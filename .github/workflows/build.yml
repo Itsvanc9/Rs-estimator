@@ -27,7 +27,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Capacitor project
+      - name: Install Capacitor
         run: |
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
@@ -38,16 +38,18 @@ jobs:
           {
             "appId": "com.rsestimator.app",
             "appName": "RS Estimator",
-            "webDir": ".",
-            "server": {
-              "url": "https://itsvanc9.github.io/Rs-estimator",
-              "cleartext": true
-            }
+            "webDir": "www"
           }
           EOF
+          mkdir -p www
+          cp index.html www/
+          cp manifest.json www/
+          cp Sw.js www/ 2>/dev/null || true
 
-      - name: Add Android platform
-        run: npx cap add android
+      - name: Add Android and sync
+        run: |
+          npx cap add android
+          npx cap sync android
 
       - name: Build APK
         working-directory: android
