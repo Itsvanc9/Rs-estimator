@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>R&S Drywall Solutions – Estimator</title>  
-<link rel="manifest" href="/Rs-estimator/manifest.json">
+<title>R&S Drywall Solutions – Estimator</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --lime: #84cc16;
@@ -460,7 +460,7 @@
   <div class="header-actions">
     <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Clear</button>
     <button class="btn btn-ghost btn-sm" onclick="saveEstimate()">💾 Save</button>
-    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 PDF</button>
+    <button class="btn btn-primary btn-sm" onclick="generatePDF()">🖨 PDF</button>
   </div>
 </header>
 
@@ -625,7 +625,7 @@
         <input id="taxPct" type="number" value="9.15" min="0" max="100" step="0.01" style="max-width:80px;text-align:center" oninput="calc()"/>
         <span id="taxAmtLabel" style="color:#84cc16;font-weight:600;font-size:13px;"></span>
       </div>
-      <button class="btn btn-primary" style="margin-top:12px" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="generatePDF()">🖨 Print / Save as PDF</button>
       <button class="btn btn-ghost" onclick="saveEstimate()">💾 Save Estimate</button>
     </div>
   </div>
@@ -1098,16 +1098,30 @@ function clearAll() {
   renderMats(); renderOthers(); calc();
 }
 
+function generatePDF() {
+  updatePrint();
+  const element = $('printPage');
+  element.style.display = 'block';
+  const estimateNum = $('estimateNumber').value || '001';
+  const client = $('client').value || 'Estimate';
+  const filename = `RS-Estimator-${estimateNum}-${client.replace(/\s+/g,'-')}.pdf`;
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(element).save().then(() => {
+    element.style.display = 'none';
+  });
+}
+
 $('date').value = new Date().toISOString().slice(0,10);
 renderMats();
 renderOthers();
 renderSaved();
 calc();
 </script>
-  <script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/Rs-estimator/sw.js');
-}
-  </script>
 </body>
 </html>
