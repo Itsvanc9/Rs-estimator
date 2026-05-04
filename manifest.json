@@ -2,7 +2,7 @@
   "name": "RS Estimator",
   "short_name": "RS Estimator",
   "description": "R&S Drywall Solutions LLC Estimator",
-  "start_url": "/Rs-estimator/",
+  "start_url": ".",
   "scope": "/Rs-estimator/",
   "display": "standalone",
   "background_color": "#0f172a",
