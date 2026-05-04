@@ -1104,5 +1104,10 @@ renderOthers();
 renderSaved();
 calc();
 </script>
+  <script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/Rs-estimator/sw.js');
+}
+  </script>
 </body>
 </html>
