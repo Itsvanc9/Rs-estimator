@@ -24,23 +24,25 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Initialize Bubblewrap project
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli@latest
+
+      - name: Initialize TWA project
         run: |
           mkdir -p twa-build
-          bubblewrap init \
-            --manifest "https://itsvanc9.github.io/Rs-estimator/manifest.json" \
-            --directory ./twa-build \
-            --jdk skip \
-            --androidSdk skip
+          cd twa-build
+          printf 'n\nn\n' | bubblewrap init \
+            --manifest "https://itsvanc9.github.io/Rs-estimator/manifest.json"
         env:
           BUBBLEWRAP_SKIP_UPDATE_CHECK: "true"
 
       - name: Build APK
         working-directory: ./twa-build
-        run: bubblewrap build --skipPwaValidation
+        run: |
+          printf 'n\n' | bubblewrap build --skipPwaValidation
         env:
           BUBBLEWRAP_SKIP_UPDATE_CHECK: "true"
 
