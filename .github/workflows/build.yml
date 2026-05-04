@@ -1,4 +1,4 @@
-name: Build APK (TWA via Bubblewrap)
+name: Build APK
 
 on:
   push:
@@ -10,44 +10,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli@latest
-
-      - name: Initialize TWA project
+      - name: Create Capacitor project
         run: |
-          mkdir -p twa-build
-          cd twa-build
-          printf 'n\nn\n' | bubblewrap init \
-            --manifest "https://itsvanc9.github.io/Rs-estimator/manifest.json"
-        env:
-          BUBBLEWRAP_SKIP_UPDATE_CHECK: "true"
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Configure Capacitor
+        run: |
+          cat > capacitor.config.json << 'EOF'
+          {
+            "appId": "com.rsestimator.app",
+            "appName": "RS Estimator",
+            "webDir": ".",
+            "server": {
+              "url": "https://itsvanc9.github.io/Rs-estimator",
+              "cleartext": true
+            }
+          }
+          EOF
+
+      - name: Add Android platform
+        run: npx cap add android
 
       - name: Build APK
-        working-directory: ./twa-build
+        working-directory: android
         run: |
-          printf 'n\n' | bubblewrap build --skipPwaValidation
-        env:
-          BUBBLEWRAP_SKIP_UPDATE_CHECK: "true"
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: rs-estimator-apk
-          path: ./twa-build/app-release-unsigned.apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
