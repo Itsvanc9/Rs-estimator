@@ -67,6 +67,116 @@ jobs:
           }
           EOF
 
+      - name: Patch MainActivity for PDF and file support
+        run: |
+          MAIN=$(find android -name "MainActivity.java" -o -name "MainActivity.kt" | head -1)
+          echo "Found: $MAIN"
+          cat > android/app/src/main/java/com/rsestimator/app/MainActivity.java << 'JAVAEOF'
+          package com.rsestimator.app;
+
+          import android.Manifest;
+          import android.content.pm.PackageManager;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.os.Environment;
+          import android.webkit.JavascriptInterface;
+          import android.webkit.ValueCallback;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.net.Uri;
+          import android.content.Intent;
+          import android.app.Activity;
+          import android.util.Base64;
+          import android.widget.Toast;
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
+          import com.getcapacitor.BridgeActivity;
+          import java.io.File;
+          import java.io.FileOutputStream;
+          import java.io.IOException;
+
+          public class MainActivity extends BridgeActivity {
+              private ValueCallback<Uri[]> filePathCallback;
+              private static final int FILE_CHOOSER_REQUEST = 1;
+              private static final int STORAGE_PERMISSION_REQUEST = 2;
+
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                              != PackageManager.PERMISSION_GRANTED) {
+                          ActivityCompat.requestPermissions(this,
+                              new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                              STORAGE_PERMISSION_REQUEST);
+                      }
+                  }
+
+                  WebView webView = getBridge().getWebView();
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setDomStorageEnabled(true);
+
+                  webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+
+                  webView.setWebChromeClient(new WebChromeClient() {
+                      @Override
+                      public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
+                              FileChooserParams fileChooserParams) {
+                          MainActivity.this.filePathCallback = filePathCallback;
+                          Intent intent = fileChooserParams.createIntent();
+                          try {
+                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                          } catch (Exception e) {
+                              MainActivity.this.filePathCallback = null;
+                              return false;
+                          }
+                          return true;
+                      }
+                  });
+              }
+
+              @Override
+              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                  if (requestCode == FILE_CHOOSER_REQUEST) {
+                      if (filePathCallback != null) {
+                          Uri[] results = null;
+                          if (resultCode == Activity.RESULT_OK && data != null) {
+                              results = new Uri[]{data.getData()};
+                          }
+                          filePathCallback.onReceiveValue(results);
+                          filePathCallback = null;
+                      }
+                  }
+                  super.onActivityResult(requestCode, resultCode, data);
+              }
+
+              class AndroidBridge {
+                  @JavascriptInterface
+                  public void saveBase64File(String base64Data, String fileName, String mimeType) {
+                      try {
+                          byte[] bytes = Base64.decode(base64Data.split(",")[1], Base64.DEFAULT);
+                          File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                          File file = new File(downloadsDir, fileName);
+                          FileOutputStream fos = new FileOutputStream(file);
+                          fos.write(bytes);
+                          fos.close();
+                          runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                              "Saved to Downloads: " + fileName, Toast.LENGTH_LONG).show());
+                      } catch (IOException e) {
+                          e.printStackTrace();
+                          runOnUiThread(() -> Toast.makeText(MainActivity.this,
+                              "Error saving file", Toast.LENGTH_SHORT).show());
+                      }
+                  }
+              }
+          }
+          JAVAEOF
+
       - name: Build APK
         working-directory: android
         run: |
