@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>R&S Drywall Solutions – Estimator</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --lime: #84cc16;
@@ -44,10 +45,13 @@
   }
 
   .logo-icon {
-    width: 42px; height: 42px;
+    width: 42px;
+    height: 42px;
     background: var(--lime);
     border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-family: 'Bebas Neue', sans-serif;
     font-size: 20px;
     color: var(--slate);
@@ -99,6 +103,7 @@
     color: var(--white);
     border: 1px solid rgba(255,255,255,0.15);
   }
+
   .btn-ghost:hover { background: rgba(255,255,255,0.15); }
 
   .btn-danger { background: #fee2e2; color: var(--red); }
@@ -109,9 +114,17 @@
     color: var(--slate);
     border: 1px solid var(--border);
   }
-  .btn-light:hover { background: var(--lime-light); border-color: var(--lime); }
 
-  .btn-sm { padding: 7px 12px; font-size: 12px; border-radius: 8px; }
+  .btn-light:hover {
+    background: var(--lime-light);
+    border-color: var(--lime);
+  }
+
+  .btn-sm {
+    padding: 7px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
 
   .main {
     max-width: 900px;
@@ -140,10 +153,13 @@
   }
 
   .card-header .icon {
-    width: 32px; height: 32px;
+    width: 32px;
+    height: 32px;
     background: var(--lime-light);
     border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 15px;
     flex-shrink: 0;
   }
@@ -170,8 +186,19 @@
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
   .col-span-2 { grid-column: span 2; }
 
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .field label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 
   input, textarea, select {
     font-family: 'DM Sans', sans-serif;
@@ -197,7 +224,6 @@
   textarea { resize: vertical; min-height: 90px; }
 
   .table-wrap { overflow-x: auto; margin: -4px -2px; }
-
   table { width: 100%; border-collapse: collapse; min-width: 500px; }
 
   thead th {
@@ -218,10 +244,15 @@
     border-bottom: 1px solid var(--border);
     transition: background 0.1s;
   }
+
   tbody tr:hover { background: #f8fafc; }
   tbody tr:last-child { border-bottom: none; }
 
-  tbody td { padding: 8px 12px; vertical-align: middle; }
+  tbody td {
+    padding: 8px 12px;
+    vertical-align: middle;
+  }
+
   tbody td input { background: var(--white); }
 
   .td-total {
@@ -243,7 +274,11 @@
     transition: color 0.15s, background 0.15s;
     line-height: 1;
   }
-  .del-btn:hover { color: var(--red); background: #fee2e2; }
+
+  .del-btn:hover {
+    color: var(--red);
+    background: #fee2e2;
+  }
 
   .add-row-btn {
     margin-top: 12px;
@@ -261,9 +296,19 @@
     transition: all 0.15s;
     font-family: 'DM Sans', sans-serif;
   }
-  .add-row-btn:hover { background: var(--lime); color: var(--slate); border-style: solid; }
 
-  .saved-list { display: flex; flex-direction: column; gap: 10px; }
+  .add-row-btn:hover {
+    background: var(--lime);
+    color: var(--slate);
+    border-style: solid;
+  }
+
+  .saved-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .saved-empty {
     padding: 14px;
     border: 1px dashed var(--border);
@@ -272,6 +317,7 @@
     font-size: 13px;
     background: #f8fafc;
   }
+
   .saved-item {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -282,17 +328,20 @@
     border-radius: 12px;
     background: #f8fafc;
   }
+
   .saved-title {
     font-weight: 800;
     font-size: 14px;
     color: var(--slate);
   }
+
   .saved-meta {
     margin-top: 3px;
     font-size: 12px;
     color: var(--muted);
     line-height: 1.4;
   }
+
   .saved-actions {
     display: flex;
     gap: 6px;
@@ -328,7 +377,6 @@
   }
 
   .summary-row:last-child { border-bottom: none; }
-
   .summary-row span:first-child { color: rgba(255,255,255,0.6); }
   .summary-row span:last-child { color: var(--white); font-weight: 600; }
 
@@ -363,7 +411,10 @@
     gap: 8px;
   }
 
-  .summary-actions .btn { width: 100%; justify-content: center; }
+  .summary-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 
   .tax-row {
     display: flex;
@@ -373,20 +424,48 @@
     border-top: 1px solid rgba(255,255,255,0.12);
     margin-top: 8px;
   }
-  .tax-row label { font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.65); white-space: nowrap; }
-  .tax-row input { max-width: 80px; text-align: center; }
-  .tax-row span { font-size: 12px; color: var(--muted); }
+
+  .tax-row label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.65);
+    white-space: nowrap;
+  }
+
+  .tax-row input {
+    max-width: 80px;
+    text-align: center;
+  }
+
+  .tax-row span {
+    font-size: 12px;
+    color: var(--muted);
+  }
 
   @media print {
     body { background: white !important; }
     .no-print { display: none !important; }
-    .print-only { display: block !important; }
     header { display: none !important; }
     .main { display: none !important; }
+    .print-only {
+      display: block !important;
+      position: static !important;
+      left: auto !important;
+      top: auto !important;
+      width: 100% !important;
+      z-index: auto !important;
+    }
     @page { size: Letter; margin: 0.5in; }
   }
 
-  .print-only { display: none; }
+  .print-only {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: 816px;
+    background: #fff;
+    z-index: -1;
+  }
 
   .print-page {
     font-family: Arial, sans-serif;
@@ -409,30 +488,139 @@
   .ph-right h2 { font-size: 28px; font-weight: 900; color: #65a30d; margin: 0; }
   .ph-right p { font-size: 11px; color: #333; margin: 4px 0; }
 
-  .pi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-  .pi-box { border: 1px solid #ddd; border-radius: 6px; padding: 12px 14px; }
-  .pi-box h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #65a30d; font-weight: 700; margin-bottom: 8px; }
-  .pi-box p { font-size: 12px; margin: 4px 0; line-height: 1.5; }
+  .pi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
 
-  .psec h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #65a30d; font-weight: 700; margin: 20px 0 8px; }
+  .pi-box {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
 
-  .ptable { width: 100%; border-collapse: collapse; border: 1px solid #ddd; margin-bottom: 16px; }
-  .ptable th { background: #84cc16; color: white; padding: 8px 10px; font-size: 11px; text-align: left; }
-  .ptable td { padding: 8px 10px; font-size: 11.5px; border-bottom: 1px solid #eee; }
+  .pi-box h3 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #65a30d;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .pi-box p {
+    font-size: 12px;
+    margin: 4px 0;
+    line-height: 1.5;
+  }
+
+  .psec h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #65a30d;
+    font-weight: 700;
+    margin: 20px 0 8px;
+  }
+
+  .ptable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+    margin-bottom: 16px;
+  }
+
+  .ptable th {
+    background: #84cc16;
+    color: white;
+    padding: 8px 10px;
+    font-size: 11px;
+    text-align: left;
+  }
+
+  .ptable td {
+    padding: 8px 10px;
+    font-size: 11.5px;
+    border-bottom: 1px solid #eee;
+  }
+
   .ptable tbody tr:nth-child(even) { background: #f9fafb; }
   .tr { text-align: right; }
 
-  .psummary { display: flex; justify-content: flex-end; margin-top: 20px; }
-  .psummary-box { width: 300px; border: 1px solid #ddd; border-radius: 6px; overflow: hidden; }
-  .psrow { display: flex; justify-content: space-between; padding: 9px 14px; border-bottom: 1px solid #eee; font-size: 12px; }
-  .psrow.total-row { background: #84cc16; font-weight: 800; font-size: 16px; }
+  .psummary {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 
-  .pnotes { border-top: 2px solid #84cc16; padding-top: 14px; margin-top: 24px; }
-  .pnotes h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #65a30d; font-weight: 700; margin-bottom: 8px; }
-  .pnotes p { font-size: 11.5px; line-height: 1.7; color: #333; white-space: pre-line; }
+  .psummary-box {
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+  }
 
-  .psig { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; }
-  .psig-line { border-top: 1px solid #999; padding-top: 6px; font-size: 11px; color: #555; }
+  .psrow {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 14px;
+    border-bottom: 1px solid #eee;
+    font-size: 12px;
+  }
+
+  .psrow.total-row {
+    background: #84cc16;
+    font-weight: 800;
+    font-size: 16px;
+  }
+
+  .pnotes {
+    border-top: 2px solid #84cc16;
+    padding-top: 14px;
+    margin-top: 24px;
+  }
+
+  .pnotes h4 {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #65a30d;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .pnotes p {
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: #333;
+    white-space: pre-line;
+  }
+
+  .psig {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+  }
+
+  .psig-line {
+    border-top: 1px solid #999;
+    padding-top: 6px;
+    font-size: 11px;
+    color: #555;
+  }
+
+  .break-avoid,
+  .pi-box,
+  .ptable,
+  .psummary-box,
+  .pnotes,
+  .psig {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
 
   @media (max-width: 600px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr 1fr; }
@@ -459,7 +647,7 @@
   <div class="header-actions">
     <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑 Clear</button>
     <button class="btn btn-ghost btn-sm" onclick="saveEstimate()">💾 Save</button>
-    <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 PDF</button>
+    <button class="btn btn-primary btn-sm" onclick="generatePDF()">🖨 PDF</button>
   </div>
 </header>
 
@@ -624,7 +812,7 @@
         <input id="taxPct" type="number" value="9.15" min="0" max="100" step="0.01" style="max-width:80px;text-align:center" oninput="calc()"/>
         <span id="taxAmtLabel" style="color:#84cc16;font-weight:600;font-size:13px;"></span>
       </div>
-      <button class="btn btn-primary" style="margin-top:12px" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="generatePDF()">🖨 Print / Save as PDF</button>
       <button class="btn btn-ghost" onclick="saveEstimate()">💾 Save Estimate</button>
     </div>
   </div>
@@ -639,7 +827,7 @@
       <div class="saved-list" id="savedList"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
         <button class="btn btn-light btn-sm" onclick="exportBackup()">⬇ Export Backup</button>
-        <button class="btn btn-light btn-sm" onclick="$('importFile').click()">⬆ Import Backup</button>
+        <button class="btn btn-light btn-sm" onclick="openImport()">⬆ Import Backup</button>
         <input id="importFile" type="file" accept=".json,application/json" style="display:none" onchange="importBackup(event)">
       </div>
     </div>
@@ -656,24 +844,32 @@ let others = [{ description:'', amount:'' }];
 const STORAGE_KEY = 'rs_drywall_saved_estimates_v1';
 const $ = id => document.getElementById(id);
 const num = v => parseFloat(v) || 0;
-const cur = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+const cur = n => new Intl.NumberFormat('en-US', { style:'currency', currency:'USD' }).format(n);
 
 function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
-    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
   }[c]));
 }
 
 function fmtDate(v) {
   if (!v) return '';
   const d = new Date(v + 'T00:00:00');
-  return new Intl.DateTimeFormat('en-US',{year:'numeric',month:'long',day:'numeric'}).format(d);
+  return new Intl.DateTimeFormat('en-US', {
+    year:'numeric',
+    month:'long',
+    day:'numeric'
+  }).format(d);
 }
 
 function estimateTotal(data = getCurrentData()) {
   const unitTotal = num(data.unitQty) * num(data.unitRate);
   const laborTotal = num(data.hours) * num(data.workers) * num(data.laborRate);
-  const matTotal = (data.mats || []).reduce((s,m) => s + num(m.quantity)*num(m.unitCost), 0);
+  const matTotal = (data.mats || []).reduce((s,m) => s + num(m.quantity) * num(m.unitCost), 0);
   const otherTotal = (data.others || []).reduce((s,o) => s + num(o.amount), 0);
   const subtotal = unitTotal + laborTotal + matTotal + otherTotal;
   const taxAmt = subtotal * (num(data.taxPct) / 100);
@@ -736,7 +932,7 @@ function applyData(data) {
   renderMats();
   renderOthers();
   calc();
-  window.scrollTo({top:0, behavior:'smooth'});
+  window.scrollTo({ top:0, behavior:'smooth' });
 }
 
 function saveEstimate() {
@@ -777,12 +973,13 @@ function printSavedEstimate(id) {
   const item = getSavedEstimates().find(x => x.id === id);
   if (!item) return alert('Estimate not found.');
   applyData(item.data);
-  setTimeout(() => window.print(), 150);
+  setTimeout(() => generatePDF(), 180);
 }
 
 function renderSaved() {
   const list = getSavedEstimates();
   $('savedCount').textContent = list.length;
+
   if (!list.length) {
     $('savedList').innerHTML = '<div class="saved-empty">No saved estimates yet. Fill the estimate and press Save Estimate.</div>';
     return;
@@ -790,9 +987,10 @@ function renderSaved() {
 
   $('savedList').innerHTML = list.map(item => {
     const d = item.data || {};
-    const title = (d.client || d.project || 'Untitled Estimate');
+    const title = d.client || d.project || 'Untitled Estimate';
     const total = cur(estimateTotal(d));
     const savedDate = item.savedAt ? new Date(item.savedAt).toLocaleString() : '';
+
     return `
       <div class="saved-item">
         <div>
@@ -814,16 +1012,18 @@ function renderSaved() {
 
 function exportBackup() {
   const list = getSavedEstimates();
-  const blob = new Blob([JSON.stringify(list, null, 2)], {type:'application/json'});
+  const blob = new Blob([JSON.stringify(list, null, 2)], { type:'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   const date = new Date().toISOString().slice(0,10);
+
   a.href = url;
   a.download = 'rs-drywall-estimates-backup-' + date + '.json';
   document.body.appendChild(a);
   a.click();
   a.remove();
-  URL.revokeObjectURL(url);
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function importBackup(event) {
@@ -836,26 +1036,35 @@ function importBackup(event) {
     try {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('Invalid file');
+
       const current = getSavedEstimates();
       const byId = {};
+
       [...imported, ...current].forEach(item => {
         if (item && item.id && item.data) byId[item.id] = item;
       });
-      setSavedEstimates(Object.values(byId).sort((a,b) => String(b.savedAt).localeCompare(String(a.savedAt))));
+
+      setSavedEstimates(
+        Object.values(byId).sort((a,b) => String(b.savedAt).localeCompare(String(a.savedAt)))
+      );
+
       alert('Backup imported.');
     } catch(err) {
       alert('Could not import this file.');
     }
   };
+
   reader.readAsText(file);
 }
 
 function renderMats() {
   const tbody = $('matBody');
   tbody.innerHTML = '';
+
   mats.forEach((m, i) => {
     const lineTotal = num(m.quantity) * num(m.unitCost);
     const tr = document.createElement('tr');
+
     tr.innerHTML = `
       <td><input value="${esc(m.description)}" placeholder="Drywall, screws, tape..." oninput="mats[${i}].description=this.value;calc()"/></td>
       <td style="width:80px"><input type="number" min="0" value="${esc(m.quantity)}" placeholder="0" oninput="mats[${i}].quantity=this.value;calc()"/></td>
@@ -864,50 +1073,64 @@ function renderMats() {
       <td class="td-total">${cur(lineTotal)}</td>
       <td><button class="del-btn" onclick="delMat(${i})">✕</button></td>
     `;
+
     tbody.appendChild(tr);
   });
 }
 
 function addMat() {
   mats.push({ description:'', quantity:'', unit:'', unitCost:'' });
-  renderMats(); calc();
+  renderMats();
+  calc();
 }
 
 function delMat(i) {
-  if (mats.length === 1) { mats[0] = { description:'', quantity:'', unit:'', unitCost:'' }; }
-  else mats.splice(i, 1);
-  renderMats(); calc();
+  if (mats.length === 1) {
+    mats[0] = { description:'', quantity:'', unit:'', unitCost:'' };
+  } else {
+    mats.splice(i, 1);
+  }
+  renderMats();
+  calc();
 }
 
 function renderOthers() {
   const tbody = $('otherBody');
   tbody.innerHTML = '';
+
   others.forEach((o, i) => {
     const tr = document.createElement('tr');
+
     tr.innerHTML = `
       <td><input value="${esc(o.description)}" placeholder="Permit, dumpster, haul-off, rental..." oninput="others[${i}].description=this.value;calc()"/></td>
       <td style="width:120px"><input type="number" min="0" step="0.01" value="${esc(o.amount)}" placeholder="0.00" oninput="others[${i}].amount=this.value;calc()"/></td>
       <td><button class="del-btn" onclick="delOther(${i})">✕</button></td>
     `;
+
     tbody.appendChild(tr);
   });
 }
 
 function addOther() {
   others.push({ description:'', amount:'' });
-  renderOthers(); calc();
+  renderOthers();
+  calc();
 }
 
 function delOther(i) {
-  if (others.length === 1) { others[0] = { description:'', amount:'' }; }
-  else others.splice(i, 1);
-  renderOthers(); calc();
+  if (others.length === 1) {
+    others[0] = { description:'', amount:'' };
+  } else {
+    others.splice(i, 1);
+  }
+  renderOthers();
+  calc();
 }
 
 function calc() {
   const unitTotal = num($('unitQty').value) * num($('unitRate').value);
   const laborTotal = num($('hours').value) * num($('workers').value) * num($('laborRate').value);
-  const matTotal = mats.reduce((s,m) => s + num(m.quantity)*num(m.unitCost), 0);
+  const matTotal = mats.reduce((s,m) => s + num(m.quantity) * num(m.unitCost), 0);
   const otherTotal = others.reduce((s,o) => s + num(o.amount), 0);
   const subtotal = unitTotal + laborTotal + matTotal + otherTotal;
   const taxPct = num($('taxPct').value);
@@ -922,7 +1145,9 @@ function calc() {
   $('grandTotal').textContent = cur(total);
 
   const tds = $('matBody').querySelectorAll('.td-total');
-  mats.forEach((m, i) => { if (tds[i]) tds[i].textContent = cur(num(m.quantity)*num(m.unitCost)); });
+  mats.forEach((m, i) => {
+    if (tds[i]) tds[i].textContent = cur(num(m.quantity) * num(m.unitCost));
+  });
 
   const rows = [];
   if (unitTotal > 0) rows.push(['Unit Pricing', cur(unitTotal)]);
@@ -956,7 +1181,7 @@ function updatePrint() {
   const workers = num($('workers').value);
   const laborRate = num($('laborRate').value);
   const laborTotal = hours * workers * laborRate;
-  const matTotal = mats.reduce((s,m) => s + num(m.quantity)*num(m.unitCost), 0);
+  const matTotal = mats.reduce((s,m) => s + num(m.quantity) * num(m.unitCost), 0);
   const otherTotal = others.reduce((s,o) => s + num(o.amount), 0);
   const subtotal = unitTotal + laborTotal + matTotal + otherTotal;
   const taxPct = num($('taxPct').value);
@@ -971,7 +1196,7 @@ function updatePrint() {
   const hasOther = otherUsed.length > 0;
 
   let html = `
-  <div class="ph">
+  <div class="ph break-avoid">
     <div>
       <h1>R &amp; S Drywall Solutions LLC</h1>
       <p>Licensed &amp; Insured · Construction &amp; Remodeling Estimates</p>
@@ -1001,51 +1226,98 @@ function updatePrint() {
   </div>`;
 
   if (hasUnit) html += `
-  <div class="psec"><h4>Pricing Details</h4>
-  <table class="ptable">
-    <thead><tr><th>Work Type</th><th class="tr">Quantity</th><th class="tr">Unit Price</th><th class="tr">Amount</th></tr></thead>
-    <tbody><tr>
-      <td>${esc(unitLabel)}</td>
-      <td class="tr">${esc(unitQty)}</td>
-      <td class="tr">${cur(unitRate)}</td>
-      <td class="tr">${cur(unitTotal)}</td>
-    </tr></tbody>
-  </table></div>`;
+  <div class="psec break-avoid">
+    <h4>Pricing Details</h4>
+    <table class="ptable">
+      <thead>
+        <tr>
+          <th>Work Type</th>
+          <th class="tr">Quantity</th>
+          <th class="tr">Unit Price</th>
+          <th class="tr">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>${esc(unitLabel)}</td>
+          <td class="tr">${esc(unitQty)}</td>
+          <td class="tr">${cur(unitRate)}</td>
+          <td class="tr">${cur(unitTotal)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 
   if (hasMat) html += `
-  <div class="psec"><h4>Materials / Equipment / Supplies</h4>
-  <table class="ptable">
-    <thead><tr><th>Description</th><th class="tr">Qty</th><th>Unit</th><th class="tr">Unit Cost</th><th class="tr">Line Total</th></tr></thead>
-    <tbody>${matUsed.map(m=>`<tr>
-      <td>${esc(m.description||'-')}</td>
-      <td class="tr">${esc(m.quantity||0)}</td>
-      <td>${esc(m.unit||'-')}</td>
-      <td class="tr">${cur(num(m.unitCost))}</td>
-      <td class="tr">${cur(num(m.quantity)*num(m.unitCost))}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+  <div class="psec">
+    <h4>Materials / Equipment / Supplies</h4>
+    <table class="ptable">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="tr">Qty</th>
+          <th>Unit</th>
+          <th class="tr">Unit Cost</th>
+          <th class="tr">Line Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${matUsed.map(m => `
+          <tr>
+            <td>${esc(m.description || '-')}</td>
+            <td class="tr">${esc(m.quantity || 0)}</td>
+            <td>${esc(m.unit || '-')}</td>
+            <td class="tr">${cur(num(m.unitCost))}</td>
+            <td class="tr">${cur(num(m.quantity) * num(m.unitCost))}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
 
   if (hasLabor) html += `
-  <div class="psec"><h4>Labor</h4>
-  <table class="ptable">
-    <thead><tr><th class="tr">Hours</th><th class="tr">Workers</th><th class="tr">Rate/hr</th><th class="tr">Total</th></tr></thead>
-    <tbody><tr>
-      <td class="tr">${esc(hours)}</td>
-      <td class="tr">${esc(workers)}</td>
-      <td class="tr">${cur(laborRate)}</td>
-      <td class="tr">${cur(laborTotal)}</td>
-    </tr></tbody>
-  </table></div>`;
+  <div class="psec break-avoid">
+    <h4>Labor</h4>
+    <table class="ptable">
+      <thead>
+        <tr>
+          <th class="tr">Hours</th>
+          <th class="tr">Workers</th>
+          <th class="tr">Rate/hr</th>
+          <th class="tr">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="tr">${esc(hours)}</td>
+          <td class="tr">${esc(workers)}</td>
+          <td class="tr">${cur(laborRate)}</td>
+          <td class="tr">${cur(laborTotal)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 
   if (hasOther) html += `
-  <div class="psec"><h4>Permits / Disposal / Other Costs</h4>
-  <table class="ptable">
-    <thead><tr><th>Description</th><th class="tr">Amount</th></tr></thead>
-    <tbody>${otherUsed.map(o=>`<tr>
-      <td>${esc(o.description||'-')}</td>
-      <td class="tr">${cur(num(o.amount))}</td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+  <div class="psec break-avoid">
+    <h4>Permits / Disposal / Other Costs</h4>
+    <table class="ptable">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="tr">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${otherUsed.map(o => `
+          <tr>
+            <td>${esc(o.description || '-')}</td>
+            <td class="tr">${cur(num(o.amount))}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>`;
 
   html += `
   <div class="psummary">
@@ -1061,13 +1333,13 @@ function updatePrint() {
   </div>`;
 
   if (notes) html += `
-  <div class="pnotes">
+  <div class="pnotes break-avoid">
     <h4>Notes</h4>
     <p>${esc(notes)}</p>
   </div>`;
 
   html += `
-  <div class="psig">
+  <div class="psig break-avoid">
     <div class="psig-line">Authorized Signature</div>
     <div class="psig-line">Client Acceptance Signature</div>
   </div>`;
@@ -1077,6 +1349,7 @@ function updatePrint() {
 
 function clearAll() {
   if (!confirm('Clear current form? Saved estimates will stay saved.')) return;
+
   $('estimateNumber').value = '001';
   $('date').value = new Date().toISOString().slice(0,10);
   $('client').value = '';
@@ -1092,13 +1365,70 @@ function clearAll() {
   $('laborRate').value = '65';
   $('taxPct').value = '9.15';
   $('notes').value = 'This estimate includes standard labor, material handling, equipment use, and basic job site cleanup unless otherwise specified.';
+
   mats = [{ description:'', quantity:'', unit:'', unitCost:'' }];
   others = [{ description:'', amount:'' }];
-  renderMats(); renderOthers(); calc();
+
+  renderMats();
+  renderOthers();
+  calc();
+}
+
+async function generatePDF() {
+  updatePrint();
+
+  const source = $('printPage');
+  const clone = source.cloneNode(true);
+
+  clone.id = 'printPageClone';
+  clone.style.display = 'block';
+  clone.style.position = 'fixed';
+  clone.style.left = '-10000px';
+  clone.style.top = '0';
+  clone.style.width = '816px';
+  clone.style.background = '#ffffff';
+  clone.style.zIndex = '-1';
+
+  document.body.appendChild(clone);
+
+  const estimateNum = $('estimateNumber').value || '001';
+  const client = ($('client').value || 'Estimate').replace(/[^\w.-]+/g, '-');
+  const filename = `RS-Estimator-${estimateNum}-${client}.pdf`;
+
+  const opt = {
+    margin: [0.5, 0.5, 0.5, 0.5],
+    filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      scrollX: 0,
+      scrollY: 0
+    },
+    pagebreak: {
+      mode: ['css', 'legacy'],
+      avoid: ['.break-avoid', '.ptable', '.pi-box', '.psummary-box', '.pnotes', '.psig']
+    },
+    jsPDF: {
+      unit: 'in',
+      format: 'letter',
+      orientation: 'portrait'
+    }
+  };
+
+  try {
+    await html2pdf().set(opt).from(clone).save();
+  } catch (err) {
+    console.error(err);
+    alert('Could not generate PDF on this device.');
+  } finally {
+    clone.remove();
+  }
 }
 
 function openImport() {
-  $('importFile').click();
+  document.getElementById('importFile').click();
 }
 
 $('date').value = new Date().toISOString().slice(0,10);
