@@ -716,14 +716,12 @@ function renderTemplates() {
     container.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:8px 0;">${t('noTemplates')}</div>`;
     return;
   }
-  container.innerHTML = templates.map((tmpl, i) => `
-    <div class="template-chip">
-      <span style="font-size:16px;flex-shrink:0;">⭐</span>
-      <span class="template-chip-name">${escapeHtml(tmpl.name)}</span>
-      <span class="template-chip-badge">${tmpl.materials.length} items</span>
-      <button class="template-chip-btn" onclick="loadNamedTemplate(${i})" title="${t('loadBtn')}">📂</button>
-      <button class="template-chip-btn" onclick="deleteTemplate(${i})" title="${t('deleteBtn')}" style="color:#ef4444;">🗑️</button>
-    </div>`).join('');
+  container.innerHTML = `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;">` +
+    templates.map((tmpl, i) => `
+      <div style="position:relative;display:inline-flex;align-items:center;gap:0;">
+        <button class="add-row-btn" style="margin-top:0;padding-right:10px;" onclick="loadNamedTemplate(${i})">⭐ ${escapeHtml(tmpl.name)}</button>
+        <button onclick="deleteTemplate(${i})" style="background:none;border:none;cursor:pointer;font-size:13px;padding:0 6px;opacity:0.6;line-height:1;" title="${t('deleteBtn')}">✕</button>
+      </div>`).join('') + `</div>`;
 }
 
 function loadDrywallTemplate() {
