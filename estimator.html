@@ -514,13 +514,15 @@ function getPrintHTML() {
 <head>
 <meta charset="UTF-8">
 <style>
+@page{size:letter portrait;margin:8mm}
 *{box-sizing:border-box}
 body{
   font-family:Arial,sans-serif;
   margin:0;
-  padding:28px;
+  padding:14px;
   color:#0f172a;
   background:white;
+  font-size:13px;
 }
 .page{
   width:100%;
@@ -531,24 +533,24 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
-  border-bottom:4px solid #84cc16;
-  padding-bottom:22px;
-  margin-bottom:22px;
+  border-bottom:3px solid #84cc16;
+  padding-bottom:12px;
+  margin-bottom:12px;
 }
 .brand{
   display:flex;
-  gap:18px;
+  gap:12px;
   align-items:flex-start;
 }
 .logo{
-  width:125px;
-  height:125px;
+  width:80px;
+  height:80px;
   object-fit:cover;
-  border-radius:18px;
+  border-radius:12px;
 }
 .company h1{
   margin:0;
-  font-size:34px;
+  font-size:24px;
   line-height:1;
   font-weight:900;
   color:#0f172a;
@@ -558,30 +560,31 @@ body{
   display:block;
 }
 .company p{
-  margin:8px 0;
-  font-size:15px;
+  margin:4px 0;
+  font-size:12px;
   color:#111827;
 }
 .contact{
-  margin-top:10px;
-  line-height:1.6;
+  margin-top:6px;
+  line-height:1.4;
+  font-size:12px;
 }
 .estimate-box{
   text-align:right;
-  min-width:230px;
+  min-width:190px;
 }
 .estimate-box h2{
-  margin:0 0 18px;
-  font-size:46px;
+  margin:0 0 8px;
+  font-size:32px;
   letter-spacing:1px;
   color:#0f172a;
 }
 .est-row{
   display:flex;
   justify-content:space-between;
-  gap:25px;
-  font-size:16px;
-  margin:10px 0;
+  gap:16px;
+  font-size:13px;
+  margin:5px 0;
 }
 .est-row strong{
   color:#0f172a;
@@ -593,71 +596,71 @@ body{
 .cards{
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:16px;
-  margin-bottom:20px;
+  gap:10px;
+  margin-bottom:10px;
 }
 .info-card{
   border:1px solid #d1d5db;
-  border-radius:8px;
+  border-radius:6px;
   overflow:hidden;
 }
 .card-title{
   background:#0f172a;
   color:white;
-  padding:14px 18px;
+  padding:8px 12px;
   font-weight:800;
-  font-size:15px;
+  font-size:12px;
   letter-spacing:.3px;
 }
 .card-title span{
   color:#84cc16;
-  margin-right:8px;
+  margin-right:6px;
 }
 .card-body{
-  padding:18px;
-  min-height:150px;
-  font-size:15px;
-  line-height:1.6;
+  padding:10px 12px;
+  font-size:12px;
+  line-height:1.45;
 }
 .info-line{
   display:grid;
-  grid-template-columns:135px 1fr;
-  margin-bottom:10px;
+  grid-template-columns:110px 1fr;
+  margin-bottom:5px;
 }
 .info-line strong{
   color:#111827;
 }
 .scope-list{
-  margin-left:18px;
+  margin-left:14px;
 }
 .scope-list li{
-  margin-bottom:8px;
+  margin-bottom:4px;
 }
 .cost-card{
   border:1px solid #d1d5db;
-  border-radius:8px;
+  border-radius:6px;
   overflow:hidden;
-  margin-top:14px;
+  margin-top:8px;
 }
 .cost-title{
   background:#0f172a;
   color:white;
-  padding:14px 18px;
+  padding:8px 12px;
   font-weight:800;
+  font-size:12px;
 }
 .cost-title span{
   color:#84cc16;
-  margin-right:8px;
+  margin-right:6px;
 }
 .cost-table{
   width:100%;
   border-collapse:collapse;
 }
 .cost-table th{
-  padding:12px 18px;
+  padding:7px 12px;
   color:#65a30d;
   text-align:left;
-  font-size:13px;
+  font-size:11px;
   border-bottom:1px solid #d1d5db;
 }
 .cost-table th:last-child,
@@ -665,15 +668,15 @@ body{
   text-align:right;
 }
 .cost-table td{
-  padding:13px 18px;
+  padding:7px 12px;
   border-bottom:1px solid #e5e7eb;
-  font-size:15px;
+  font-size:12px;
 }
 .cost-icon{
   color:#65a30d;
-  width:35px;
+  width:26px;
   display:inline-block;
-  font-size:20px;
+  font-size:14px;
 }
 .bold-row td{
   font-weight:800;
@@ -686,7 +689,7 @@ body{
   background:#84cc16;
 }
 .balance td{
-  font-size:24px;
+  font-size:18px;
   font-weight:900;
   color:#0f172a;
   border-bottom:none;
@@ -694,50 +697,50 @@ body{
 .bottom-grid{
   display:grid;
   grid-template-columns:1fr 1fr 1.25fr;
-  gap:22px;
-  margin-top:24px;
+  gap:12px;
+  margin-top:12px;
 }
 .bottom-box h3{
-  font-size:15px;
-  margin:0 0 10px;
+  font-size:12px;
+  margin:0 0 6px;
   border-bottom:2px solid #84cc16;
-  padding-bottom:6px;
+  padding-bottom:4px;
 }
 .bottom-box h3 span{
   color:#84cc16;
-  margin-right:6px;
+  margin-right:5px;
 }
 .bottom-box p{
-  font-size:13px;
-  line-height:1.55;
-  margin:0 0 10px;
+  font-size:11px;
+  line-height:1.4;
+  margin:0 0 5px;
 }
 .sig-line{
   border-top:1px solid #111827;
-  margin-top:34px;
-  padding-top:6px;
-  font-size:12px;
+  margin-top:18px;
+  padding-top:4px;
+  font-size:11px;
 }
 .footer{
-  margin-top:30px;
-  border-top:3px solid #0f172a;
-  padding-top:16px;
+  margin-top:12px;
+  border-top:2px solid #0f172a;
+  padding-top:10px;
   display:grid;
   grid-template-columns:1fr 1fr;
-  gap:18px;
-  font-size:13px;
+  gap:12px;
+  font-size:11px;
 }
 .footer div{
-  line-height:1.5;
+  line-height:1.4;
 }
 .copyright{
   text-align:center;
-  font-size:11px;
+  font-size:10px;
   color:#64748b;
-  margin-top:14px;
+  margin-top:8px;
 }
 @media print{
-  body{padding:20px}
+  body{padding:0}
   .page{max-width:100%}
 }
 </style>
