@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── LIGHT MODE (default) ── */
   :root {
     --lime: #84cc16;
     --lime-dark: #65a30d;
@@ -15,61 +17,82 @@
     --muted: #64748b;
     --border: #e2e8f0;
     --bg: #dce8d7;
+    --card-bg: #ffffff;
+    --input-bg: #dce8d7;
+    --saved-item-bg: #f9f9ff;
+    --saved-item-border: #eef2ff;
     --white: #ffffff;
     --red: #ef4444;
+    --text: #0f172a;
+    --shadow: rgba(0,0,0,0.08);
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--slate); }
+
+  /* ── DARK MODE ── */
+  [data-theme="dark"] {
+    --bg: #0f172a;
+    --card-bg: #1e293b;
+    --input-bg: #0f172a;
+    --border: #334155;
+    --muted: #94a3b8;
+    --lime-light: #1a2e05;
+    --saved-item-bg: #1e293b;
+    --saved-item-border: #334155;
+    --white: #1e293b;
+    --text: #f1f5f9;
+    --shadow: rgba(0,0,0,0.3);
+  }
+  [data-theme="dark"] body { color: var(--text); }
+  [data-theme="dark"] .card { background: var(--card-bg); }
+  [data-theme="dark"] .card-header { border-color: var(--border); }
+  [data-theme="dark"] .card-header h2 { color: #f1f5f9; }
+  [data-theme="dark"] .field label { color: var(--muted); }
+  [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+    background: var(--input-bg); color: #f1f5f9; border-color: var(--border);
+  }
+  [data-theme="dark"] thead th { background: #334155; }
+  [data-theme="dark"] tbody tr { border-color: var(--border); }
+  [data-theme="dark"] tbody td { color: #f1f5f9; }
+  [data-theme="dark"] .saved-item { background: var(--saved-item-bg); border-color: var(--saved-item-border); }
+  [data-theme="dark"] .saved-title { color: #f1f5f9; }
+  [data-theme="dark"] .btn-light { background: #334155; color: #f1f5f9; border-color: #475569; }
+  [data-theme="dark"] .btn-danger { background: #450a0a; color: #fca5a5; }
+  [data-theme="dark"] .footer { color: #94a3b8; }
+  [data-theme="dark"] .add-row-btn { background: #1a2e05; color: #a3e635; border-color: #4d7c0f; }
+  [data-theme="dark"] .template-item { background: #1e293b; border-color: #334155; }
+
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); transition: background 0.3s, color 0.3s; }
 
   header {
     background: linear-gradient(rgba(0,0,0,.15), rgba(0,0,0,.35)), url('file:///android_asset/banner.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    min-height: 320px;
-    padding: 220px 28px 24px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-start;
-    position: relative;
-    border-bottom-left-radius: 28px;
-    border-bottom-right-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    min-height: 320px; padding: 220px 28px 24px;
+    display: flex; align-items: flex-end; justify-content: flex-start;
+    position: relative; border-bottom-left-radius: 28px; border-bottom-right-radius: 28px;
+    overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.25);
   }
-
-  .header-actions {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
-  }
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
-    border-radius: 12px;
-    border: none;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 4px 14px rgba(0,0,0,.18);
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: 12px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    backdrop-filter: blur(8px); box-shadow: 0 4px 14px rgba(0,0,0,.18);
   }
-  .btn-primary { background: #84cc16; color: var(--slate); }
+  .btn-primary { background: #84cc16; color: #0f172a; }
   .btn-primary:hover { background: var(--lime-dark); color: white; }
-  .btn-ghost { background: rgba(20,20,20,.55); color: white; border: 1px solid rgba(255,255,255,.18);}
-  .btn-light { background: rgba(255,255,255,.92); color: var(--slate); border: 1px solid var(--border);}
-  .btn-light:hover { background: var(--lime-light);}
+  .btn-ghost { background: rgba(20,20,20,.55); color: white; border: 1px solid rgba(255,255,255,.18); }
+  .btn-light { background: rgba(255,255,255,.92); color: var(--slate); border: 1px solid var(--border); }
+  .btn-light:hover { background: var(--lime-light); }
   .btn-danger { background: #fee2e2; color: var(--red); }
   .btn-danger:hover { background: var(--red); color: white; }
   .btn-sm { padding: 6px 14px; font-size: 12px; }
+  .btn-settings { background: rgba(255,255,255,.15); color: white; border: 1px solid rgba(255,255,255,.3); font-size: 18px; padding: 8px 12px; }
 
   .main { max-width: 1024px; margin: 0 auto; padding: 28px 20px 60px; display: flex; flex-direction: column; gap: 24px; }
-  .card { background: white; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+  .card { background: var(--card-bg); border-radius: 14px; box-shadow: 0 2px 10px var(--shadow); border: 1px solid var(--border); transition: background 0.3s; }
   .card-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
   .card-header h2 { font-size: 16px; font-weight: 700; }
-  .card-header .card-total { margin-left: auto; background: var(--lime-light); padding: 5px 12px; border-radius: 24px; font-weight: 800; }
+  .card-header .card-total { margin-left: auto; background: var(--lime-light); color: var(--lime-dark); padding: 5px 12px; border-radius: 24px; font-weight: 800; }
   .card-body { padding: 20px 24px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
@@ -78,9 +101,10 @@
   .field label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
   input, textarea, select {
     font-family: 'DM Sans', sans-serif; font-size: 14px; border: 1.5px solid var(--border);
-    border-radius: 10px; padding: 10px 14px; background: var(--bg); width: 100%; outline: none;
+    border-radius: 10px; padding: 10px 14px; background: var(--input-bg); color: var(--text);
+    width: 100%; outline: none; transition: background 0.3s, color 0.3s, border-color 0.2s;
   }
-  input:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(132,204,22,0.2); }
+  input:focus, select:focus, textarea:focus { border-color: var(--lime); box-shadow: 0 0 0 3px rgba(132,204,22,0.2); }
   input[type="number"] { text-align: right; }
   .table-wrap { overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 500px; }
@@ -92,56 +116,81 @@
   .del-btn:hover { color: var(--red); }
   .add-row-btn {
     margin-top: 14px; background: var(--lime-light); border: 1.5px dashed var(--lime);
-    padding: 8px 16px; border-radius: 28px; font-size: 12px; font-weight: 700; cursor: pointer;
+    padding: 8px 16px; border-radius: 28px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--lime-dark);
   }
+
+  /* ── SUMMARY ── */
   .summary-card { background: var(--slate); border-radius: 20px; overflow: hidden; }
-  .summary-header { background: var(--lime); padding: 16px 26px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; }
+  .summary-header { background: var(--lime); padding: 16px 26px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #0f172a; }
   .summary-rows { padding: 14px 24px; }
-  .summary-row {
-    display: flex; justify-content: space-between; padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
+  .summary-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
   .summary-row span:first-child { color: rgba(255,255,255,0.65); }
   .summary-row span:last-child { color: white; font-weight: 600; }
-  .summary-total {
-    background: var(--lime); margin: 10px 24px 24px; border-radius: 18px;
-    padding: 18px 24px; display: flex; justify-content: space-between;
-  }
-  .summary-total .amount { font-family: 'Bebas Neue', sans-serif; font-size: 32px; font-weight: 800; }
+  .summary-total { background: var(--lime); margin: 10px 24px 24px; border-radius: 18px; padding: 18px 24px; display: flex; justify-content: space-between; }
+  .summary-total .amount { font-family: 'Bebas Neue', sans-serif; font-size: 32px; font-weight: 800; color: #0f172a; }
+  .summary-total .label { color: #0f172a; font-weight: 800; }
   .summary-actions { padding: 0 24px; }
-  .tax-row {
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 16px;
-    margin-bottom: 16px;
-  }
+  .tax-row { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 16px; margin-bottom: 16px; }
   .tax-row label { color: #d9f99d; font-weight: 600; }
-  .tax-row input { max-width: 90px; background: #1e293b; color: white; text-align: center; }
+  .tax-row input { max-width: 90px; background: #1e293b; color: white; text-align: center; border-color: #334155; }
   .tax-row span { color: #d9f99d; font-weight: 600; }
+
+  /* ── SAVED ITEMS ── */
   .saved-list { display: flex; flex-direction: column; gap: 12px; }
-  .saved-item {
-    display: flex; justify-content: space-between; align-items: center;
-    background: #f9f9ff; padding: 14px 18px; border-radius: 20px;
-    border: 1px solid #eef2ff; flex-wrap: wrap; gap: 10px;
-  }
+  .saved-item { display: flex; justify-content: space-between; align-items: center; background: var(--saved-item-bg); padding: 14px 18px; border-radius: 20px; border: 1px solid var(--saved-item-border); flex-wrap: wrap; gap: 10px; }
   .saved-title { font-weight: 800; font-size: 15px; }
   .saved-meta { font-size: 11px; color: var(--muted); }
   .saved-actions { display: flex; gap: 8px; }
+
+  /* ── TEMPLATE ITEMS ── */
+  .template-item { display: flex; justify-content: space-between; align-items: center; background: var(--saved-item-bg); padding: 12px 16px; border-radius: 16px; border: 1px solid var(--saved-item-border); flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+  .template-name { font-weight: 700; font-size: 14px; }
+  .template-meta { font-size: 11px; color: var(--muted); }
+  .template-actions { display: flex; gap: 6px; }
+
+  /* ── SETTINGS PANEL ── */
+  .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; }
+  .settings-overlay.open { display: block; }
+  .settings-panel {
+    position: fixed; top: 0; right: -320px; width: 300px; height: 100vh;
+    background: var(--card-bg); box-shadow: -6px 0 30px rgba(0,0,0,0.25);
+    z-index: 9999; transition: right 0.3s ease; display: flex; flex-direction: column;
+    border-left: 1px solid var(--border);
+  }
+  .settings-panel.open { right: 0; }
+  .settings-head { padding: 20px 22px; background: var(--slate); color: white; display: flex; justify-content: space-between; align-items: center; }
+  .settings-head span { font-weight: 800; font-size: 16px; }
+  .settings-head button { background: none; border: none; color: white; font-size: 20px; cursor: pointer; line-height: 1; }
+  .settings-body { padding: 20px; display: flex; flex-direction: column; gap: 24px; overflow-y: auto; }
+  .setting-section { display: flex; flex-direction: column; gap: 12px; }
+  .setting-section-title { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .setting-row { display: flex; justify-content: space-between; align-items: center; }
+  .setting-label { font-weight: 600; font-size: 14px; color: var(--text); }
+
+  /* Toggle switch */
+  .toggle-wrap { width: 50px; height: 28px; background: #cbd5e1; border-radius: 14px; cursor: pointer; position: relative; transition: background 0.25s; flex-shrink: 0; }
+  .toggle-wrap.on { background: var(--lime); }
+  .toggle-knob { position: absolute; width: 22px; height: 22px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+  .toggle-wrap.on .toggle-knob { left: 25px; }
+
+  /* Language buttons */
+  .lang-btns { display: flex; gap: 6px; }
+  .lang-btn { padding: 7px 16px; border-radius: 10px; border: 1.5px solid var(--border); background: var(--input-bg); color: var(--text); font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+  .lang-btn.active { background: var(--lime); border-color: var(--lime); color: #0f172a; }
+
+  /* Toast */
   #appToast {
     position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
     background: #0f172a; color: white; padding: 12px 20px; border-radius: 14px;
     font-weight: 700; z-index: 99999; box-shadow: 0 8px 25px rgba(0,0,0,0.25);
     font-size: 14px; white-space: nowrap;
   }
-  .footer {
-    margin-top: 30px;
-    font-size: 10px;
-    color: #666;
-    text-align: center;
-    padding: 20px;
-  }
+
+  .footer { margin-top: 30px; font-size: 10px; color: var(--muted); text-align: center; padding: 20px; }
+
   @media (max-width: 640px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .saved-item { flex-direction: column; align-items: flex-start; }
+    .saved-item, .template-item { flex-direction: column; align-items: flex-start; }
     .header-actions { margin-left: 0; width: 100%; }
     #appToast { white-space: normal; text-align: center; max-width: 90%; }
   }
@@ -149,171 +198,185 @@
 </head>
 <body>
 
+<!-- ═══════════════ SETTINGS PANEL ═══════════════ -->
+<div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-head">
+    <span id="settingsTitle">⚙️ Settings</span>
+    <button onclick="closeSettings()">✕</button>
+  </div>
+  <div class="settings-body">
+
+    <div class="setting-section">
+      <div class="setting-section-title" id="lblAppearance">Appearance</div>
+      <div class="setting-row">
+        <span class="setting-label" id="lblDarkMode">Dark Mode</span>
+        <div class="toggle-wrap" id="darkToggle" onclick="toggleDarkMode()">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="setting-section-title" id="lblLanguageSection">Language / Idioma</div>
+      <div class="lang-btns">
+        <button class="lang-btn active" id="langEN" onclick="setLanguage('en')">🇺🇸 English</button>
+        <button class="lang-btn" id="langES" onclick="setLanguage('es')">🇲🇽 Español</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
 <header>
   <div class="header-actions">
-    <button class="btn btn-ghost btn-sm" onclick="saveEstimate()">💾 Save</button>
-    <button class="btn btn-light btn-sm" onclick="clearEstimate()">🧹 New</button>
-    <button class="btn btn-primary btn-sm" onclick="doPrint()">🖨️ Print</button>
+    <button class="btn btn-ghost btn-sm" onclick="saveEstimate()">💾 <span data-i18n="save">Save</span></button>
+    <button class="btn btn-light btn-sm" onclick="clearEstimate()">🧹 <span data-i18n="new">New</span></button>
+    <button class="btn btn-primary btn-sm" onclick="doPrint()">🖨️ <span data-i18n="print">Print</span></button>
     <button class="btn btn-primary btn-sm" onclick="doPDF()">📄 PDF</button>
+    <button class="btn btn-settings btn-sm" onclick="openSettings()">⚙️</button>
   </div>
 </header>
 
 <div class="main">
+
   <!-- DASHBOARD -->
   <div class="card">
-    <div class="card-header">
-      <div>📊</div>
-      <h2>Dashboard</h2>
-    </div>
+    <div class="card-header"><div>📊</div><h2 data-i18n="dashboard">Dashboard</h2></div>
     <div class="card-body">
       <div class="grid-3">
-        <div class="field">
-          <label>Saved Estimates</label>
-          <input id="dashEstimates" readonly>
-        </div>
-        <div class="field">
-          <label>Total Quoted</label>
-          <input id="dashQuoted" readonly>
-        </div>
-        <div class="field">
-          <label>Average Estimate</label>
-          <input id="dashAverage" readonly>
-        </div>
+        <div class="field"><label data-i18n="savedEstimates">Saved Estimates</label><input id="dashEstimates" readonly></div>
+        <div class="field"><label data-i18n="totalQuoted">Total Quoted</label><input id="dashQuoted" readonly></div>
+        <div class="field"><label data-i18n="avgEstimate">Average Estimate</label><input id="dashAverage" readonly></div>
       </div>
     </div>
   </div>
 
   <!-- PROJECT DETAILS -->
   <div class="card">
-    <div class="card-header"><div>📋</div><h2>Project Details</h2></div>
+    <div class="card-header"><div>📋</div><h2 data-i18n="projectDetails">Project Details</h2></div>
     <div class="card-body">
       <div class="grid-2">
-        <div class="field"><label>Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal()"></div>
-        <div class="field"><label>Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
-        <div class="field"><label>Client</label><input id="clientName" placeholder="Client Name" oninput="updateTotal()"></div>
-        <div class="field"><label>Project</label><input id="projectName" placeholder="Project Name" oninput="updateTotal()"></div>
-        <div class="field col-span-2"><label>Project Address</label><input id="projectAddress" placeholder="Job site address" oninput="updateTotal()"></div>
-        <div class="field"><label>Valid Until</label><input id="validUntil" type="date" oninput="updateTotal()"></div>
-        <div class="field"><label>Deposit Paid ($)</label><input id="depositPaid" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field col-span-2"><label>Scope</label><input id="scopeWork" placeholder="Scope of work" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="date">Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="client">Client</label><input id="clientName" placeholder="Client Name" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="project">Project</label><input id="projectName" placeholder="Project Name" oninput="updateTotal()"></div>
+        <div class="field col-span-2"><label data-i18n="projectAddress">Project Address</label><input id="projectAddress" placeholder="Job site address" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="validUntil">Valid Until</label><input id="validUntil" type="date" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="depositPaid">Deposit Paid ($)</label><input id="depositPaid" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field col-span-2"><label data-i18n="scope">Scope</label><input id="scopeWork" placeholder="Scope of work" oninput="updateTotal()"></div>
       </div>
     </div>
   </div>
 
   <!-- SAVED CLIENTS -->
   <div class="card">
-    <div class="card-header">
-      <div>👥</div>
-      <h2>Saved Clients</h2>
-    </div>
+    <div class="card-header"><div>👥</div><h2 data-i18n="savedClients">Saved Clients</h2></div>
     <div class="card-body">
       <div class="grid-3">
         <div class="field">
-          <label>Select Client</label>
+          <label data-i18n="selectClient">Select Client</label>
           <select id="clientSelect" onchange="loadClientFromSelect()">
-            <option value="">Select saved client</option>
+            <option value="" data-i18n="selectClient">Select saved client</option>
           </select>
         </div>
-        <div class="field">
-          <label>Client Phone</label>
-          <input id="clientPhone" placeholder="Client phone">
-        </div>
-        <div class="field">
-          <label>Client Email</label>
-          <input id="clientEmail" placeholder="Client email">
-        </div>
+        <div class="field"><label data-i18n="clientPhone">Client Phone</label><input id="clientPhone" placeholder="Client phone"></div>
+        <div class="field"><label data-i18n="clientEmail">Client Email</label><input id="clientEmail" placeholder="Client email"></div>
       </div>
-      <button class="add-row-btn" onclick="saveClient()">+ Save Client</button>
+      <button class="add-row-btn" onclick="saveClient()" data-i18n="saveClientBtn">+ Save Client</button>
     </div>
   </div>
 
   <!-- UNIT PRICING -->
   <div class="card">
-    <div class="card-header"><div>📐</div><h2>Unit Pricing</h2><span class="card-total" id="unitTotalShow">$0.00</span></div>
+    <div class="card-header"><div>📐</div><h2 data-i18n="unitPricing">Unit Pricing</h2><span class="card-total" id="unitTotalShow">$0.00</span></div>
     <div class="card-body">
       <div class="grid-3">
-        <div class="field"><label>Type</label><input id="unitType" placeholder="Sq ft / Room" oninput="updateTotal()"></div>
-        <div class="field"><label>Qty</label><input id="unitQty" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field"><label>Price</label><input id="unitPrice" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="type">Type</label><input id="unitType" placeholder="Sq ft / Room" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="qty">Qty</label><input id="unitQty" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="price">Price</label><input id="unitPrice" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
       </div>
     </div>
   </div>
 
   <!-- LABOR -->
   <div class="card">
-    <div class="card-header"><div>👷</div><h2>Labor</h2><span class="card-total" id="laborTotalShow">$0.00</span></div>
+    <div class="card-header"><div>👷</div><h2 data-i18n="labor">Labor</h2><span class="card-total" id="laborTotalShow">$0.00</span></div>
     <div class="card-body">
       <div class="grid-3">
-        <div class="field"><label>Hours</label><input id="laborHours" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field"><label>Workers</label><input id="workersCount" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field"><label>Rate/hr</label><input id="hourlyRate" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="hours">Hours</label><input id="laborHours" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="workers">Workers</label><input id="workersCount" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="rateHr">Rate/hr</label><input id="hourlyRate" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
       </div>
     </div>
   </div>
 
   <!-- MATERIALS -->
   <div class="card">
-    <div class="card-header"><div>🧱</div><h2>Materials</h2><span class="card-total" id="materialsTotalShow">$0.00</span></div>
+    <div class="card-header"><div>🧱</div><h2 data-i18n="materials">Materials</h2><span class="card-total" id="materialsTotalShow">$0.00</span></div>
     <div class="card-body">
       <div class="table-wrap">
-        <table id="materialsTable">
+        <table>
           <thead>
             <tr>
-              <th>Description</th>
-              <th>Qty</th>
-              <th>Unit</th>
-              <th>Cost</th>
-              <th>Total</th>
+              <th data-i18n="description">Description</th>
+              <th data-i18n="qty">Qty</th>
+              <th data-i18n="unit">Unit</th>
+              <th data-i18n="cost">Cost</th>
+              <th data-i18n="total">Total</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="materialsTbody"></tbody>
         </table>
       </div>
-      <button class="add-row-btn" onclick="addMaterial()">+ Add Material</button>
+      <button class="add-row-btn" onclick="addMaterial()" data-i18n="addMaterial">+ Add Material</button>
     </div>
   </div>
 
   <!-- MATERIAL TEMPLATES -->
   <div class="card">
-    <div class="card-header">
-      <div>⭐</div>
-      <h2>Material Templates</h2>
-    </div>
+    <div class="card-header"><div>⭐</div><h2 data-i18n="materialTemplates">Material Templates</h2></div>
     <div class="card-body">
-      <button class="add-row-btn" onclick="loadDrywallTemplate()">Load Drywall Package</button>
-      <button class="add-row-btn" onclick="saveMaterialFavorite()">Save Current Materials</button>
-      <button class="add-row-btn" onclick="loadMaterialFavorite()">Load Favorite Materials</button>
+      <!-- Save new template -->
+      <div class="grid-2" style="margin-bottom:14px; align-items:flex-end;">
+        <div class="field">
+          <label data-i18n="templateName">Template Name</label>
+          <input id="templateNameInput" placeholder="e.g. Ceiling Package">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveNamedTemplate()" style="height:42px;" data-i18n="saveTemplate">💾 Save Template</button>
+      </div>
+      <!-- Drywall preset -->
+      <button class="add-row-btn" onclick="loadDrywallTemplate()" data-i18n="drywallPreset">📦 Load Drywall Preset</button>
+      <!-- Saved templates list -->
+      <div id="templatesList" style="margin-top:16px;"></div>
     </div>
   </div>
 
   <!-- OTHER COSTS -->
   <div class="card">
-    <div class="card-header">
-      <div>📦</div>
-      <h2>Other Costs</h2>
-      <span class="card-total" id="otherTotalShow">$0.00</span>
-    </div>
+    <div class="card-header"><div>📦</div><h2 data-i18n="otherCosts">Other Costs</h2><span class="card-total" id="otherTotalShow">$0.00</span></div>
     <div class="card-body">
       <div class="table-wrap">
-        <table id="otherTable">
+        <table>
           <thead>
             <tr>
-              <th>Description</th>
-              <th>Amount</th>
+              <th data-i18n="description">Description</th>
+              <th data-i18n="amount">Amount</th>
               <th></th>
             </tr>
           </thead>
           <tbody id="otherTbody"></tbody>
         </table>
       </div>
-      <button class="add-row-btn" onclick="addOther()">+ Add Cost</button>
+      <button class="add-row-btn" onclick="addOther()" data-i18n="addCost">+ Add Cost</button>
     </div>
   </div>
 
   <!-- NOTES -->
   <div class="card">
-    <div class="card-header"><div>📝</div><h2>Notes</h2></div>
+    <div class="card-header"><div>📝</div><h2 data-i18n="notes">Notes</h2></div>
     <div class="card-body">
       <textarea id="notes" rows="2" oninput="updateTotal()">Standard installation & finishing. Cleanup included.</textarea>
     </div>
@@ -321,10 +384,10 @@
 
   <!-- SUMMARY -->
   <div class="summary-card">
-    <div class="summary-header">Estimate Summary</div>
+    <div class="summary-header" data-i18n="summary">Estimate Summary</div>
     <div class="summary-actions">
       <div class="tax-row">
-        <label>Tax (%)</label>
+        <label data-i18n="tax">Tax (%)</label>
         <input id="taxRate" type="number" value="9.15" oninput="updateTotal()">
         <span id="taxAmount"></span>
       </div>
@@ -338,45 +401,29 @@
 
   <!-- CONTRACTOR PROFIT VIEW -->
   <div class="card">
-    <div class="card-header">
-      <div>💰</div>
-      <h2>Contractor Profit View</h2>
-      <span class="card-total" id="profitShow">$0.00</span>
-    </div>
+    <div class="card-header"><div>💰</div><h2 data-i18n="profitView">Contractor Profit View</h2><span class="card-total" id="profitShow">$0.00</span></div>
     <div class="card-body">
       <div class="grid-3">
-        <div class="field">
-          <label>Real Job Cost</label>
-          <input id="realJobCost" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()">
-        </div>
-        <div class="field">
-          <label>Profit</label>
-          <input id="profitAmount" readonly>
-        </div>
-        <div class="field">
-          <label>Margin %</label>
-          <input id="profitMargin" readonly>
-        </div>
+        <div class="field"><label data-i18n="realJobCost">Real Job Cost</label><input id="realJobCost" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="profit">Profit</label><input id="profitAmount" readonly></div>
+        <div class="field"><label data-i18n="margin">Margin %</label><input id="profitMargin" readonly></div>
       </div>
     </div>
   </div>
 
   <!-- SAVED ESTIMATES -->
   <div class="card">
-    <div class="card-header">
-      <div>📁</div>
-      <h2>Saved Estimates</h2>
-      <span class="card-total" id="savedCount">0</span>
-    </div>
+    <div class="card-header"><div>📁</div><h2 data-i18n="savedEstimatesSection">Saved Estimates</h2><span class="card-total" id="savedCount">0</span></div>
     <div class="card-body">
       <div class="saved-list" id="savedList"></div>
-      <div style="display:flex; gap:10px; margin-top:20px;">
-        <button class="btn btn-light btn-sm" onclick="exportBackup()">⬇ Backup</button>
-        <button class="btn btn-light btn-sm" onclick="AndroidBridge.pickBackupFile()">⬆ Import</button>
+      <div style="display:flex; gap:10px; margin-top:20px; flex-wrap:wrap;">
+        <button class="btn btn-light btn-sm" onclick="exportBackup()" data-i18n="backup">⬇ Backup</button>
+        <button class="btn btn-light btn-sm" onclick="AndroidBridge.pickBackupFile()" data-i18n="importBtn">⬆ Import</button>
         <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="importBackup(event)">
       </div>
     </div>
   </div>
+
 </div>
 
 <div class="footer">
@@ -385,15 +432,138 @@
 </div>
 
 <script>
-function showToast(msg) {
-  let old = document.getElementById("appToast");
-  if (old) old.remove();
+// ═══════════════════════════════════════════════════════
+// TRANSLATIONS
+// ═══════════════════════════════════════════════════════
+const T = {
+  en: {
+    save:'Save', new:'New', print:'Print',
+    dashboard:'Dashboard', savedEstimates:'Saved Estimates',
+    totalQuoted:'Total Quoted', avgEstimate:'Average Estimate',
+    projectDetails:'Project Details', estimateNum:'Estimate #',
+    date:'Date', client:'Client', project:'Project',
+    projectAddress:'Project Address', validUntil:'Valid Until',
+    depositPaid:'Deposit Paid ($)', scope:'Scope',
+    savedClients:'Saved Clients', selectClient:'Select saved client',
+    clientPhone:'Client Phone', clientEmail:'Client Email',
+    saveClientBtn:'+ Save Client',
+    unitPricing:'Unit Pricing', type:'Type', qty:'Qty', price:'Price',
+    labor:'Labor', hours:'Hours', workers:'Workers', rateHr:'Rate/hr',
+    materials:'Materials', description:'Description', unit:'Unit',
+    cost:'Cost', total:'Total', addMaterial:'+ Add Material',
+    materialTemplates:'Material Templates', templateName:'Template Name',
+    saveTemplate:'💾 Save Template', drywallPreset:'📦 Load Drywall Preset',
+    noTemplates:'No saved templates — save one above',
+    loadBtn:'Load', deleteBtn:'Delete',
+    otherCosts:'Other Costs', amount:'Amount', addCost:'+ Add Cost',
+    notes:'Notes', summary:'Estimate Summary', tax:'Tax (%)',
+    profitView:'Contractor Profit View', realJobCost:'Real Job Cost',
+    profit:'Profit', margin:'Margin %',
+    savedEstimatesSection:'Saved Estimates',
+    backup:'⬇ Backup', importBtn:'⬆ Import',
+    settingsTitle:'⚙️ Settings', lblAppearance:'Appearance',
+    lblDarkMode:'Dark Mode', lblLanguageSection:'Language / Idioma',
+    toastSaved:'✓ Estimate saved', toastNew:'✓ New estimate ready',
+    toastClientSaved:'✓ Client saved', toastClientLoaded:'✓ Client loaded',
+    toastTemplateSaved:'✓ Template saved', toastTemplateLoaded:'✓ Template loaded',
+    toastTemplateDeleted:'✓ Template deleted',
+    confirmNew:'Start a new estimate? Unsaved data will be lost.',
+    noMaterials:'No materials to save', enterTemplateName:'Enter a template name',
+  },
+  es: {
+    save:'Guardar', new:'Nuevo', print:'Imprimir',
+    dashboard:'Panel', savedEstimates:'Estimados Guardados',
+    totalQuoted:'Total Cotizado', avgEstimate:'Promedio',
+    projectDetails:'Detalles del Proyecto', estimateNum:'Estimado #',
+    date:'Fecha', client:'Cliente', project:'Proyecto',
+    projectAddress:'Dirección del Proyecto', validUntil:'Válido Hasta',
+    depositPaid:'Depósito Pagado ($)', scope:'Alcance del Trabajo',
+    savedClients:'Clientes Guardados', selectClient:'Seleccionar cliente',
+    clientPhone:'Teléfono', clientEmail:'Correo Electrónico',
+    saveClientBtn:'+ Guardar Cliente',
+    unitPricing:'Precio Unitario', type:'Tipo', qty:'Cant.', price:'Precio',
+    labor:'Mano de Obra', hours:'Horas', workers:'Trabajadores', rateHr:'Tarifa/hr',
+    materials:'Materiales', description:'Descripción', unit:'Unidad',
+    cost:'Costo', total:'Total', addMaterial:'+ Agregar Material',
+    materialTemplates:'Plantillas de Materiales', templateName:'Nombre de Plantilla',
+    saveTemplate:'💾 Guardar Plantilla', drywallPreset:'📦 Plantilla Drywall',
+    noTemplates:'Sin plantillas guardadas — guarda una arriba',
+    loadBtn:'Cargar', deleteBtn:'Borrar',
+    otherCosts:'Otros Costos', amount:'Monto', addCost:'+ Agregar Costo',
+    notes:'Notas', summary:'Resumen del Estimado', tax:'Impuesto (%)',
+    profitView:'Vista de Ganancia', realJobCost:'Costo Real del Trabajo',
+    profit:'Ganancia', margin:'Margen %',
+    savedEstimatesSection:'Estimados Guardados',
+    backup:'⬇ Respaldo', importBtn:'⬆ Importar',
+    settingsTitle:'⚙️ Configuración', lblAppearance:'Apariencia',
+    lblDarkMode:'Modo Oscuro', lblLanguageSection:'Idioma / Language',
+    toastSaved:'✓ Estimado guardado', toastNew:'✓ Nuevo estimado listo',
+    toastClientSaved:'✓ Cliente guardado', toastClientLoaded:'✓ Cliente cargado',
+    toastTemplateSaved:'✓ Plantilla guardada', toastTemplateLoaded:'✓ Plantilla cargada',
+    toastTemplateDeleted:'✓ Plantilla borrada',
+    confirmNew:'¿Nuevo estimado? Los datos sin guardar se perderán.',
+    noMaterials:'No hay materiales para guardar', enterTemplateName:'Escribe un nombre de plantilla',
+  }
+};
 
-  let toast = document.createElement("div");
-  toast.id = "appToast";
+let currentLang = localStorage.getItem('RS_LANG') || 'en';
+function t(key) { return T[currentLang][key] || T.en[key] || key; }
+
+function setLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('RS_LANG', lang);
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (T[lang][k] !== undefined) el.textContent = T[lang][k];
+  });
+  $('langEN') && ($('langEN').className = 'lang-btn' + (lang === 'en' ? ' active' : ''));
+  $('langES') && ($('langES').className = 'lang-btn' + (lang === 'es' ? ' active' : ''));
+  $('settingsTitle') && ($('settingsTitle').textContent = t('settingsTitle'));
+  $('lblAppearance') && ($('lblAppearance').textContent = t('lblAppearance'));
+  $('lblDarkMode') && ($('lblDarkMode').textContent = t('lblDarkMode'));
+  $('lblLanguageSection') && ($('lblLanguageSection').textContent = t('lblLanguageSection'));
+  renderTemplates();
+}
+
+// ═══════════════════════════════════════════════════════
+// DARK MODE
+// ═══════════════════════════════════════════════════════
+function toggleDarkMode() {
+  let isDark = document.body.getAttribute('data-theme') === 'dark';
+  let next = isDark ? 'light' : 'dark';
+  document.body.setAttribute('data-theme', next);
+  localStorage.setItem('RS_THEME', next);
+  updateDarkToggleUI();
+}
+function updateDarkToggleUI() {
+  let isDark = document.body.getAttribute('data-theme') === 'dark';
+  let wrap = $('darkToggle');
+  if (wrap) wrap.className = 'toggle-wrap' + (isDark ? ' on' : '');
+}
+
+// ═══════════════════════════════════════════════════════
+// SETTINGS PANEL
+// ═══════════════════════════════════════════════════════
+function openSettings() {
+  $('settingsPanel').classList.add('open');
+  $('settingsOverlay').classList.add('open');
+}
+function closeSettings() {
+  $('settingsPanel').classList.remove('open');
+  $('settingsOverlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// CORE UTILS
+// ═══════════════════════════════════════════════════════
+function showToast(msg) {
+  let old = document.getElementById('appToast');
+  if (old) old.remove();
+  let toast = document.createElement('div');
+  toast.id = 'appToast';
   toast.innerText = msg;
   document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 2000);
+  setTimeout(() => toast.remove(), 2200);
 }
 
 let materials = [];
@@ -401,22 +571,29 @@ let otherCosts = [];
 
 function $(id) { return document.getElementById(id); }
 function formatMoney(v) { return '$' + (v || 0).toFixed(2); }
-function escapeHtml(str) { return String(str || '').replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
-function formatDate() { let d = $("estDate").value; if(!d) return ''; let date = new Date(d + 'T00:00:00'); return date.toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'}); }
+function escapeHtml(str) { return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function formatDate() {
+  let d = $('estDate').value;
+  if (!d) return '';
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+}
 
-function addMaterial() { materials.push({ desc: "", qty: "0", unit: "", cost: "0" }); updateTotal(); }
-function addOther() { otherCosts.push({ desc: "", amount: "0" }); updateTotal(); }
+// ═══════════════════════════════════════════════════════
+// TOTALS
+// ═══════════════════════════════════════════════════════
+function addMaterial() { materials.push({ desc:'', qty:'0', unit:'', cost:'0' }); updateTotal(); }
+function addOther() { otherCosts.push({ desc:'', amount:'0' }); updateTotal(); }
 
 function computeTotals() {
-  let unit = (parseFloat($("unitQty").value)||0) * (parseFloat($("unitPrice").value)||0);
-  let labor = (parseFloat($("laborHours").value)||0) * (parseFloat($("workersCount").value)||0) * (parseFloat($("hourlyRate").value)||0);
+  let unit = (parseFloat($('unitQty').value)||0) * (parseFloat($('unitPrice').value)||0);
+  let labor = (parseFloat($('laborHours').value)||0) * (parseFloat($('workersCount').value)||0) * (parseFloat($('hourlyRate').value)||0);
   let mat = materials.reduce((s,m) => s + (parseFloat(m.qty)||0)*(parseFloat(m.cost)||0), 0);
   let other = otherCosts.reduce((s,o) => s + (parseFloat(o.amount)||0), 0);
   let sub = unit + labor + mat + other;
-  let taxP = parseFloat($("taxRate").value)||0;
+  let taxP = parseFloat($('taxRate').value)||0;
   let tax = sub * (taxP / 100);
-  let deposit = parseFloat($("depositPaid")?.value)||0;
-  let realCost = parseFloat($("realJobCost")?.value)||0;
+  let deposit = parseFloat($('depositPaid')?.value)||0;
+  let realCost = parseFloat($('realJobCost')?.value)||0;
   let grand = sub + tax;
   let balance = grand - deposit;
   let profit = grand - realCost;
@@ -426,493 +603,452 @@ function computeTotals() {
 
 function updateTotal() {
   let t = computeTotals();
-  $("unitTotalShow").innerText = formatMoney(t.unit);
-  $("laborTotalShow").innerText = formatMoney(t.labor);
-  $("materialsTotalShow").innerText = formatMoney(t.mat);
-  $("otherTotalShow").innerText = formatMoney(t.other);
-  $("grandTotal").innerText = formatMoney(t.grand);
-  $("taxAmount").innerHTML = "= " + formatMoney(t.tax);
+  $('unitTotalShow').innerText = formatMoney(t.unit);
+  $('laborTotalShow').innerText = formatMoney(t.labor);
+  $('materialsTotalShow').innerText = formatMoney(t.mat);
+  $('otherTotalShow').innerText = formatMoney(t.other);
+  $('grandTotal').innerText = formatMoney(t.grand);
+  $('taxAmount').innerHTML = '= ' + formatMoney(t.tax);
 
-  let html = "";
+  let html = '';
   if(t.unit > 0) html += `<div class="summary-row"><span>Unit Pricing</span><span>${formatMoney(t.unit)}</span></div>`;
-  if(t.mat > 0) html += `<div class="summary-row"><span>Materials</span><span>${formatMoney(t.mat)}</span></div>`;
+  if(t.mat > 0)  html += `<div class="summary-row"><span>Materials</span><span>${formatMoney(t.mat)}</span></div>`;
   if(t.labor > 0) html += `<div class="summary-row"><span>Labor</span><span>${formatMoney(t.labor)}</span></div>`;
   if(t.other > 0) html += `<div class="summary-row"><span>Other Costs</span><span>${formatMoney(t.other)}</span></div>`;
   html += `<div class="summary-row"><span>Subtotal</span><span>${formatMoney(t.sub)}</span></div>`;
   html += `<div class="summary-row"><span>Tax (${t.taxP}%)</span><span>${formatMoney(t.tax)}</span></div>`;
   if(t.deposit > 0) html += `<div class="summary-row"><span>Deposit Paid</span><span>-${formatMoney(t.deposit)}</span></div>`;
   html += `<div class="summary-row"><span>Remaining Balance</span><span>${formatMoney(t.balance)}</span></div>`;
-  $("summaryRows").innerHTML = html;
+  $('summaryRows').innerHTML = html;
 
-  if ($("profitShow")) $("profitShow").innerText = formatMoney(t.profit);
-  if ($("profitAmount")) $("profitAmount").value = formatMoney(t.profit);
-  if ($("profitMargin")) $("profitMargin").value = t.margin.toFixed(1) + "%";
+  if ($('profitShow')) $('profitShow').innerText = formatMoney(t.profit);
+  if ($('profitAmount')) $('profitAmount').value = formatMoney(t.profit);
+  if ($('profitMargin')) $('profitMargin').value = t.margin.toFixed(1) + '%';
 
   updateDashboard();
   renderMaterials();
   renderOthers();
 }
 
+// ═══════════════════════════════════════════════════════
+// RENDER TABLES
+// ═══════════════════════════════════════════════════════
 function renderMaterials() {
-  let tbody = $("materialsTbody");
-  if(!tbody) return;
-  tbody.innerHTML = "";
-  for(let i = 0; i < materials.length; i++) {
+  let tbody = $('materialsTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  for (let i = 0; i < materials.length; i++) {
     let m = materials[i];
     let total = (parseFloat(m.qty)||0) * (parseFloat(m.cost)||0);
-    let tr = document.createElement("tr");
+    let tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input value="${escapeHtml(m.desc)}" onchange="materials[${i}].desc=this.value; updateTotal()" placeholder="Description"></td>
-      <td><input type="number" step="1" value="${m.qty}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="materials[${i}].qty=this.value; updateTotal()" style="width:70px" placeholder="0"></td>
-      <td><input value="${escapeHtml(m.unit)}" onchange="materials[${i}].unit=this.value; updateTotal()" style="width:60px" placeholder="ea"></td>
-      <td><input type="number" step="0.5" value="${m.cost}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="materials[${i}].cost=this.value; updateTotal()" style="width:80px" placeholder="0.00"></td>
+      <td><input value="${escapeHtml(m.desc)}" onchange="materials[${i}].desc=this.value;updateTotal()" placeholder="Description"></td>
+      <td><input type="number" step="1" value="${m.qty}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="materials[${i}].qty=this.value;updateTotal()" style="width:70px"></td>
+      <td><input value="${escapeHtml(m.unit)}" onchange="materials[${i}].unit=this.value;updateTotal()" style="width:60px" placeholder="ea"></td>
+      <td><input type="number" step="0.5" value="${m.cost}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="materials[${i}].cost=this.value;updateTotal()" style="width:80px"></td>
       <td class="td-total">${formatMoney(total)}</td>
-      <td><button class="del-btn" onclick="deleteMaterial(${i})">🗑️</button></td>
-    `;
+      <td><button class="del-btn" onclick="deleteMaterial(${i})">🗑️</button></td>`;
     tbody.appendChild(tr);
   }
-  if(materials.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:#64748b;">No materials added. Click "+ Add Material"</td></tr>';
+  if (materials.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px;color:#64748b;">No materials added.</td></tr>`;
   }
 }
 
 function renderOthers() {
-  let tbody = $("otherTbody");
-  if(!tbody) return;
-  tbody.innerHTML = "";
-  for(let i = 0; i < otherCosts.length; i++) {
+  let tbody = $('otherTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  for (let i = 0; i < otherCosts.length; i++) {
     let o = otherCosts[i];
-    let tr = document.createElement("tr");
+    let tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input value="${escapeHtml(o.desc)}" onchange="otherCosts[${i}].desc=this.value; updateTotal()" placeholder="Description"></td>
-      <td><input type="number" step="0.5" value="${o.amount}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="otherCosts[${i}].amount=this.value; updateTotal()" style="width:100px" placeholder="0.00"></td>
-      <td><button class="del-btn" onclick="deleteOther(${i})">🗑️</button></td>
-    `;
+      <td><input value="${escapeHtml(o.desc)}" onchange="otherCosts[${i}].desc=this.value;updateTotal()" placeholder="Description"></td>
+      <td><input type="number" step="0.5" value="${o.amount}" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" onchange="otherCosts[${i}].amount=this.value;updateTotal()" style="width:100px"></td>
+      <td><button class="del-btn" onclick="deleteOther(${i})">🗑️</button></td>`;
     tbody.appendChild(tr);
   }
-  if(otherCosts.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;color:#64748b;">No other costs added. Click "+ Add Cost"</td></tr>';
+  if (otherCosts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;padding:20px;color:#64748b;">No other costs added.</td></tr>`;
   }
 }
 
-function deleteMaterial(index) {
-  materials.splice(index, 1);
-  updateTotal();
+function deleteMaterial(i) { materials.splice(i,1); updateTotal(); }
+function deleteOther(i) { otherCosts.splice(i,1); updateTotal(); }
+
+// ═══════════════════════════════════════════════════════
+// MATERIAL TEMPLATES (multiple named)
+// ═══════════════════════════════════════════════════════
+function saveNamedTemplate() {
+  let name = $('templateNameInput').value.trim();
+  if (!name) { showToast(t('enterTemplateName')); return; }
+  if (materials.length === 0) { showToast(t('noMaterials')); return; }
+  let templates = JSON.parse(localStorage.getItem('RS_TEMPLATES') || '[]');
+  templates = templates.filter(t => t.name !== name);
+  templates.push({ name, materials: JSON.parse(JSON.stringify(materials)) });
+  localStorage.setItem('RS_TEMPLATES', JSON.stringify(templates));
+  $('templateNameInput').value = '';
+  renderTemplates();
+  showToast(t('toastTemplateSaved') + ': ' + name);
 }
 
-function deleteOther(index) {
-  otherCosts.splice(index, 1);
+function loadNamedTemplate(index) {
+  let templates = JSON.parse(localStorage.getItem('RS_TEMPLATES') || '[]');
+  if (!templates[index]) return;
+  materials = JSON.parse(JSON.stringify(templates[index].materials));
   updateTotal();
+  showToast(t('toastTemplateLoaded') + ': ' + templates[index].name);
 }
 
+function deleteTemplate(index) {
+  let templates = JSON.parse(localStorage.getItem('RS_TEMPLATES') || '[]');
+  templates.splice(index, 1);
+  localStorage.setItem('RS_TEMPLATES', JSON.stringify(templates));
+  renderTemplates();
+  showToast(t('toastTemplateDeleted'));
+}
+
+function renderTemplates() {
+  let container = $('templatesList');
+  if (!container) return;
+  let templates = JSON.parse(localStorage.getItem('RS_TEMPLATES') || '[]');
+  if (templates.length === 0) {
+    container.innerHTML = `<div style="color:var(--muted);font-size:12px;padding:8px 0;">${t('noTemplates')}</div>`;
+    return;
+  }
+  container.innerHTML = templates.map((tmpl, i) => `
+    <div class="template-item">
+      <div>
+        <div class="template-name">${escapeHtml(tmpl.name)}</div>
+        <div class="template-meta">${tmpl.materials.length} items</div>
+      </div>
+      <div class="template-actions">
+        <button class="btn btn-light btn-sm" onclick="loadNamedTemplate(${i})">📂 ${t('loadBtn')}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteTemplate(${i})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function loadDrywallTemplate() {
+  materials = [
+    { desc:'Drywall 1/2 in', qty:'0', unit:'Sheets', cost:'0' },
+    { desc:'Joint Compound', qty:'0', unit:'Buckets', cost:'0' },
+    { desc:'Drywall Tape', qty:'0', unit:'Rolls', cost:'0' },
+    { desc:'Screws', qty:'0', unit:'Boxes', cost:'0' },
+    { desc:'Corner Bead', qty:'0', unit:'Pieces', cost:'0' }
+  ];
+  updateTotal();
+  showToast('✓ Drywall preset loaded');
+}
+
+// ═══════════════════════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════════════════════
+function saveClient() {
+  let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
+  let client = { name:$('clientName').value, phone:$('clientPhone').value, email:$('clientEmail').value, address:$('projectAddress').value };
+  if (!client.name) { showToast('Add client name first'); return; }
+  clients = clients.filter(c => c.name !== client.name);
+  clients.push(client);
+  localStorage.setItem('RS_CLIENTS', JSON.stringify(clients));
+  renderClients();
+  let sel = $('clientSelect');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].text === client.name) { sel.selectedIndex = i; break; }
+  }
+  showToast(t('toastClientSaved'));
+}
+
+function renderClients() {
+  let sel = $('clientSelect');
+  if (!sel) return;
+  let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
+  sel.innerHTML = `<option value="">${t('selectClient')}</option>`;
+  clients.forEach((c,i) => sel.innerHTML += `<option value="${i}">${escapeHtml(c.name)}</option>`);
+}
+
+function loadClientFromSelect() {
+  let idx = $('clientSelect').value;
+  if (idx === '') return;
+  let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
+  let c = clients[idx];
+  if (!c) return;
+  $('clientName').value = c.name || '';
+  $('clientPhone').value = c.phone || '';
+  $('clientEmail').value = c.email || '';
+  $('projectAddress').value = c.address || '';
+  updateTotal();
+  showToast(t('toastClientLoaded'));
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+function updateDashboard() {
+  let saved = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  let total = 0;
+  saved.forEach(s => {
+    let unit = (parseFloat(s.unitQty)||0)*(parseFloat(s.unitPrice)||0);
+    let labor = (parseFloat(s.hours)||0)*(parseFloat(s.workers)||0)*(parseFloat(s.rate)||0);
+    let mat = (s.materials||[]).reduce((a,m) => a+((parseFloat(m.qty)||0)*(parseFloat(m.cost)||0)),0);
+    let other = (s.others||[]).reduce((a,o) => a+(parseFloat(o.amount)||0),0);
+    let sub = unit+labor+mat+other;
+    total += sub + sub*((parseFloat(s.tax)||0)/100);
+  });
+  if ($('dashEstimates')) $('dashEstimates').value = saved.length;
+  if ($('dashQuoted')) $('dashQuoted').value = formatMoney(total);
+  if ($('dashAverage')) $('dashAverage').value = saved.length ? formatMoney(total/saved.length) : '$0.00';
+}
+
+// ═══════════════════════════════════════════════════════
+// SAVE / LOAD / DELETE ESTIMATES
+// ═══════════════════════════════════════════════════════
+function getNextEstimateNumber() {
+  let year = new Date().getFullYear();
+  let saved = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  let max = 0;
+  saved.forEach(s => { let m = String(s.estNum||'').match(/RS-\d{4}-(\d+)/); if(m && parseInt(m[1])>max) max=parseInt(m[1]); });
+  return 'RS-' + year + '-' + String(max+1).padStart(3,'0');
+}
+
+function saveEstimate() {
+  let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  let current = {
+    id: Date.now().toString(),
+    estNum:$('estNum').value, date:$('estDate').value,
+    client:$('clientName').value, project:$('projectName').value,
+    address:$('projectAddress').value, validUntil:$('validUntil').value,
+    deposit:$('depositPaid').value, scope:$('scopeWork').value,
+    notes:$('notes').value, unitType:$('unitType').value,
+    unitQty:$('unitQty').value, unitPrice:$('unitPrice').value,
+    hours:$('laborHours').value, workers:$('workersCount').value,
+    rate:$('hourlyRate').value, tax:$('taxRate').value,
+    clientPhone:$('clientPhone').value, clientEmail:$('clientEmail').value,
+    realJobCost:$('realJobCost').value,
+    materials: JSON.parse(JSON.stringify(materials)),
+    others: JSON.parse(JSON.stringify(otherCosts))
+  };
+  savedArray.unshift(current);
+  localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
+  renderSaved(); updateDashboard();
+  showToast(t('toastSaved'));
+}
+
+function loadEstimate(id) {
+  let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  let item = savedArray.find(s => s.id == id);
+  if (!item) return;
+  $('estNum').value = item.estNum;
+  $('estDate').value = item.date || new Date().toISOString().slice(0,10);
+  $('clientName').value = item.client || '';
+  $('projectName').value = item.project || '';
+  $('projectAddress').value = item.address || '';
+  $('validUntil').value = item.validUntil || '';
+  $('depositPaid').value = item.deposit || 0;
+  $('scopeWork').value = item.scope || '';
+  $('notes').value = item.notes || '';
+  $('unitType').value = item.unitType || '';
+  $('unitQty').value = item.unitQty || 0;
+  $('unitPrice').value = item.unitPrice || 0;
+  $('laborHours').value = item.hours || 0;
+  $('workersCount').value = item.workers || 0;
+  $('hourlyRate').value = item.rate || 0;
+  $('taxRate').value = item.tax || 9.15;
+  $('clientPhone').value = item.clientPhone || '';
+  $('clientEmail').value = item.clientEmail || '';
+  $('realJobCost').value = item.realJobCost || 0;
+  materials = item.materials || [];
+  otherCosts = item.others || [];
+  updateTotal();
+  showToast('✓ Loaded: ' + item.estNum);
+}
+
+function deleteEstimate(id) {
+  let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray.filter(s => s.id != id)));
+  renderSaved(); updateDashboard();
+  showToast('✓ Deleted');
+}
+
+function renderSaved() {
+  let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  $('savedCount').innerText = savedArray.length;
+  let container = $('savedList');
+  if (savedArray.length === 0) {
+    container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);">No saved estimates</div>`;
+    return;
+  }
+  container.innerHTML = savedArray.map(s => `
+    <div class="saved-item">
+      <div>
+        <div class="saved-title">${escapeHtml(s.estNum)} · ${escapeHtml(s.client||'No Client')}</div>
+        <div class="saved-meta">${escapeHtml(s.project||'')}</div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn btn-light btn-sm" onclick="loadEstimate('${s.id}')">📂 Open</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteEstimate('${s.id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function clearEstimate() {
+  if (!confirm(t('confirmNew'))) return;
+  $('estNum').value = getNextEstimateNumber();
+  $('estDate').value = new Date().toISOString().slice(0,10);
+  ['clientName','projectName','projectAddress','validUntil','scopeWork','notes','unitType','clientPhone','clientEmail'].forEach(id => $(id).value = '');
+  ['depositPaid','unitQty','unitPrice','laborHours','workersCount','hourlyRate','realJobCost'].forEach(id => $(id).value = 0);
+  $('taxRate').value = 9.15;
+  materials = []; otherCosts = [];
+  updateTotal();
+  showToast(t('toastNew'));
+}
+
+// ═══════════════════════════════════════════════════════
+// PRINT / PDF
+// ═══════════════════════════════════════════════════════
 function getPrintHTML() {
   let t = computeTotals();
-
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<style>
+  return `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
 @page{size:letter portrait;margin:8mm}
 *{box-sizing:border-box}
-body{
-  font-family:Arial,sans-serif;
-  margin:0;
-  padding:14px;
-  color:#0f172a;
-  background:white;
-  font-size:13px;
-}
-.page{
-  width:100%;
-  max-width:900px;
-  margin:0 auto;
-}
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
-  border-bottom:3px solid #84cc16;
-  padding-bottom:12px;
-  margin-bottom:12px;
-}
-.brand{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-}
-.logo{
-  width:80px;
-  height:80px;
-  object-fit:cover;
-  border-radius:12px;
-}
-.company h1{
-  margin:0;
-  font-size:24px;
-  line-height:1;
-  font-weight:900;
-  color:#0f172a;
-}
-.company .green{
-  color:#84cc16;
-  display:block;
-}
-.company p{
-  margin:4px 0;
-  font-size:12px;
-  color:#111827;
-}
-.contact{
-  margin-top:6px;
-  line-height:1.4;
-  font-size:12px;
-}
-.estimate-box{
-  text-align:right;
-  min-width:190px;
-}
-.estimate-box h2{
-  margin:0 0 8px;
-  font-size:32px;
-  letter-spacing:1px;
-  color:#0f172a;
-}
-.est-row{
-  display:flex;
-  justify-content:space-between;
-  gap:16px;
-  font-size:13px;
-  margin:5px 0;
-}
-.est-row strong{
-  color:#0f172a;
-}
-.est-row span{
-  color:#65a30d;
-  font-weight:800;
-}
-.cards{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-bottom:10px;
-}
-.info-card{
-  border:1px solid #d1d5db;
-  border-radius:6px;
-  overflow:hidden;
-}
-.card-title{
-  background:#0f172a;
-  color:white;
-  padding:8px 12px;
-  font-weight:800;
-  font-size:12px;
-  letter-spacing:.3px;
-}
-.card-title span{
-  color:#84cc16;
-  margin-right:6px;
-}
-.card-body{
-  padding:10px 12px;
-  font-size:12px;
-  line-height:1.45;
-}
-.info-line{
-  display:grid;
-  grid-template-columns:110px 1fr;
-  margin-bottom:5px;
-}
-.info-line strong{
-  color:#111827;
-}
-.scope-list{
-  margin-left:14px;
-}
-.scope-list li{
-  margin-bottom:4px;
-}
-.cost-card{
-  border:1px solid #d1d5db;
-  border-radius:6px;
-  overflow:hidden;
-  margin-top:8px;
-}
-.cost-title{
-  background:#0f172a;
-  color:white;
-  padding:8px 12px;
-  font-weight:800;
-  font-size:12px;
-}
-.cost-title span{
-  color:#84cc16;
-  margin-right:6px;
-}
-.cost-table{
-  width:100%;
-  border-collapse:collapse;
-}
-.cost-table th{
-  padding:7px 12px;
-  color:#65a30d;
-  text-align:left;
-  font-size:11px;
-  border-bottom:1px solid #d1d5db;
-}
-.cost-table th:last-child,
-.cost-table td:last-child{
-  text-align:right;
-}
-.cost-table td{
-  padding:7px 12px;
-  border-bottom:1px solid #e5e7eb;
-  font-size:12px;
-}
-.cost-icon{
-  color:#65a30d;
-  width:26px;
-  display:inline-block;
-  font-size:14px;
-}
-.bold-row td{
-  font-weight:800;
-}
-.deposit td:last-child{
-  color:#dc2626;
-  font-weight:800;
-}
-.balance{
-  background:#84cc16;
-}
-.balance td{
-  font-size:18px;
-  font-weight:900;
-  color:#0f172a;
-  border-bottom:none;
-}
-.bottom-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr 1.25fr;
-  gap:12px;
-  margin-top:12px;
-}
-.bottom-box h3{
-  font-size:12px;
-  margin:0 0 6px;
-  border-bottom:2px solid #84cc16;
-  padding-bottom:4px;
-}
-.bottom-box h3 span{
-  color:#84cc16;
-  margin-right:5px;
-}
-.bottom-box p{
-  font-size:11px;
-  line-height:1.4;
-  margin:0 0 5px;
-}
-.sig-line{
-  border-top:1px solid #111827;
-  margin-top:18px;
-  padding-top:4px;
-  font-size:11px;
-}
-.footer{
-  margin-top:12px;
-  border-top:2px solid #0f172a;
-  padding-top:10px;
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  font-size:11px;
-}
-.footer div{
-  line-height:1.4;
-}
-.copyright{
-  text-align:center;
-  font-size:10px;
-  color:#64748b;
-  margin-top:8px;
-}
-@media print{
-  body{padding:0}
-  .page{max-width:100%}
-}
-</style>
-</head>
-
-<body>
-<div class="page">
-
+body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background:white;font-size:13px;}
+.page{width:100%;max-width:900px;margin:0 auto;}
+.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}
+.brand{display:flex;gap:12px;align-items:flex-start;}
+.logo{width:80px;height:80px;object-fit:cover;border-radius:12px;}
+.company h1{margin:0;font-size:24px;line-height:1;font-weight:900;color:#0f172a;}
+.company .green{color:#84cc16;display:block;}
+.company p{margin:4px 0;font-size:12px;color:#111827;}
+.contact{margin-top:6px;line-height:1.4;font-size:12px;}
+.estimate-box{text-align:right;min-width:190px;}
+.estimate-box h2{margin:0 0 8px;font-size:32px;letter-spacing:1px;color:#0f172a;}
+.est-row{display:flex;justify-content:space-between;gap:16px;font-size:13px;margin:5px 0;}
+.est-row strong{color:#0f172a;} .est-row span{color:#65a30d;font-weight:800;}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.info-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;}
+.card-title{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:12px;}
+.card-title span{color:#84cc16;margin-right:6px;}
+.card-body{padding:10px 12px;font-size:12px;line-height:1.45;}
+.info-line{display:grid;grid-template-columns:110px 1fr;margin-bottom:5px;}
+.info-line strong{color:#111827;}
+.scope-list{margin-left:14px;} .scope-list li{margin-bottom:4px;}
+.cost-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;margin-top:8px;}
+.cost-title{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:12px;}
+.cost-title span{color:#84cc16;margin-right:6px;}
+.cost-table{width:100%;border-collapse:collapse;}
+.cost-table th{padding:7px 12px;color:#65a30d;text-align:left;font-size:11px;border-bottom:1px solid #d1d5db;}
+.cost-table th:last-child,.cost-table td:last-child{text-align:right;}
+.cost-table td{padding:7px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;}
+.cost-icon{color:#65a30d;width:26px;display:inline-block;font-size:14px;}
+.bold-row td{font-weight:800;}
+.deposit td:last-child{color:#dc2626;font-weight:800;}
+.balance{background:#84cc16;} .balance td{font-size:18px;font-weight:900;color:#0f172a;border-bottom:none;}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:12px;margin-top:12px;}
+.bottom-box h3{font-size:12px;margin:0 0 6px;border-bottom:2px solid #84cc16;padding-bottom:4px;}
+.bottom-box h3 span{color:#84cc16;margin-right:5px;}
+.bottom-box p{font-size:11px;line-height:1.4;margin:0 0 5px;}
+.sig-line{border-top:1px solid #111827;margin-top:18px;padding-top:4px;font-size:11px;}
+.footer{margin-top:12px;border-top:2px solid #0f172a;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11px;}
+.footer div{line-height:1.4;}
+.copyright{text-align:center;font-size:10px;color:#64748b;margin-top:8px;}
+@media print{body{padding:0}.page{max-width:100%}}
+</style></head>
+<body><div class="page">
   <div class="top">
     <div class="brand">
       <img src="file:///android_asset/logo.png" class="logo">
       <div class="company">
         <h1>R&S DRYWALL <span class="green">SOLUTIONS LLC</span></h1>
         <p>Licensed & Insured · Denver, Colorado</p>
-        <div class="contact">
-          <div>☎ Phone: (720) 761-8835</div>
-          <div>✉ Email: roicegarcia14@gmail.com</div>
-        </div>
+        <div class="contact"><div>☎ (720) 761-8835</div><div>✉ roicegarcia14@gmail.com</div></div>
       </div>
     </div>
-
     <div class="estimate-box">
       <h2>ESTIMATE</h2>
-      <div class="est-row"><strong>Estimate #:</strong><span>${escapeHtml($("estNum").value || "-")}</span></div>
-      <div class="est-row"><strong>Date:</strong><div>${escapeHtml(formatDate() || "-")}</div></div>
-      <div class="est-row"><strong>Valid Until:</strong><div>${escapeHtml($("validUntil").value || "-")}</div></div>
+      <div class="est-row"><strong>Estimate #:</strong><span>${escapeHtml($('estNum').value||'-')}</span></div>
+      <div class="est-row"><strong>Date:</strong><span>${escapeHtml(formatDate()||'-')}</span></div>
+      <div class="est-row"><strong>Valid Until:</strong><span>${escapeHtml($('validUntil').value||'-')}</span></div>
     </div>
   </div>
-
   <div class="cards">
     <div class="info-card">
       <div class="card-title"><span>●</span>CLIENT INFORMATION</div>
       <div class="card-body">
-        <div class="info-line"><strong>Client Name:</strong><div>${escapeHtml($("clientName").value || "-")}</div></div>
-        <div class="info-line"><strong>Project:</strong><div>${escapeHtml($("projectName").value || "-")}</div></div>
-        <div class="info-line"><strong>Project Address:</strong><div>${escapeHtml($("projectAddress").value || "-")}</div></div>
+        <div class="info-line"><strong>Client:</strong><div>${escapeHtml($('clientName').value||'-')}</div></div>
+        <div class="info-line"><strong>Project:</strong><div>${escapeHtml($('projectName').value||'-')}</div></div>
+        <div class="info-line"><strong>Address:</strong><div>${escapeHtml($('projectAddress').value||'-')}</div></div>
       </div>
     </div>
-
     <div class="info-card">
       <div class="card-title"><span>▣</span>SCOPE OF WORK</div>
       <div class="card-body">
         <ul class="scope-list">
-          ${String($("scopeWork").value || "-")
-            .split("\n")
-            .map(x => `<li>${escapeHtml(x.trim() || "-")}</li>`)
-            .join("")}
+          ${String($('scopeWork').value||'-').split('\n').map(x=>`<li>${escapeHtml(x.trim()||'-')}</li>`).join('')}
         </ul>
       </div>
     </div>
   </div>
-
   <div class="cost-card">
     <div class="cost-title"><span>$</span>PROJECT COSTS</div>
     <table class="cost-table">
-      <tr>
-        <th>Description</th>
-        <th>Total</th>
-      </tr>
-
-      ${t.unit > 0 ? `
-      <tr>
-        <td><span class="cost-icon">▧</span>Unit Pricing</td>
-        <td>${formatMoney(t.unit)}</td>
-      </tr>` : ""}
-
-      ${t.labor > 0 ? `
-      <tr>
-        <td><span class="cost-icon">👷</span>Labor</td>
-        <td>${formatMoney(t.labor)}</td>
-      </tr>` : ""}
-
-      ${t.mat > 0 ? `
-      <tr>
-        <td><span class="cost-icon">▤</span>Materials</td>
-        <td>${formatMoney(t.mat)}</td>
-      </tr>` : ""}
-
-      ${otherCosts.filter(o => (parseFloat(o.amount)||0) > 0).map(o => `
-      <tr>
-        <td><span class="cost-icon">⚙</span>${escapeHtml(o.desc || "Other Cost")}</td>
-        <td>${formatMoney(parseFloat(o.amount)||0)}</td>
-      </tr>`).join("")}
-
-      <tr class="bold-row">
-        <td>Subtotal</td>
-        <td>${formatMoney(t.sub)}</td>
-      </tr>
-
-      <tr class="bold-row">
-        <td>Tax (${t.taxP}%)</td>
-        <td>${formatMoney(t.tax)}</td>
-      </tr>
-
-      ${t.deposit > 0 ? `
-      <tr class="deposit">
-        <td>Deposit Paid</td>
-        <td>-${formatMoney(t.deposit)}</td>
-      </tr>` : ""}
-
-      <tr class="balance">
-        <td>BALANCE DUE</td>
-        <td>${formatMoney(t.balance)}</td>
-      </tr>
+      <tr><th>Description</th><th>Total</th></tr>
+      ${t.unit>0?`<tr><td><span class="cost-icon">▧</span>Unit Pricing</td><td>${formatMoney(t.unit)}</td></tr>`:''}
+      ${t.labor>0?`<tr><td><span class="cost-icon">👷</span>Labor</td><td>${formatMoney(t.labor)}</td></tr>`:''}
+      ${t.mat>0?`<tr><td><span class="cost-icon">▤</span>Materials</td><td>${formatMoney(t.mat)}</td></tr>`:''}
+      ${otherCosts.filter(o=>(parseFloat(o.amount)||0)>0).map(o=>`<tr><td><span class="cost-icon">⚙</span>${escapeHtml(o.desc||'Other Cost')}</td><td>${formatMoney(parseFloat(o.amount)||0)}</td></tr>`).join('')}
+      <tr class="bold-row"><td>Subtotal</td><td>${formatMoney(t.sub)}</td></tr>
+      <tr class="bold-row"><td>Tax (${t.taxP}%)</td><td>${formatMoney(t.tax)}</td></tr>
+      ${t.deposit>0?`<tr class="deposit"><td>Deposit Paid</td><td>-${formatMoney(t.deposit)}</td></tr>`:''}
+      <tr class="balance"><td>BALANCE DUE</td><td>${formatMoney(t.balance)}</td></tr>
     </table>
   </div>
-
   <div class="bottom-grid">
     <div class="bottom-box">
       <h3><span>▣</span>NOTES</h3>
-      <p>${escapeHtml($("notes").value || "Standard installation and cleanup included.")}</p>
+      <p>${escapeHtml($('notes').value||'Standard installation and cleanup included.')}</p>
       <p>Additional repairs or change orders may affect pricing.</p>
       <p>Thank you for the opportunity!</p>
     </div>
-
     <div class="bottom-box">
       <h3><span>🛡</span>TERMS & CONDITIONS</h3>
       <p>This estimate is valid until the date listed above.</p>
-      <p>Final pricing may change if project scope, materials, or site conditions change after approval.</p>
+      <p>Final pricing may change if scope, materials, or site conditions change.</p>
       <p>A deposit may be required before scheduling work.</p>
     </div>
-
     <div class="bottom-box">
       <h3><span>✎</span>SIGNATURES</h3>
       <div class="sig-line">Authorized Signature</div>
       <div class="sig-line">Client Signature</div>
     </div>
   </div>
-
   <div class="footer">
-    <div>
-      📍 R&S Drywall Solutions LLC<br>
-      Denver, Colorado<br>
-      Licensed & Insured
-    </div>
-    <div>
-      ☎ (720) 761-8835<br>
-      ✉ roicegarcia14@gmail.com
-    </div>
+    <div>📍 R&S Drywall Solutions LLC<br>Denver, Colorado<br>Licensed & Insured</div>
+    <div>☎ (720) 761-8835<br>✉ roicegarcia14@gmail.com</div>
   </div>
-
-  <div class="copyright">
-    © 2026 R&S Drywall Solutions LLC. All rights reserved.
-  </div>
-
-</div>
-</body>
-</html>`;
+  <div class="copyright">© 2026 R&S Drywall Solutions LLC. All rights reserved.</div>
+</div></body></html>`;
 }
 
 function doPDF() {
-  if (!window.AndroidBridge) { showToast("AndroidBridge no conectado"); return; }
-  let html = getPrintHTML();
-  let filename = "R&S_Estimate_" + ($("estNum").value || "estimate");
-  AndroidBridge.saveHtmlAsPdf(html, filename);
+  if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
+  AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'R&S_Estimate_' + ($('estNum').value||'estimate'));
 }
-
 function doPrint() {
-  if (!window.AndroidBridge) { showToast("AndroidBridge no conectado"); return; }
-  let html = getPrintHTML();
-  let filename = "R&S_Estimate_" + ($("estNum").value || "estimate");
-  AndroidBridge.printHtml(html, filename);
+  if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
+  AndroidBridge.printHtml(getPrintHTML(), 'R&S_Estimate_' + ($('estNum').value||'estimate'));
 }
 
+// ═══════════════════════════════════════════════════════
+// BACKUP / IMPORT
+// ═══════════════════════════════════════════════════════
 function exportBackup() {
-  let saved = localStorage.getItem("RS_ESTIMATES") || "[]";
-  let filename = "backup_" + new Date().toISOString().slice(0,10) + ".json";
-
+  let saved = localStorage.getItem('RS_ESTIMATES') || '[]';
+  let filename = 'backup_' + new Date().toISOString().slice(0,10) + '.json';
   if (window.AndroidBridge && AndroidBridge.saveTextFile) {
-    AndroidBridge.saveTextFile(saved, filename, "application/json");
+    AndroidBridge.saveTextFile(saved, filename, 'application/json');
   } else {
-    showToast("AndroidBridge no conectado");
+    showToast('AndroidBridge not connected');
   }
 }
 
@@ -920,334 +1056,56 @@ function importBackupBase64(base64Text) {
   try {
     let jsonText = decodeURIComponent(escape(atob(base64Text)));
     let data = JSON.parse(jsonText);
-
-    let imported = [];
-
-    if (Array.isArray(data)) {
-      imported = data;
-    } else if (data.estimates && Array.isArray(data.estimates)) {
-      imported = data.estimates;
-    } else if (data.RS_ESTIMATES && Array.isArray(data.RS_ESTIMATES)) {
-      imported = data.RS_ESTIMATES;
-    }
-
-    if (imported.length === 0) {
-      showToast("Backup vacío o formato incorrecto");
-      return;
-    }
-
-    let current = JSON.parse(localStorage.getItem("RS_ESTIMATES") || "[]");
-    let merged = current.concat(imported);
-
-    localStorage.setItem("RS_ESTIMATES", JSON.stringify(merged));
-
-    renderSaved();
-    updateDashboard();
-    showToast("✅ Importados: " + imported.length);
-
-  } catch (err) {
-    showToast("Import error: " + err.message);
-  }
-}
-
-function getNextEstimateNumber() {
-  let year = new Date().getFullYear();
-  let saved = JSON.parse(localStorage.getItem("RS_ESTIMATES") || "[]");
-  let max = 0;
-
-  for (let i = 0; i < saved.length; i++) {
-    let match = String(saved[i].estNum || "").match(/RS-\d{4}-(\d+)/);
-    if (match) {
-      let num = parseInt(match[1]);
-      if (num > max) max = num;
-    }
-  }
-
-  let next = max + 1;
-  return "RS-" + year + "-" + String(next).padStart(3, "0");
-}
-
-function saveClient() {
-  let clients = JSON.parse(localStorage.getItem("RS_CLIENTS") || "[]");
-
-  let client = {
-    name: $("clientName").value,
-    phone: $("clientPhone").value,
-    email: $("clientEmail").value,
-    address: $("projectAddress").value
-  };
-
-  if (!client.name) {
-    showToast("Add client name first");
-    return;
-  }
-
-  clients = clients.filter(c => c.name !== client.name);
-  clients.push(client);
-
-  localStorage.setItem("RS_CLIENTS", JSON.stringify(clients));
-  renderClients();
-
-  let select = $("clientSelect");
-  for (let i = 0; i < select.options.length; i++) {
-    if (select.options[i].text === client.name) {
-      select.selectedIndex = i;
-      break;
-    }
-  }
-
-  showToast("✓ Client saved");
-}
-
-function renderClients() {
-  let select = $("clientSelect");
-  if (!select) return;
-
-  let clients = JSON.parse(localStorage.getItem("RS_CLIENTS") || "[]");
-
-  select.innerHTML = '<option value="">Select saved client</option>';
-
-  clients.forEach((c, index) => {
-    select.innerHTML += `<option value="${index}">${escapeHtml(c.name)}</option>`;
-  });
-}
-
-function loadClientFromSelect() {
-  let index = $("clientSelect").value;
-  if (index === "") return;
-
-  let clients = JSON.parse(localStorage.getItem("RS_CLIENTS") || "[]");
-  let c = clients[index];
-
-  if (!c) return;
-
-  $("clientName").value = c.name || "";
-  $("clientPhone").value = c.phone || "";
-  $("clientEmail").value = c.email || "";
-  $("projectAddress").value = c.address || "";
-
-  updateTotal();
-  showToast("✓ Client loaded");
-}
-
-function loadDrywallTemplate() {
-  materials = [
-    { desc: "Drywall 1/2 in", qty: "0", unit: "Sheets", cost: "0" },
-    { desc: "Joint Compound", qty: "0", unit: "Buckets", cost: "0" },
-    { desc: "Drywall Tape", qty: "0", unit: "Rolls", cost: "0" },
-    { desc: "Screws", qty: "0", unit: "Boxes", cost: "0" },
-    { desc: "Corner Bead", qty: "0", unit: "Pieces", cost: "0" }
-  ];
-
-  updateTotal();
-  showToast("✓ Drywall template loaded");
-}
-
-function saveMaterialFavorite() {
-  localStorage.setItem("RS_FAVORITE_MATERIALS", JSON.stringify(materials));
-  showToast("✓ Favorite materials saved");
-}
-
-function loadMaterialFavorite() {
-  let fav = JSON.parse(localStorage.getItem("RS_FAVORITE_MATERIALS") || "[]");
-
-  if (fav.length === 0) {
-    showToast("No favorite materials saved");
-    return;
-  }
-
-  materials = fav;
-  updateTotal();
-  showToast("✓ Favorite materials loaded");
-}
-
-function updateDashboard() {
-  let saved = JSON.parse(localStorage.getItem("RS_ESTIMATES") || "[]");
-
-  let total = 0;
-
-  saved.forEach(s => {
-    let unit = (parseFloat(s.unitQty)||0) * (parseFloat(s.unitPrice)||0);
-    let labor = (parseFloat(s.hours)||0) * (parseFloat(s.workers)||0) * (parseFloat(s.rate)||0);
-    let mat = (s.materials || []).reduce((a,m) => a + ((parseFloat(m.qty)||0) * (parseFloat(m.cost)||0)), 0);
-    let other = (s.others || []).reduce((a,o) => a + (parseFloat(o.amount)||0), 0);
-    let sub = unit + labor + mat + other;
-    let tax = sub * ((parseFloat(s.tax)||0) / 100);
-    total += sub + tax;
-  });
-
-  if ($("dashEstimates")) $("dashEstimates").value = saved.length;
-  if ($("dashQuoted")) $("dashQuoted").value = formatMoney(total);
-  if ($("dashAverage")) $("dashAverage").value = saved.length ? formatMoney(total / saved.length) : "$0.00";
-}
-
-function saveEstimate() {
-  let saved = localStorage.getItem("RS_ESTIMATES");
-  let savedArray = saved ? JSON.parse(saved) : [];
-  let current = {
-    id: Date.now().toString(),
-    estNum: $("estNum").value,
-    date: $("estDate").value,
-    client: $("clientName").value,
-    project: $("projectName").value,
-    address: $("projectAddress").value,
-    validUntil: $("validUntil").value,
-    deposit: $("depositPaid").value,
-    scope: $("scopeWork").value,
-    notes: $("notes").value,
-    unitType: $("unitType").value,
-    unitQty: $("unitQty").value,
-    unitPrice: $("unitPrice").value,
-    hours: $("laborHours").value,
-    workers: $("workersCount").value,
-    rate: $("hourlyRate").value,
-    tax: $("taxRate").value,
-    clientPhone: $("clientPhone").value,
-    clientEmail: $("clientEmail").value,
-    realJobCost: $("realJobCost").value,
-    materials: JSON.parse(JSON.stringify(materials)),
-    others: JSON.parse(JSON.stringify(otherCosts))
-  };
-  savedArray.unshift(current);
-  localStorage.setItem("RS_ESTIMATES", JSON.stringify(savedArray));
-  renderSaved();
-  updateDashboard();
-  showToast("✓ Estimate saved");
-}
-
-function loadEstimate(id) {
-  let saved = localStorage.getItem("RS_ESTIMATES");
-  let savedArray = saved ? JSON.parse(saved) : [];
-  let item = savedArray.find(s => s.id == id);
-  if(item) {
-    $("estNum").value = item.estNum;
-    $("estDate").value = item.date || new Date().toISOString().slice(0,10);
-    $("clientName").value = item.client || "";
-    $("projectName").value = item.project || "";
-    $("projectAddress").value = item.address || "";
-    $("validUntil").value = item.validUntil || "";
-    $("depositPaid").value = item.deposit || 0;
-    $("scopeWork").value = item.scope || "";
-    $("notes").value = item.notes || "";
-    $("unitType").value = item.unitType || "";
-    $("unitQty").value = item.unitQty || 0;
-    $("unitPrice").value = item.unitPrice || 0;
-    $("laborHours").value = item.hours || 0;
-    $("workersCount").value = item.workers || 0;
-    $("hourlyRate").value = item.rate || 0;
-    $("taxRate").value = item.tax || 9.15;
-    $("clientPhone").value = item.clientPhone || "";
-    $("clientEmail").value = item.clientEmail || "";
-    $("realJobCost").value = item.realJobCost || 0;
-    materials = item.materials || [];
-    otherCosts = item.others || [];
-    updateTotal();
-    showToast("✓ Loaded: " + item.estNum);
-  }
-}
-
-function deleteEstimate(id) {
-  let saved = localStorage.getItem("RS_ESTIMATES");
-  let savedArray = saved ? JSON.parse(saved) : [];
-  let newArray = [];
-  for(let i = 0; i < savedArray.length; i++) {
-    if(savedArray[i].id != id) {
-      newArray.push(savedArray[i]);
-    }
-  }
-  localStorage.setItem("RS_ESTIMATES", JSON.stringify(newArray));
-  renderSaved();
-  updateDashboard();
-  showToast("✓ Estimate deleted");
-}
-
-function renderSaved() {
-  let saved = localStorage.getItem("RS_ESTIMATES");
-  let savedArray = saved ? JSON.parse(saved) : [];
-  $("savedCount").innerText = savedArray.length;
-  let container = $("savedList");
-  if(savedArray.length === 0) {
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:#64748b;">No saved estimates</div>';
-    return;
-  }
-  let html = "";
-  for(let i = 0; i < savedArray.length; i++) {
-    let s = savedArray[i];
-    html += `<div class="saved-item">
-      <div>
-        <div class="saved-title">${escapeHtml(s.estNum)} · ${escapeHtml(s.client || "No Client")}</div>
-        <div class="saved-meta">${escapeHtml(s.project || "")}</div>
-      </div>
-      <div class="saved-actions"><button class="btn btn-light btn-sm" onclick="loadEstimate('${s.id}')">📂 Open</button> <button class="btn btn-danger btn-sm" onclick="deleteEstimate('${s.id}')">🗑️ Delete</button></div>
-    </div>`;
-  }
-  container.innerHTML = html;
-}
-
-function clearEstimate() {
-  if (!confirm("Start a new estimate? Unsaved data will be lost.")) return;
-  $("estNum").value = getNextEstimateNumber();
-  $("estDate").value = new Date().toISOString().slice(0,10);
-  $("clientName").value = "";
-  $("projectName").value = "";
-  $("projectAddress").value = "";
-  $("validUntil").value = "";
-  $("depositPaid").value = 0;
-  $("scopeWork").value = "";
-  $("notes").value = "";
-  $("unitType").value = "";
-  $("unitQty").value = 0;
-  $("unitPrice").value = 0;
-  $("laborHours").value = 0;
-  $("workersCount").value = 0;
-  $("hourlyRate").value = 0;
-  $("taxRate").value = 9.15;
-  $("clientPhone").value = "";
-  $("clientEmail").value = "";
-  $("realJobCost").value = 0;
-  materials = [];
-  otherCosts = [];
-  updateTotal();
-  showToast("✓ New estimate ready");
-}
-
-function triggerImport() {
-  document.getElementById("importFileInput").click();
+    let imported = Array.isArray(data) ? data : (data.estimates || data.RS_ESTIMATES || []);
+    if (imported.length === 0) { showToast('Empty or invalid backup'); return; }
+    let current = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+    localStorage.setItem('RS_ESTIMATES', JSON.stringify(current.concat(imported)));
+    renderSaved(); updateDashboard();
+    showToast('✅ Imported: ' + imported.length);
+  } catch(err) { showToast('Import error: ' + err.message); }
 }
 
 function importBackup(e) {
   let file = e.target.files[0];
-  if(!file) return;
+  if (!file) return;
   let reader = new FileReader();
-  reader.onload = function(ev) {
+  reader.onload = ev => {
     try {
       let data = JSON.parse(ev.target.result);
-      if(Array.isArray(data)) {
-        localStorage.setItem("RS_ESTIMATES", JSON.stringify(data));
-        renderSaved();
-        updateDashboard();
-        showToast("✓ Backup imported");
-      } else {
-        showToast("Invalid backup file");
-      }
-    } catch(err) {
-      showToast("Error: " + err.message);
-    }
+      if (Array.isArray(data)) {
+        localStorage.setItem('RS_ESTIMATES', JSON.stringify(data));
+        renderSaved(); updateDashboard();
+        showToast('✓ Backup imported');
+      } else { showToast('Invalid backup file'); }
+    } catch(err) { showToast('Error: ' + err.message); }
   };
   reader.readAsText(file);
   e.target.value = '';
 }
 
-// ============================================================
-// INICIALIZACIÓN
-// ============================================================
-$("estDate").value = new Date().toISOString().slice(0,10);
-if (!$("estNum").value || $("estNum").value === "RS-2026-001") {
-  $("estNum").value = getNextEstimateNumber();
-}
-renderClients();
-renderSaved();
-updateTotal();
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+(function init() {
+  // Restore theme
+  let theme = localStorage.getItem('RS_THEME') || 'light';
+  document.body.setAttribute('data-theme', theme);
+  updateDarkToggleUI();
+
+  // Restore language
+  setLanguage(currentLang);
+
+  // Set date and estimate number
+  $('estDate').value = new Date().toISOString().slice(0,10);
+  if (!$('estNum').value || $('estNum').value === 'RS-2026-001') {
+    $('estNum').value = getNextEstimateNumber();
+  }
+
+  renderClients();
+  renderSaved();
+  renderTemplates();
+  updateTotal();
+})();
 </script>
 </body>
 </html>
