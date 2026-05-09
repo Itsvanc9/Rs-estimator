@@ -816,11 +816,11 @@ body{
         <td>${formatMoney(t.mat)}</td>
       </tr>` : ""}
 
-      ${t.other > 0 ? `
+      ${otherCosts.filter(o => (parseFloat(o.amount)||0) > 0).map(o => `
       <tr>
-        <td><span class="cost-icon">⚙</span>Other Costs</td>
-        <td>${formatMoney(t.other)}</td>
-      </tr>` : ""}
+        <td><span class="cost-icon">⚙</span>${escapeHtml(o.desc || "Other Cost")}</td>
+        <td>${formatMoney(parseFloat(o.amount)||0)}</td>
+      </tr>`).join("")}
 
       <tr class="bold-row">
         <td>Subtotal</td>
