@@ -340,15 +340,14 @@
     <div class="card-header"><div>⭐</div><h2 data-i18n="materialTemplates">Material Templates</h2></div>
     <div class="card-body">
       <!-- Save new template -->
-      <div class="grid-2" style="margin-bottom:14px; align-items:flex-end;">
-        <div class="field">
-          <label data-i18n="templateName">Template Name</label>
-          <input id="templateNameInput" placeholder="e.g. Ceiling Package">
-        </div>
-        <button class="btn btn-primary btn-sm" onclick="saveNamedTemplate()" style="height:42px;" data-i18n="saveTemplate">💾 Save Template</button>
+      <div class="field" style="margin-bottom:4px;">
+        <label data-i18n="templateName">Template Name</label>
+        <input id="templateNameInput" placeholder="e.g. Ceiling Package">
       </div>
-      <!-- Drywall preset -->
-      <button class="add-row-btn" onclick="loadDrywallTemplate()" data-i18n="drywallPreset">📦 Load Drywall Preset</button>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="add-row-btn" onclick="saveNamedTemplate()" data-i18n="saveTemplate">💾 Save Template</button>
+        <button class="add-row-btn" onclick="loadDrywallTemplate()" data-i18n="drywallPreset">📦 Load Drywall Preset</button>
+      </div>
       <!-- Saved templates list -->
       <div id="templatesList" style="margin-top:16px;"></div>
     </div>
