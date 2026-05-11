@@ -397,7 +397,7 @@
     <div class="card-header"><div>📷</div><h2 data-i18n="depositReceipt">Deposit Receipt</h2></div>
     <div class="card-body">
       <input type="file" id="receiptInput" accept="image/*" style="display:none" onchange="handleReceiptFile(this)">
-      <button class="add-row-btn" onclick="$('receiptInput').click()" data-i18n="addPhoto">📷 Add Photo</button>
+      <button class="add-row-btn" onclick="openReceiptCamera()" data-i18n="addPhoto">📷 Add Photo</button>
       <div class="receipt-grid" id="receiptGrid"></div>
     </div>
   </div>
@@ -833,6 +833,19 @@ function getNextEstimateNumber() {
   let max = 0;
   saved.forEach(s => { let m = String(s.estNum||'').match(/RS-\d{4}-(\d+)/); if(m && parseInt(m[1])>max) max=parseInt(m[1]); });
   return 'RS-' + year + '-' + String(max+1).padStart(3,'0');
+}
+
+function openReceiptCamera() {
+  if (window.AndroidBridge && AndroidBridge.takePhoto) {
+    AndroidBridge.takePhoto();
+  } else {
+    $('receiptInput').click();
+  }
+}
+
+function receiveNativePhoto(base64) {
+  receiptPhotos.push(base64);
+  renderReceipts();
 }
 
 function handleReceiptFile(input) {
