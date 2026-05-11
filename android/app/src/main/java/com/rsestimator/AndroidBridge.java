@@ -18,8 +18,6 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.widget.Toast;
 
-import androidx.core.content.FileProvider;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -83,10 +81,8 @@ public class AndroidBridge {
                     File photoFile = File.createTempFile(
                             "receipt_", ".jpg", activity.getExternalCacheDir()
                     );
-                    pendingPhotoUri = FileProvider.getUriForFile(
-                            activity,
-                            "com.rsestimator.fileprovider",
-                            photoFile
+                    pendingPhotoUri = Uri.parse(
+                            "content://com.rsestimator.rsprovider" + photoFile.getAbsolutePath()
                     );
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
