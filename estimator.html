@@ -150,7 +150,7 @@
   .template-chip-btn:active { opacity:1; background:rgba(255,255,255,0.1); }
 
   /* ── ESTIMATES PAGE ── */
-  .estimates-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; overflow:hidden; }
+  .estimates-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; }
   .estimates-page.open { display:block; }
   .estimates-page-header { position:relative; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
   .estimates-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
@@ -170,7 +170,7 @@
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
   /* ── OWNER PAGE ── */
-  .owner-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; overflow:hidden; }
+  .owner-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; }
   .owner-page.open { display:block; }
   .owner-page-header { position:relative; background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); }
   .owner-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
@@ -697,11 +697,15 @@ function updateDarkToggleUI() {
 function openEstimatesPage() {
   renderSaved();
   $('estimatesPage').classList.add('open');
-  requestAnimationFrame(function() {
+  setTimeout(function() {
     var hdr = document.querySelector('.estimates-page-header');
     var body = document.querySelector('.estimates-page-body');
-    if (hdr && body) body.style.top = hdr.offsetHeight + 'px';
-  });
+    if (hdr && body) {
+      var hdrH = hdr.offsetHeight || 120;
+      body.style.top = hdrH + 'px';
+      body.style.height = (window.innerHeight - hdrH) + 'px';
+    }
+  }, 50);
 }
 
 function closeEstimatesPage() {
@@ -1073,11 +1077,15 @@ function openOwnerPage() {
     renderSalesChart();
   } catch(e) { /* non-fatal */ }
   $('ownerPage').classList.add('open');
-  requestAnimationFrame(function() {
+  setTimeout(function() {
     var hdr = document.querySelector('.owner-page-header');
     var body = document.querySelector('.owner-page-body');
-    if (hdr && body) body.style.top = hdr.offsetHeight + 'px';
-  });
+    if (hdr && body) {
+      var hdrH = hdr.offsetHeight || 120;
+      body.style.top = hdrH + 'px';
+      body.style.height = (window.innerHeight - hdrH) + 'px';
+    }
+  }, 50);
 }
 
 function closeOwnerPage() {
