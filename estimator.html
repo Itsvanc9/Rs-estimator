@@ -1073,7 +1073,7 @@ function lockProfit() { closeOwnerPage(); }
 
 function openOwnerPage() {
   try {
-    let t = calcTotals();
+    let t = computeTotals();
     let autoCost = t.mat + t.labor + t.other;
     $('realJobCost').value = autoCost;
     if ($('ownerRealCost')) $('ownerRealCost').value = autoCost;
@@ -1092,7 +1092,7 @@ function closeOwnerPage() {
 }
 
 function refreshOwnerStats() {
-  let t = calcTotals();
+  let t = computeTotals();
   let overheadPct = parseFloat($('ownerOverhead')?.value) || 0;
   let overheadAmt = t.grand * (overheadPct / 100);
   let grossProfit = t.grand - t.realCost;
@@ -1244,7 +1244,7 @@ function closeReceiptModal() {
 function saveEstimate() {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   let current = {
-    id: Date.now().toString(), grand: calcTotals().grand,
+    id: Date.now().toString(), grand: computeTotals().grand,
     estNum:$('estNum').value, date:$('estDate').value,
     client:$('clientName').value, project:$('projectName').value,
     address:$('projectAddress').value, validUntil:$('validUntil').value,
