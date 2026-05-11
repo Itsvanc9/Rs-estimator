@@ -513,7 +513,7 @@
         <div class="owner-stat"><div class="owner-stat-val" id="ownerMargin">0%</div><div class="owner-stat-lbl">Margin</div></div>
       </div>
       <div class="owner-cost-row">
-        <label data-i18n="realJobCost">Real Job Cost</label>
+        <label style="line-height:1.3;">Real Job Cost<br><span style="font-size:10px;color:var(--muted);">Mat + Labor + Other (auto)</span></label>
         <input type="number" id="ownerRealCost" value="0"
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
@@ -1044,7 +1044,12 @@ function lockProfit() { closeOwnerPage(); }
 
 function openOwnerPage() {
   try {
-    if ($('ownerRealCost')) $('ownerRealCost').value = $('realJobCost').value || 0;
+    // Auto-calculate real job cost from materials + labor + other costs
+    let t = calcTotals();
+    let autoCost = t.mat + t.labor + t.other;
+    $('realJobCost').value = autoCost;
+    if ($('ownerRealCost')) $('ownerRealCost').value = autoCost;
+    updateTotal();
     refreshOwnerStats();
     renderSalesChart();
   } catch(e) { /* non-fatal */ }
