@@ -155,7 +155,7 @@
   .estimates-page-header { background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
   .estimates-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .estimates-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .estimates-page-body { flex:1; overflow-y:auto; padding:16px; }
+  .estimates-page-body { flex:1; min-height:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px; }
   .estimates-page-footer { padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; }
   .saved-badge { background:#84cc16; color:#0f172a; border-radius:20px; font-size:11px; font-weight:800; padding:1px 7px; min-width:18px; text-align:center; }
 
@@ -170,25 +170,26 @@
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
   /* ── OWNER PAGE ── */
-  .owner-page { position:fixed; inset:0; background:var(--bg); z-index:9990; display:none; flex-direction:column; overflow:hidden; }
+  .owner-page { position:fixed; inset:0; background:var(--bg); z-index:9990; display:none; flex-direction:column; }
   .owner-page.open { display:flex; }
-  .owner-page-header { background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+  .owner-page-header { background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); flex-shrink:0; }
   .owner-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .owner-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .owner-page-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:16px; }
+  .owner-page-body { flex:1; min-height:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 40px; display:flex; flex-direction:column; gap:16px; }
   .owner-card { background:var(--card-bg); border-radius:18px; border:1px solid var(--border); overflow:hidden; }
   .owner-card-title { padding:14px 18px 10px; font-weight:800; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
   .owner-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
   .owner-stat { background:var(--card-bg); padding:14px 10px; text-align:center; }
   .owner-stat-val { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--lime); }
   .owner-stat-lbl { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px; }
-  .chart-wrap { padding:16px; }
-  .chart-bars { display:flex; align-items:flex-end; gap:6px; height:140px; }
-  .chart-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
-  .chart-bar { width:100%; background:var(--lime); border-radius:6px 6px 0 0; min-height:4px; transition:height .3s; }
+  .chart-wrap { padding:16px 16px 8px; }
+  .chart-bars { display:flex; align-items:stretch; gap:6px; height:140px; }
+  .chart-col { flex:1; display:flex; flex-direction:column; align-items:center; }
+  .chart-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
+  .chart-bar { width:100%; background:var(--lime); border-radius:4px 4px 0 0; min-height:3px; transition:height .3s; }
   .chart-bar.zero { background:var(--border); }
-  .chart-lbl { font-size:10px; color:var(--muted); font-weight:700; }
-  .chart-val { font-size:9px; color:var(--lime); font-weight:800; }
+  .chart-lbl { font-size:10px; color:var(--muted); font-weight:700; padding-top:4px; }
+  .chart-val { font-size:9px; color:var(--lime); font-weight:800; height:13px; }
   .owner-cost-row { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); }
   .owner-cost-row:last-child { border-bottom:none; }
   .owner-cost-row label { font-size:12px; color:var(--muted); flex:1; }
@@ -1136,7 +1137,9 @@ function renderSalesChart() {
     let val = m.total > 0 ? (m.total >= 1000 ? '$' + (m.total/1000).toFixed(1) + 'k' : '$' + Math.round(m.total)) : '';
     return `<div class="chart-col">
       <div class="chart-val">${val}</div>
-      <div class="chart-bar${m.total===0?' zero':''}" style="height:${Math.max(pct,3)}%"></div>
+      <div class="chart-bar-wrap">
+        <div class="chart-bar${m.total===0?' zero':''}" style="height:${Math.max(pct,3)}%"></div>
+      </div>
       <div class="chart-lbl">${m.label}</div>
     </div>`;
   }).join('');
