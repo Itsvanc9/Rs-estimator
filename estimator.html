@@ -150,13 +150,13 @@
   .template-chip-btn:active { opacity:1; background:rgba(255,255,255,0.1); }
 
   /* ── ESTIMATES PAGE ── */
-  .estimates-page { position:fixed; inset:0; background:var(--bg); z-index:9990; display:none; flex-direction:column; }
-  .estimates-page.open { display:flex; }
-  .estimates-page-header { background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .estimates-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; overflow:hidden; }
+  .estimates-page.open { display:block; }
+  .estimates-page-header { position:relative; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
   .estimates-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .estimates-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .estimates-page-body { flex:1; min-height:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px; }
-  .estimates-page-footer { padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; }
+  .estimates-page-body { position:absolute; left:0; right:0; bottom:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 80px; }
+  .estimates-page-footer { position:fixed; bottom:0; left:0; right:0; z-index:9991; padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; background:var(--bg); }
   .saved-badge { background:#84cc16; color:#0f172a; border-radius:20px; font-size:11px; font-weight:800; padding:1px 7px; min-width:18px; text-align:center; }
 
   /* ── RECEIPT PHOTOS ── */
@@ -170,12 +170,12 @@
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
   /* ── OWNER PAGE ── */
-  .owner-page { position:fixed; inset:0; background:var(--bg); z-index:9990; display:none; flex-direction:column; }
-  .owner-page.open { display:flex; }
-  .owner-page-header { background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); flex-shrink:0; }
+  .owner-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; overflow:hidden; }
+  .owner-page.open { display:block; }
+  .owner-page-header { position:relative; background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); }
   .owner-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .owner-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .owner-page-body { flex:1; min-height:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 40px; display:flex; flex-direction:column; gap:16px; }
+  .owner-page-body { position:absolute; left:0; right:0; bottom:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 60px; display:flex; flex-direction:column; gap:16px; }
   .owner-card { background:var(--card-bg); border-radius:18px; border:1px solid var(--border); overflow:hidden; }
   .owner-card-title { padding:14px 18px 10px; font-weight:800; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
   .owner-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
@@ -697,6 +697,11 @@ function updateDarkToggleUI() {
 function openEstimatesPage() {
   renderSaved();
   $('estimatesPage').classList.add('open');
+  requestAnimationFrame(function() {
+    var hdr = document.querySelector('.estimates-page-header');
+    var body = document.querySelector('.estimates-page-body');
+    if (hdr && body) body.style.top = hdr.offsetHeight + 'px';
+  });
 }
 
 function closeEstimatesPage() {
@@ -1068,6 +1073,11 @@ function openOwnerPage() {
     renderSalesChart();
   } catch(e) { /* non-fatal */ }
   $('ownerPage').classList.add('open');
+  requestAnimationFrame(function() {
+    var hdr = document.querySelector('.owner-page-header');
+    var body = document.querySelector('.owner-page-body');
+    if (hdr && body) body.style.top = hdr.offsetHeight + 'px';
+  });
 }
 
 function closeOwnerPage() {
