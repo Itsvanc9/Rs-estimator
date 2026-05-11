@@ -318,16 +318,11 @@
 
 <div class="main">
 
-  <!-- DASHBOARD -->
-  <div class="card">
-    <div class="card-header"><div>📊</div><h2 data-i18n="dashboard">Dashboard</h2></div>
-    <div class="card-body">
-      <div class="grid-3">
-        <div class="field"><label data-i18n="savedEstimates">Saved Estimates</label><input id="dashEstimates" readonly></div>
-        <div class="field"><label data-i18n="totalQuoted">Total Quoted</label><input id="dashQuoted" readonly></div>
-        <div class="field"><label data-i18n="avgEstimate">Average Estimate</label><input id="dashAverage" readonly></div>
-      </div>
-    </div>
+  <!-- Hidden dashboard inputs kept for updateDashboard() compatibility -->
+  <div style="display:none">
+    <input id="dashEstimates" readonly>
+    <input id="dashQuoted" readonly>
+    <input id="dashAverage" readonly>
   </div>
 
   <!-- PROJECT DETAILS -->
@@ -1048,9 +1043,11 @@ function unlockProfit() { openOwnerPage(); }
 function lockProfit() { closeOwnerPage(); }
 
 function openOwnerPage() {
-  $('ownerRealCost').value = $('realJobCost').value || 0;
-  refreshOwnerStats();
-  renderSalesChart();
+  try {
+    if ($('ownerRealCost')) $('ownerRealCost').value = $('realJobCost').value || 0;
+    refreshOwnerStats();
+    renderSalesChart();
+  } catch(e) { /* non-fatal */ }
   $('ownerPage').classList.add('open');
 }
 
@@ -1115,7 +1112,7 @@ function renderSalesChart() {
 function calcEstimateGrand(e) {
   let unit  = (parseFloat(e.unitQty)||0) * (parseFloat(e.unitPrice)||0);
   let labor = (parseFloat(e.hours)||0) * (parseFloat(e.workers)||0) * (parseFloat(e.rate)||0);
-  let mat   = (e.materials||[]).reduce((s,m)=>(s+(parseFloat(m.qty)||0)*(parseFloat(m.unit)||0)),0);
+  let mat   = (e.materials||[]).reduce((s,m)=>(s+(parseFloat(m.qty)||0)*(parseFloat(m.cost)||0)),0);
   let other = (e.others||[]).reduce((s,o)=>(s+(parseFloat(o.amount)||0)),0);
   let sub   = unit + labor + mat + other;
   let tax   = sub * ((parseFloat(e.tax)||0) / 100);
