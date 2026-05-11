@@ -169,6 +169,31 @@
   .receipt-modal img { max-width:95vw; max-height:88vh; border-radius:12px; object-fit:contain; }
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
+  /* ── OWNER PAGE ── */
+  .owner-page { position:fixed; inset:0; background:var(--bg); z-index:9990; display:none; flex-direction:column; overflow:hidden; }
+  .owner-page.open { display:flex; }
+  .owner-page-header { background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+  .owner-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
+  .owner-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
+  .owner-page-body { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:16px; }
+  .owner-card { background:var(--card-bg); border-radius:18px; border:1px solid var(--border); overflow:hidden; }
+  .owner-card-title { padding:14px 18px 10px; font-weight:800; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
+  .owner-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
+  .owner-stat { background:var(--card-bg); padding:14px 10px; text-align:center; }
+  .owner-stat-val { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--lime); }
+  .owner-stat-lbl { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px; }
+  .chart-wrap { padding:16px; }
+  .chart-bars { display:flex; align-items:flex-end; gap:6px; height:140px; }
+  .chart-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; }
+  .chart-bar { width:100%; background:var(--lime); border-radius:6px 6px 0 0; min-height:4px; transition:height .3s; }
+  .chart-bar.zero { background:var(--border); }
+  .chart-lbl { font-size:10px; color:var(--muted); font-weight:700; }
+  .chart-val { font-size:9px; color:var(--lime); font-weight:800; }
+  .owner-cost-row { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); }
+  .owner-cost-row:last-child { border-bottom:none; }
+  .owner-cost-row label { font-size:12px; color:var(--muted); flex:1; }
+  .owner-cost-row input { width:130px; text-align:right; }
+
   /* ── PIN MODAL ── */
   .pin-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; display:none; align-items:center; justify-content:center; }
   .pin-overlay.open { display:flex; }
@@ -271,11 +296,9 @@
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title">Owner PIN</div>
-      <div class="setting-row">
-        <span class="setting-label" style="font-size:12px;color:var(--muted);">Protects profit view</span>
-        <button class="btn btn-light btn-sm" style="font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
-      </div>
+      <div class="setting-section-title">Owner</div>
+      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')">👑 Owner Dashboard</button>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
     </div>
 
   </div>
@@ -468,25 +491,60 @@
     </div>
   </div>
 
-  <!-- CONTRACTOR PROFIT VIEW -->
-  <div class="card">
-    <div class="card-header"><div>💰</div><h2 data-i18n="profitView">Contractor Profit View</h2><span class="card-total" id="profitShow" style="display:none">$0.00</span></div>
-    <div id="profitLocked" class="profit-lock-bar" onclick="openPinModal('unlock')">🔒 <span data-i18n="tapToUnlock">Tap to unlock</span></div>
-    <div id="profitContent" style="display:none">
-      <div class="card-body">
-        <div class="grid-3">
-          <div class="field"><label data-i18n="realJobCost">Real Job Cost</label><input id="realJobCost" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-          <div class="field"><label data-i18n="profit">Profit</label><input id="profitAmount" readonly></div>
-          <div class="field"><label data-i18n="margin">Margin %</label><input id="profitMargin" readonly></div>
-        </div>
-      </div>
-      <div style="text-align:center;padding-bottom:12px;">
-        <button class="btn btn-light btn-sm" onclick="lockProfit()" style="font-size:11px;">🔒 <span data-i18n="lockProfit">Lock</span></button>
-      </div>
-    </div>
+  <!-- HIDDEN PROFIT INPUTS (used by updateTotal/saveEstimate) -->
+  <div style="display:none">
+    <input id="realJobCost" type="number" value="0" oninput="updateTotal()">
+    <input id="profitAmount" readonly>
+    <input id="profitMargin" readonly>
+    <span id="profitShow"></span>
   </div>
 
+</div>
 
+<!-- OWNER DASHBOARD PAGE -->
+<div id="ownerPage" class="owner-page">
+  <div class="owner-page-header">
+    <span class="owner-page-title">👑 Owner Dashboard</span>
+    <button class="owner-page-back" onclick="closeOwnerPage()">✕ Close</button>
+  </div>
+  <div class="owner-page-body">
+
+    <!-- Current estimate profit -->
+    <div class="owner-card">
+      <div class="owner-card-title">💰 Current Estimate</div>
+      <div class="owner-stat-grid">
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerGrand">$0</div><div class="owner-stat-lbl">Estimate Total</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerProfit">$0</div><div class="owner-stat-lbl">Profit</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerMargin">0%</div><div class="owner-stat-lbl">Margin</div></div>
+      </div>
+      <div class="owner-cost-row">
+        <label data-i18n="realJobCost">Real Job Cost</label>
+        <input type="number" id="ownerRealCost" value="0"
+          onfocus="if(this.value=='0')this.value=''"
+          onblur="if(this.value=='')this.value='0'"
+          oninput="$('realJobCost').value=this.value;updateTotal();refreshOwnerStats()">
+      </div>
+    </div>
+
+    <!-- Monthly sales chart -->
+    <div class="owner-card">
+      <div class="owner-card-title">📊 Monthly Sales (last 6 months)</div>
+      <div class="chart-wrap">
+        <div class="chart-bars" id="salesChart"></div>
+      </div>
+    </div>
+
+    <!-- All-time stats -->
+    <div class="owner-card">
+      <div class="owner-card-title">📈 All Time</div>
+      <div class="owner-stat-grid">
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerTotalEst">0</div><div class="owner-stat-lbl">Estimates</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerTotalRev">$0</div><div class="owner-stat-lbl">Total Quoted</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerAvgJob">$0</div><div class="owner-stat-lbl">Avg Job</div></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- SAVED ESTIMATES FULL PAGE -->
@@ -910,9 +968,9 @@ function openPinModal(action) {
   pinStep = 1;
   pinTemp = '';
   let pin = localStorage.getItem('RS_PIN') || '1234';
-  if (action === 'unlock') {
-    $('pinTitle').textContent = '🔒 Owner Access';
-    $('pinSub').textContent = 'Enter your PIN to view profit data';
+  if (action === 'unlock' || action === 'owner') {
+    $('pinTitle').textContent = '👑 Owner Access';
+    $('pinSub').textContent = 'Enter your PIN to continue';
     $('pinInput').placeholder = '••••';
   } else {
     if (pin === '1234') {
@@ -940,10 +998,11 @@ function submitPin() {
   let stored = localStorage.getItem('RS_PIN') || '1234';
   if (!val) return;
 
-  if (pinAction === 'unlock') {
+  if (pinAction === 'unlock' || pinAction === 'owner') {
     if (val === stored) {
       closePinModal();
-      unlockProfit();
+      if (pinAction === 'owner') openOwnerPage();
+      else unlockProfit();
     } else {
       $('pinInput').value = '';
       $('pinSub').textContent = '❌ Wrong PIN. Try again:';
@@ -985,16 +1044,82 @@ function submitPin() {
   }
 }
 
-function unlockProfit() {
-  $('profitLocked').style.display = 'none';
-  $('profitContent').style.display = 'block';
-  $('profitShow').style.display = '';
+function unlockProfit() { openOwnerPage(); }
+function lockProfit() { closeOwnerPage(); }
+
+function openOwnerPage() {
+  $('ownerRealCost').value = $('realJobCost').value || 0;
+  refreshOwnerStats();
+  renderSalesChart();
+  $('ownerPage').classList.add('open');
 }
 
-function lockProfit() {
-  $('profitLocked').style.display = '';
-  $('profitContent').style.display = 'none';
-  $('profitShow').style.display = 'none';
+function closeOwnerPage() {
+  $('ownerPage').classList.remove('open');
+}
+
+function refreshOwnerStats() {
+  let t = calcTotals();
+  $('ownerGrand').textContent  = formatMoney(t.grand);
+  $('ownerProfit').textContent = formatMoney(t.profit);
+  $('ownerMargin').textContent = t.margin.toFixed(1) + '%';
+  $('ownerProfit').style.color = t.profit >= 0 ? 'var(--lime)' : '#ef4444';
+}
+
+function renderSalesChart() {
+  let estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+
+  // Build last 6 months
+  let months = [];
+  let now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    let d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      key: d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'),
+      label: d.toLocaleString('default', {month:'short'}),
+      total: 0
+    });
+  }
+
+  // Sum grand total per month
+  estimates.forEach(e => {
+    let key = (e.date||'').slice(0,7);
+    let m = months.find(m => m.key === key);
+    if (!m) return;
+    let grand = parseFloat(e.grand) || calcEstimateGrand(e);
+    m.total += grand;
+  });
+
+  let max = Math.max(...months.map(m => m.total), 1);
+
+  let chart = $('salesChart');
+  chart.innerHTML = months.map(m => {
+    let pct = Math.round((m.total / max) * 100);
+    let val = m.total > 0 ? (m.total >= 1000 ? '$' + (m.total/1000).toFixed(1) + 'k' : '$' + Math.round(m.total)) : '';
+    return `<div class="chart-col">
+      <div class="chart-val">${val}</div>
+      <div class="chart-bar${m.total===0?' zero':''}" style="height:${Math.max(pct,3)}%"></div>
+      <div class="chart-lbl">${m.label}</div>
+    </div>`;
+  }).join('');
+
+  // All-time stats
+  let total = estimates.length;
+  let totalRev = estimates.reduce((s,e) => s + (parseFloat(e.grand)||calcEstimateGrand(e)), 0);
+  let avg = total > 0 ? totalRev / total : 0;
+  $('ownerTotalEst').textContent = total;
+  $('ownerTotalRev').textContent = totalRev >= 1000 ? '$' + (totalRev/1000).toFixed(1) + 'k' : formatMoney(totalRev);
+  $('ownerAvgJob').textContent   = avg >= 1000 ? '$' + (avg/1000).toFixed(1) + 'k' : formatMoney(avg);
+}
+
+function calcEstimateGrand(e) {
+  let unit  = (parseFloat(e.unitQty)||0) * (parseFloat(e.unitPrice)||0);
+  let labor = (parseFloat(e.hours)||0) * (parseFloat(e.workers)||0) * (parseFloat(e.rate)||0);
+  let mat   = (e.materials||[]).reduce((s,m)=>(s+(parseFloat(m.qty)||0)*(parseFloat(m.unit)||0)),0);
+  let other = (e.others||[]).reduce((s,o)=>(s+(parseFloat(o.amount)||0)),0);
+  let sub   = unit + labor + mat + other;
+  let tax   = sub * ((parseFloat(e.tax)||0) / 100);
+  return sub + tax;
 }
 
 function openReceiptCamera() {
@@ -1061,7 +1186,7 @@ function closeReceiptModal() {
 function saveEstimate() {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   let current = {
-    id: Date.now().toString(),
+    id: Date.now().toString(), grand: calcTotals().grand,
     estNum:$('estNum').value, date:$('estDate').value,
     client:$('clientName').value, project:$('projectName').value,
     address:$('projectAddress').value, validUntil:$('validUntil').value,
