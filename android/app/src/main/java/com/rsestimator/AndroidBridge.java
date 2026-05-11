@@ -78,15 +78,21 @@ public class AndroidBridge {
             @Override
             public void run() {
                 try {
-                    File photoFile = File.createTempFile(
-                            "receipt_", ".jpg", activity.getExternalCacheDir()
-                    );
-                    pendingPhotoUri = Uri.parse(
-                            "content://com.rsestimator.rsprovider" + photoFile.getAbsolutePath()
-                    );
+                    ContentValues values = new ContentValues();
+                    values.put(MediaStore.Images.Media.DISPLAY_NAME,
+                            "receipt_" + System.currentTimeMillis() + ".jpg");
+                    values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+                    pendingPhotoUri = context.getContentResolver().insert(
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+                    if (pendingPhotoUri == null) {
+                        mostrarMensaje("Error preparando cámara");
+                        return;
+                    }
+
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
-                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                     activity.startActivityForResult(intent, REQUEST_CAMERA);
                 } catch (Exception e) {
                     mostrarMensaje("Error al abrir cámara");

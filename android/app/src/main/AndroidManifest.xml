@@ -33,11 +33,6 @@
 
         </activity>
 
-        <provider
-            android:name=".RsFileProvider"
-            android:authorities="com.rsestimator.rsprovider"
-            android:exported="false"
-            android:grantUriPermissions="true" />
 
     </application>
 
