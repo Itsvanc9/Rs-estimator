@@ -169,6 +169,17 @@
   .receipt-modal img { max-width:95vw; max-height:88vh; border-radius:12px; object-fit:contain; }
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
+  /* ── PIN MODAL ── */
+  .pin-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; display:none; align-items:center; justify-content:center; }
+  .pin-overlay.open { display:flex; }
+  .pin-box { background:var(--card-bg); border-radius:20px; padding:28px 24px; width:280px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+  .pin-title { font-weight:800; font-size:16px; margin-bottom:6px; }
+  .pin-sub { font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .pin-input { width:100%; font-size:22px; letter-spacing:8px; text-align:center; padding:12px; border-radius:12px; border:2px solid var(--border); background:var(--input-bg); color:var(--text); margin-bottom:14px; }
+  .pin-actions { display:flex; gap:10px; }
+  .profit-lock-bar { display:flex; align-items:center; justify-content:center; gap:10px; padding:18px; color:var(--muted); font-size:13px; cursor:pointer; }
+  .profit-lock-bar:hover { color:var(--lime); }
+
   /* ── SETTINGS PANEL ── */
   .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9998; display: none; }
   .settings-overlay.open { display: block; }
@@ -220,6 +231,19 @@
 <body>
 
 <!-- ═══════════════ SETTINGS PANEL ═══════════════ -->
+<!-- PIN MODAL -->
+<div class="pin-overlay" id="pinOverlay">
+  <div class="pin-box">
+    <div class="pin-title" id="pinTitle">🔒 Owner Access</div>
+    <div class="pin-sub" id="pinSub">Enter your PIN to view profit data</div>
+    <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')submitPin()">
+    <div class="pin-actions">
+      <button class="btn btn-light btn-sm" style="flex:1" onclick="closePinModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="submitPin()">Unlock</button>
+    </div>
+  </div>
+</div>
+
 <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-head">
@@ -243,6 +267,14 @@
       <div class="lang-btns">
         <button class="lang-btn active" id="langEN" onclick="setLanguage('en')">🇺🇸 English</button>
         <button class="lang-btn" id="langES" onclick="setLanguage('es')">🇲🇽 Español</button>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <div class="setting-section-title">Owner PIN</div>
+      <div class="setting-row">
+        <span class="setting-label" style="font-size:12px;color:var(--muted);">Protects profit view</span>
+        <button class="btn btn-light btn-sm" style="font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
       </div>
     </div>
 
@@ -438,12 +470,18 @@
 
   <!-- CONTRACTOR PROFIT VIEW -->
   <div class="card">
-    <div class="card-header"><div>💰</div><h2 data-i18n="profitView">Contractor Profit View</h2><span class="card-total" id="profitShow">$0.00</span></div>
-    <div class="card-body">
-      <div class="grid-3">
-        <div class="field"><label data-i18n="realJobCost">Real Job Cost</label><input id="realJobCost" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field"><label data-i18n="profit">Profit</label><input id="profitAmount" readonly></div>
-        <div class="field"><label data-i18n="margin">Margin %</label><input id="profitMargin" readonly></div>
+    <div class="card-header"><div>💰</div><h2 data-i18n="profitView">Contractor Profit View</h2><span class="card-total" id="profitShow" style="display:none">$0.00</span></div>
+    <div id="profitLocked" class="profit-lock-bar" onclick="openPinModal('unlock')">🔒 <span data-i18n="tapToUnlock">Tap to unlock</span></div>
+    <div id="profitContent" style="display:none">
+      <div class="card-body">
+        <div class="grid-3">
+          <div class="field"><label data-i18n="realJobCost">Real Job Cost</label><input id="realJobCost" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
+          <div class="field"><label data-i18n="profit">Profit</label><input id="profitAmount" readonly></div>
+          <div class="field"><label data-i18n="margin">Margin %</label><input id="profitMargin" readonly></div>
+        </div>
+      </div>
+      <div style="text-align:center;padding-bottom:12px;">
+        <button class="btn btn-light btn-sm" onclick="lockProfit()" style="font-size:11px;">🔒 <span data-i18n="lockProfit">Lock</span></button>
       </div>
     </div>
   </div>
@@ -509,6 +547,7 @@ const T = {
     toastTemplateSaved:'✓ Template saved', toastTemplateLoaded:'✓ Template loaded',
     toastTemplateDeleted:'✓ Template deleted',
     depositReceipt:'Deposit Receipt', addPhoto:'📷 Add Photo',
+    tapToUnlock:'Tap to unlock', lockProfit:'Lock',
     confirmNew:'Start a new estimate? Unsaved data will be lost.',
     noMaterials:'No materials to save', enterTemplateName:'Enter a template name',
   },
@@ -544,6 +583,7 @@ const T = {
     toastTemplateSaved:'✓ Plantilla guardada', toastTemplateLoaded:'✓ Plantilla cargada',
     toastTemplateDeleted:'✓ Plantilla borrada',
     depositReceipt:'Comprobante de Pago', addPhoto:'📷 Agregar Foto',
+    tapToUnlock:'Toca para desbloquear', lockProfit:'Bloquear',
     confirmNew:'¿Nuevo estimado? Los datos sin guardar se perderán.',
     noMaterials:'No hay materiales para guardar', enterTemplateName:'Escribe un nombre de plantilla',
   }
@@ -859,6 +899,104 @@ function getNextEstimateNumber() {
   return 'RS-' + year + '-' + String(max+1).padStart(3,'0');
 }
 
+// ── PIN / PROFIT LOCK ────────────────────────────────────────────────────────
+
+let pinAction = 'unlock';
+let pinStep = 1;
+let pinTemp = '';
+
+function openPinModal(action) {
+  pinAction = action;
+  pinStep = 1;
+  pinTemp = '';
+  let pin = localStorage.getItem('RS_PIN') || '1234';
+  if (action === 'unlock') {
+    $('pinTitle').textContent = '🔒 Owner Access';
+    $('pinSub').textContent = 'Enter your PIN to view profit data';
+    $('pinInput').placeholder = '••••';
+  } else {
+    if (pin === '1234') {
+      $('pinTitle').textContent = '🔒 Set New PIN';
+      $('pinSub').textContent = 'Default PIN is 1234. Enter a new PIN:';
+      pinStep = 2;
+    } else {
+      $('pinTitle').textContent = '🔒 Change PIN';
+      $('pinSub').textContent = 'Enter your current PIN first:';
+    }
+    $('pinInput').placeholder = '••••';
+  }
+  $('pinInput').value = '';
+  $('pinOverlay').classList.add('open');
+  setTimeout(() => $('pinInput').focus(), 100);
+}
+
+function closePinModal() {
+  $('pinOverlay').classList.remove('open');
+  $('pinInput').value = '';
+}
+
+function submitPin() {
+  let val = $('pinInput').value.trim();
+  let stored = localStorage.getItem('RS_PIN') || '1234';
+  if (!val) return;
+
+  if (pinAction === 'unlock') {
+    if (val === stored) {
+      closePinModal();
+      unlockProfit();
+    } else {
+      $('pinInput').value = '';
+      $('pinSub').textContent = '❌ Wrong PIN. Try again:';
+    }
+    return;
+  }
+
+  if (pinAction === 'change') {
+    if (pinStep === 1) {
+      if (val !== stored) {
+        $('pinInput').value = '';
+        $('pinSub').textContent = '❌ Wrong current PIN. Try again:';
+        return;
+      }
+      pinStep = 2;
+      $('pinTitle').textContent = '🔒 New PIN';
+      $('pinSub').textContent = 'Enter your new PIN:';
+      $('pinInput').value = '';
+      return;
+    }
+    if (pinStep === 2) {
+      pinTemp = val;
+      pinStep = 3;
+      $('pinSub').textContent = 'Confirm new PIN:';
+      $('pinInput').value = '';
+      return;
+    }
+    if (pinStep === 3) {
+      if (val !== pinTemp) {
+        pinStep = 2;
+        $('pinInput').value = '';
+        $('pinSub').textContent = '❌ PINs don\'t match. Enter new PIN again:';
+        return;
+      }
+      localStorage.setItem('RS_PIN', val);
+      closePinModal();
+      showToast('✅ PIN updated');
+    }
+  }
+}
+
+function unlockProfit() {
+  $('profitLocked').style.display = 'none';
+  $('profitContent').style.display = 'block';
+  $('profitShow').style.display = '';
+}
+
+function lockProfit() {
+  $('profitLocked').style.display = '';
+  $('profitContent').style.display = 'none';
+  $('profitShow').style.display = 'none';
+}
+
 function openReceiptCamera() {
   if (window.AndroidBridge && AndroidBridge.takePhoto) {
     AndroidBridge.takePhoto();
@@ -972,6 +1110,7 @@ function loadEstimate(id) {
   receiptPhotos = item.receipts || [];
   renderReceipts();
   updateTotal();
+  lockProfit();
   closeEstimatesPage();
   window.scrollTo(0, 0);
   showToast('✓ Loaded: ' + item.estNum);
