@@ -150,13 +150,13 @@
   .template-chip-btn:active { opacity:1; background:rgba(255,255,255,0.1); }
 
   /* ── ESTIMATES PAGE ── */
-  .estimates-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; }
+  .estimates-page { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9990; display:none; overflow-y:scroll; -webkit-overflow-scrolling:touch; }
   .estimates-page.open { display:block; }
-  .estimates-page-header { position:relative; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .estimates-page-header { position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
   .estimates-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .estimates-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .estimates-page-body { position:absolute; left:0; right:0; bottom:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 80px; }
-  .estimates-page-footer { position:fixed; bottom:0; left:0; right:0; z-index:9991; padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; background:var(--bg); }
+  .estimates-page-body { padding:16px; }
+  .estimates-page-footer { padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; }
   .saved-badge { background:#84cc16; color:#0f172a; border-radius:20px; font-size:11px; font-weight:800; padding:1px 7px; min-width:18px; text-align:center; }
 
   /* ── RECEIPT PHOTOS ── */
@@ -170,30 +170,38 @@
   .receipt-modal-close { position:absolute; top:18px; right:18px; background:rgba(255,255,255,0.15); color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; cursor:pointer; }
 
   /* ── OWNER PAGE ── */
-  .owner-page { position:fixed; top:0; left:0; right:0; bottom:0; background:var(--bg); z-index:9990; display:none; }
+  .owner-page { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9990; display:none; overflow-y:scroll; -webkit-overflow-scrolling:touch; }
   .owner-page.open { display:block; }
-  .owner-page-header { position:relative; background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.3); }
-  .owner-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
-  .owner-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
-  .owner-page-body { position:absolute; left:0; right:0; bottom:0; overflow-y:scroll; -webkit-overflow-scrolling:touch; padding:16px 16px 60px; display:flex; flex-direction:column; gap:16px; }
-  .owner-card { background:var(--card-bg); border-radius:18px; border:1px solid var(--border); overflow:hidden; }
-  .owner-card-title { padding:14px 18px 10px; font-weight:800; font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--border); }
-  .owner-stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
-  .owner-stat { background:var(--card-bg); padding:14px 10px; text-align:center; }
-  .owner-stat-val { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--lime); }
-  .owner-stat-lbl { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:2px; }
-  .chart-wrap { padding:16px 16px 8px; }
-  .chart-bars { display:flex; align-items:stretch; gap:6px; height:140px; }
-  .chart-col { flex:1; display:flex; flex-direction:column; align-items:center; }
-  .chart-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
-  .chart-bar { width:100%; background:var(--lime); border-radius:4px 4px 0 0; min-height:3px; transition:height .3s; }
-  .chart-bar.zero { background:var(--border); }
-  .chart-lbl { font-size:10px; color:var(--muted); font-weight:700; padding-top:4px; }
-  .chart-val { font-size:9px; color:var(--lime); font-weight:800; height:13px; }
-  .owner-cost-row { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--border); }
-  .owner-cost-row:last-child { border-bottom:none; }
-  .owner-cost-row label { font-size:12px; color:var(--muted); flex:1; }
-  .owner-cost-row input { width:130px; text-align:right; }
+  .op-header { position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#1a1a3a,#2d1b5a); padding:48px 20px 16px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 20px rgba(0,0,0,.4); }
+  .op-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; }
+  .op-close { background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); color:white; border-radius:12px; padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; }
+  .op-body { padding:16px 16px 48px; display:flex; flex-direction:column; gap:14px; }
+  .op-card { background:var(--card-bg); border-radius:18px; border:1px solid var(--border); overflow:hidden; }
+  .op-card-title { padding:13px 16px 10px; font-weight:800; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; border-bottom:1px solid var(--border); }
+  .op-kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); }
+  .op-kpi { background:var(--card-bg); padding:18px 10px 14px; text-align:center; }
+  .op-kpi-val { font-family:'Bebas Neue',sans-serif; font-size:30px; color:var(--lime); line-height:1; }
+  .op-kpi-lbl { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:5px; }
+  .op-benchmark { margin:12px 14px; padding:10px 14px; border-radius:10px; font-size:12px; font-weight:700; text-align:center; }
+  .op-row { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .op-row:last-child { border-bottom:none; }
+  .op-row-lbl { flex:1; }
+  .op-row-lbl b { font-size:13px; font-weight:700; display:block; color:var(--text); }
+  .op-row-lbl small { font-size:11px; color:var(--muted); }
+  .op-row input { width:110px; text-align:right; font-size:15px; font-weight:700; }
+  .op-row-val { font-weight:800; font-size:15px; color:var(--lime); min-width:80px; text-align:right; }
+  .op-chart-wrap { padding:16px 16px 8px; }
+  .op-bars { display:flex; align-items:stretch; gap:7px; height:120px; }
+  .op-col { flex:1; display:flex; flex-direction:column; align-items:center; }
+  .op-col-bw { flex:1; width:100%; display:flex; align-items:flex-end; }
+  .op-bar { width:100%; background:var(--lime); border-radius:4px 4px 0 0; min-height:3px; }
+  .op-bar.zero { background:var(--border); }
+  .op-col-lbl { font-size:10px; color:var(--muted); font-weight:700; padding-top:3px; }
+  .op-col-val { font-size:9px; color:var(--lime); font-weight:800; height:12px; }
+  .op-alltime { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); }
+  .op-stat { background:var(--card-bg); padding:16px 8px; text-align:center; }
+  .op-stat-val { font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--lime); }
+  .op-stat-lbl { font-size:10px; color:var(--muted); font-weight:700; text-transform:uppercase; margin-top:3px; }
 
   /* ── PIN MODAL ── */
   .pin-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:10001; display:none; align-items:center; justify-content:center; }
@@ -499,57 +507,62 @@
 
 <!-- OWNER DASHBOARD PAGE -->
 <div id="ownerPage" class="owner-page">
-  <div class="owner-page-header">
-    <span class="owner-page-title">👑 Owner Dashboard</span>
-    <button class="owner-page-back" onclick="closeOwnerPage()">✕ Close</button>
+  <div class="op-header">
+    <span class="op-title">👑 Owner Dashboard</span>
+    <button class="op-close" onclick="closeOwnerPage()">✕ Close</button>
   </div>
-  <div class="owner-page-body">
+  <div class="op-body">
 
-    <!-- Current estimate profit -->
-    <div class="owner-card">
-      <div class="owner-card-title">💰 Current Estimate</div>
-      <div class="owner-stat-grid" style="grid-template-columns:repeat(2,1fr);">
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerGrand">$0</div><div class="owner-stat-lbl">Estimate Total</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerGrossMargin">0%</div><div class="owner-stat-lbl">Gross Margin</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerProfit">$0</div><div class="owner-stat-lbl">Net Profit</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerMargin">0%</div><div class="owner-stat-lbl">Net Margin</div></div>
+    <!-- KPI metrics -->
+    <div class="op-card">
+      <div class="op-card-title">💰 Current Estimate</div>
+      <div class="op-kpi-grid">
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrand">$0</div><div class="op-kpi-lbl">Total</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrossMargin">0%</div><div class="op-kpi-lbl">Gross Margin</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerProfit">$0</div><div class="op-kpi-lbl">Net Profit</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerMargin">0%</div><div class="op-kpi-lbl">Net Margin</div></div>
       </div>
-      <div id="marginBenchmark" style="margin:0 14px 12px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;text-align:center;"></div>
-      <div class="owner-cost-row">
-        <label style="line-height:1.3;">Real Job Cost<br><span style="font-size:10px;color:var(--muted);">Mat + Labor + Other (auto)</span></label>
+      <div id="marginBenchmark" class="op-benchmark" style="display:none;"></div>
+    </div>
+
+    <!-- Cost inputs -->
+    <div class="op-card">
+      <div class="op-card-title">🔧 Cost Breakdown</div>
+      <div class="op-row">
+        <div class="op-row-lbl"><b>Real Job Cost</b><small>Mat + Labor + Other (auto)</small></div>
         <input type="number" id="ownerRealCost" value="0"
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
           oninput="$('realJobCost').value=this.value;updateTotal();refreshOwnerStats()">
       </div>
-      <div class="owner-cost-row">
-        <label style="line-height:1.3;">Overhead %<br><span style="font-size:10px;color:var(--muted);">Insurance, fuel, tools, office…</span></label>
+      <div class="op-row">
+        <div class="op-row-lbl"><b>Overhead %</b><small>Insurance, fuel, tools, office…</small></div>
         <input type="number" id="ownerOverhead" value="12" min="0" max="100"
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
-          oninput="localStorage.setItem('RS_OVERHEAD',$('ownerOverhead').value);refreshOwnerStats()">
+          oninput="localStorage.setItem('RS_OVERHEAD',this.value);refreshOwnerStats()">
       </div>
-      <div class="owner-cost-row" style="border-bottom:none;">
-        <label style="font-weight:700;">Overhead Amount</label>
-        <span id="ownerOverheadAmt" style="font-weight:800;color:var(--lime);font-size:14px;">$0</span>
+      <div class="op-row">
+        <div class="op-row-lbl"><b>Overhead Amount</b></div>
+        <span id="ownerOverheadAmt" class="op-row-val">$0</span>
       </div>
     </div>
 
     <!-- Monthly sales chart -->
-    <div class="owner-card">
-      <div class="owner-card-title">📊 Monthly Sales (last 6 months)</div>
-      <div class="chart-wrap">
-        <div class="chart-bars" id="salesChart"></div>
+    <div class="op-card">
+      <div class="op-card-title">📊 Monthly Sales — last 6 months</div>
+      <div class="op-chart-wrap">
+        <div class="op-bars" id="salesChart"></div>
       </div>
     </div>
 
     <!-- All-time stats -->
-    <div class="owner-card">
-      <div class="owner-card-title">📈 All Time</div>
-      <div class="owner-stat-grid">
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerTotalEst">0</div><div class="owner-stat-lbl">Estimates</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerTotalRev">$0</div><div class="owner-stat-lbl">Total Quoted</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerAvgJob">$0</div><div class="owner-stat-lbl">Avg Job</div></div>
+    <div class="op-card">
+      <div class="op-card-title">📈 All Time</div>
+      <div class="op-alltime">
+        <div class="op-stat"><div class="op-stat-val" id="ownerTotalEst">0</div><div class="op-stat-lbl">Estimates</div></div>
+        <div class="op-stat"><div class="op-stat-val" id="ownerTotalRev">$0</div><div class="op-stat-lbl">Quoted</div></div>
+        <div class="op-stat"><div class="op-stat-val" id="ownerAvgJob">$0</div><div class="op-stat-lbl">Avg Job</div></div>
       </div>
     </div>
 
@@ -696,16 +709,9 @@ function updateDarkToggleUI() {
 // ═══════════════════════════════════════════════════════
 function openEstimatesPage() {
   renderSaved();
-  $('estimatesPage').classList.add('open');
-  setTimeout(function() {
-    var hdr = document.querySelector('.estimates-page-header');
-    var body = document.querySelector('.estimates-page-body');
-    if (hdr && body) {
-      var hdrH = hdr.offsetHeight || 120;
-      body.style.top = hdrH + 'px';
-      body.style.height = (window.innerHeight - hdrH) + 'px';
-    }
-  }, 50);
+  var el = $('estimatesPage');
+  el.classList.add('open');
+  el.scrollTop = 0;
 }
 
 function closeEstimatesPage() {
@@ -1075,17 +1081,10 @@ function openOwnerPage() {
     updateTotal();
     refreshOwnerStats();
     renderSalesChart();
-  } catch(e) { /* non-fatal */ }
-  $('ownerPage').classList.add('open');
-  setTimeout(function() {
-    var hdr = document.querySelector('.owner-page-header');
-    var body = document.querySelector('.owner-page-body');
-    if (hdr && body) {
-      var hdrH = hdr.offsetHeight || 120;
-      body.style.top = hdrH + 'px';
-      body.style.height = (window.innerHeight - hdrH) + 'px';
-    }
-  }, 50);
+  } catch(e) {}
+  var el = $('ownerPage');
+  el.classList.add('open');
+  el.scrollTop = 0;
 }
 
 function closeOwnerPage() {
@@ -1153,12 +1152,12 @@ function renderSalesChart() {
   chart.innerHTML = months.map(m => {
     let pct = Math.round((m.total / max) * 100);
     let val = m.total > 0 ? (m.total >= 1000 ? '$' + (m.total/1000).toFixed(1) + 'k' : '$' + Math.round(m.total)) : '';
-    return `<div class="chart-col">
-      <div class="chart-val">${val}</div>
-      <div class="chart-bar-wrap">
-        <div class="chart-bar${m.total===0?' zero':''}" style="height:${Math.max(pct,3)}%"></div>
+    return `<div class="op-col">
+      <div class="op-col-val">${val}</div>
+      <div class="op-col-bw">
+        <div class="op-bar${m.total===0?' zero':''}" style="height:${Math.max(pct,3)}%"></div>
       </div>
-      <div class="chart-lbl">${m.label}</div>
+      <div class="op-col-lbl">${m.label}</div>
     </div>`;
   }).join('');
 
