@@ -507,10 +507,11 @@
     <!-- Current estimate profit -->
     <div class="owner-card">
       <div class="owner-card-title">💰 Current Estimate</div>
-      <div class="owner-stat-grid">
+      <div class="owner-stat-grid" style="grid-template-columns:repeat(2,1fr);">
         <div class="owner-stat"><div class="owner-stat-val" id="ownerGrand">$0</div><div class="owner-stat-lbl">Estimate Total</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerProfit">$0</div><div class="owner-stat-lbl">Profit</div></div>
-        <div class="owner-stat"><div class="owner-stat-val" id="ownerMargin">0%</div><div class="owner-stat-lbl">Margin</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerGrossMargin">0%</div><div class="owner-stat-lbl">Gross Margin</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerProfit">$0</div><div class="owner-stat-lbl">Net Profit</div></div>
+        <div class="owner-stat"><div class="owner-stat-val" id="ownerMargin">0%</div><div class="owner-stat-lbl">Net Margin</div></div>
       </div>
       <div id="marginBenchmark" style="margin:0 14px 12px;padding:8px 12px;border-radius:10px;font-size:12px;font-weight:700;text-align:center;"></div>
       <div class="owner-cost-row">
@@ -519,6 +520,17 @@
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
           oninput="$('realJobCost').value=this.value;updateTotal();refreshOwnerStats()">
+      </div>
+      <div class="owner-cost-row">
+        <label style="line-height:1.3;">Overhead %<br><span style="font-size:10px;color:var(--muted);">Insurance, fuel, tools, office…</span></label>
+        <input type="number" id="ownerOverhead" value="12" min="0" max="100"
+          onfocus="if(this.value=='0')this.value=''"
+          onblur="if(this.value=='')this.value='0'"
+          oninput="localStorage.setItem('RS_OVERHEAD',$('ownerOverhead').value);refreshOwnerStats()">
+      </div>
+      <div class="owner-cost-row" style="border-bottom:none;">
+        <label style="font-weight:700;">Overhead Amount</label>
+        <span id="ownerOverheadAmt" style="font-weight:800;color:var(--lime);font-size:14px;">$0</span>
       </div>
     </div>
 
@@ -1045,11 +1057,11 @@ function lockProfit() { closeOwnerPage(); }
 
 function openOwnerPage() {
   try {
-    // Auto-calculate real job cost from materials + labor + other costs
     let t = calcTotals();
     let autoCost = t.mat + t.labor + t.other;
     $('realJobCost').value = autoCost;
     if ($('ownerRealCost')) $('ownerRealCost').value = autoCost;
+    if ($('ownerOverhead')) $('ownerOverhead').value = localStorage.getItem('RS_OVERHEAD') || '12';
     updateTotal();
     refreshOwnerStats();
     renderSalesChart();
@@ -1063,22 +1075,33 @@ function closeOwnerPage() {
 
 function refreshOwnerStats() {
   let t = calcTotals();
-  $('ownerGrand').textContent  = formatMoney(t.grand);
-  $('ownerProfit').textContent = formatMoney(t.profit);
-  $('ownerMargin').textContent = t.margin.toFixed(1) + '%';
-  $('ownerProfit').style.color = t.profit >= 0 ? 'var(--lime)' : '#ef4444';
+  let overheadPct = parseFloat($('ownerOverhead')?.value) || 0;
+  let overheadAmt = t.grand * (overheadPct / 100);
+  let grossProfit = t.grand - t.realCost;
+  let grossMargin = t.grand > 0 ? (grossProfit / t.grand) * 100 : 0;
+  let netProfit   = grossProfit - overheadAmt;
+  let netMargin   = t.grand > 0 ? (netProfit / t.grand) * 100 : 0;
 
-  // Benchmark indicator (CFMA 2024 + Colorado industry data)
-  let m = t.margin;
+  $('ownerGrand').textContent      = formatMoney(t.grand);
+  $('ownerGrossMargin').textContent = grossMargin.toFixed(1) + '%';
+  $('ownerProfit').textContent      = formatMoney(netProfit);
+  $('ownerMargin').textContent      = netMargin.toFixed(1) + '%';
+  if ($('ownerOverheadAmt')) $('ownerOverheadAmt').textContent = formatMoney(overheadAmt);
+
+  $('ownerGrossMargin').style.color = grossMargin >= 16 ? 'var(--lime)' : '#f59e0b';
+  $('ownerProfit').style.color      = netProfit >= 0 ? 'var(--lime)' : '#ef4444';
+  $('ownerMargin').style.color      = netMargin >= 8 ? 'var(--lime)' : netMargin >= 0 ? '#f59e0b' : '#ef4444';
+
+  // Benchmark based on NET margin (CFMA 2024 Colorado data)
   let bm = $('marginBenchmark');
   if (!bm) return;
   if (t.grand <= 0) { bm.style.display = 'none'; return; }
   bm.style.display = '';
-  if (m < 0)       { bm.style.background='#fef2f2'; bm.style.color='#dc2626'; bm.textContent='🔴 Losing money on this job'; }
-  else if (m < 7)  { bm.style.background='#fff7ed'; bm.style.color='#ea580c'; bm.textContent='🟠 Below industry average (CO avg: 7–12%)'; }
-  else if (m < 12) { bm.style.background='#fefce8'; bm.style.color='#ca8a04'; bm.textContent='🟡 Industry average — room to improve'; }
-  else if (m < 18) { bm.style.background='#f0fdf4'; bm.style.color='#16a34a'; bm.textContent='🟢 Good margin — above CO average'; }
-  else             { bm.style.background='#f0fdf4'; bm.style.color='#15803d'; bm.textContent='✅ Excellent — top 25% of CO contractors'; }
+  if (netMargin < 0)       { bm.style.background='#fef2f2'; bm.style.color='#dc2626'; bm.textContent='🔴 Losing money — review your costs'; }
+  else if (netMargin < 5)  { bm.style.background='#fff7ed'; bm.style.color='#ea580c'; bm.textContent='🟠 Below average — CO specialty avg: 6.9% net'; }
+  else if (netMargin < 8)  { bm.style.background='#fefce8'; bm.style.color='#ca8a04'; bm.textContent='🟡 Average range — target 8%+ to be healthy'; }
+  else if (netMargin < 12) { bm.style.background='#f0fdf4'; bm.style.color='#16a34a'; bm.textContent='🟢 Good — above CO industry average'; }
+  else                     { bm.style.background='#f0fdf4'; bm.style.color='#15803d'; bm.textContent='✅ Excellent — top 25% of CO contractors (11.9%+)'; }
 }
 
 function renderSalesChart() {
