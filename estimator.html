@@ -644,10 +644,10 @@
   }
   .nav-tab.active { color: var(--lime-dark); }
   .nav-tab.active::before { transform: scaleX(1); }
-  .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-icon { font-size: 18px; line-height: 1; }
   .nav-label {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.2px;
-    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.1px;
+    display: flex; align-items: center; gap: 3px; white-space: nowrap;
   }
   [data-theme="dark"] .bottom-nav { background: var(--card-bg); border-color: var(--border); }
   [data-theme="dark"] .nav-tab { color: var(--muted); }
@@ -760,14 +760,7 @@
 </div>
 
 <!-- ═══════════════ HEADER ═══════════════ -->
-<header>
-  <div class="header-top-bar">
-    <button class="hdr-btn" onclick="clearEstimate()" data-i18n="new">✏️ New</button>
-    <div class="header-spacer"></div>
-    <button class="hdr-btn" onclick="doPrint()">🖨️ Print</button>
-    <button class="hdr-btn hdr-btn-primary" onclick="doPDF()">📤 Export PDF</button>
-  </div>
-</header>
+<header></header>
 
 <div class="main">
 
@@ -1045,13 +1038,21 @@
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-tab active" id="navEstimate" onclick="navTo('estimate')">
     <div class="nav-icon">📝</div>
-    <div class="nav-label" data-i18n="nav_estimate">Estimate</div>
+    <div class="nav-label">Estimate</div>
   </button>
-  <button class="nav-tab" id="navSaved" onclick="navTo('saved')">
-    <div class="nav-icon">📁</div>
-    <div class="nav-label">Files <span class="saved-badge" id="savedCount">0</span></div>
+  <button class="nav-tab" onclick="clearEstimate()">
+    <div class="nav-icon">✏️</div>
+    <div class="nav-label">New</div>
   </button>
-<button class="nav-tab" id="navSettings" onclick="navTo('settings')">
+  <button class="nav-tab" onclick="doPrint()">
+    <div class="nav-icon">🖨️</div>
+    <div class="nav-label">Print</div>
+  </button>
+  <button class="nav-tab" onclick="doPDF()">
+    <div class="nav-icon">📤</div>
+    <div class="nav-label">Export</div>
+  </button>
+  <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
     <div class="nav-label">Settings</div>
   </button>
@@ -1781,7 +1782,7 @@ function deleteEstimate(id) {
 
 function renderSaved() {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-  $('savedCount').innerText = savedArray.length;
+  var sc = $('savedCount'); if (sc) sc.innerText = savedArray.length;
   let container = $('savedList');
   if (savedArray.length === 0) {
     container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);">No saved estimates</div>`;
