@@ -505,7 +505,153 @@
     font-family: 'Inter', 'DM Sans', sans-serif;
   }
 
-  .footer { margin-top: 32px; font-size: 10px; color: var(--n400); text-align: center; padding: 16px 20px 24px; letter-spacing: 0.2px; }
+  .footer { margin-top: 16px; font-size: 10px; color: var(--n400); text-align: center; padding: 12px 20px 8px; letter-spacing: 0.2px; }
+
+  /* ══════════════════════════════════════════
+     SPLASH SCREEN
+  ══════════════════════════════════════════ */
+  .splash-screen {
+    position: fixed; inset: 0; z-index: 99990; cursor: pointer;
+    background: url('file:///android_asset/banner.jpg') center/cover no-repeat;
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  }
+  .splash-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.92) 100%);
+  }
+  .splash-body {
+    position: relative; z-index: 1; width: 100%; padding: 0 28px 52px;
+  }
+  .splash-badge {
+    display: inline-block;
+    background: var(--lime); color: #fff;
+    font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
+    padding: 5px 12px; border-radius: 20px; margin-bottom: 16px;
+  }
+  .splash-version {
+    font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500;
+    letter-spacing: 1px; margin-bottom: 40px;
+  }
+  .splash-tap {
+    font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500;
+    letter-spacing: 0.3px; margin-bottom: 14px;
+    animation: blink 2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:.4} 50%{opacity:1} }
+  .splash-dots { display: flex; gap: 6px; }
+  .splash-dots span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--lime); opacity: 0.4;
+    animation: dot-pulse 1.4s infinite;
+  }
+  .splash-dots span:nth-child(2) { animation-delay: .2s; }
+  .splash-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes dot-pulse { 0%,80%,100%{opacity:.2; transform:scale(0.8)} 40%{opacity:1; transform:scale(1)} }
+
+  /* ══════════════════════════════════════════
+     TERMS & CONDITIONS
+  ══════════════════════════════════════════ */
+  .terms-screen {
+    position: fixed; inset: 0; z-index: 99980; background: var(--bg);
+    display: flex; flex-direction: column;
+    font-family: 'Inter', 'DM Sans', sans-serif;
+  }
+  .terms-header-bar {
+    background: linear-gradient(135deg, #0d1b2e, #162035);
+    padding: 52px 22px 22px; display: flex; align-items: center; gap: 14px;
+    flex-shrink: 0;
+  }
+  .terms-header-icon {
+    width: 44px; height: 44px; background: rgba(132,204,22,0.2);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px;
+    border: 1px solid rgba(132,204,22,0.3); flex-shrink: 0;
+  }
+  .terms-header-title { font-size: 20px; font-weight: 800; color: #fff; }
+  .terms-header-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .terms-scroll {
+    flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch;
+    padding: 24px 22px 8px;
+  }
+  .terms-section-title {
+    font-size: 11px; font-weight: 800; color: var(--lime-dark);
+    text-transform: uppercase; letter-spacing: 0.8px; margin: 20px 0 8px;
+  }
+  .terms-section-title:first-child { margin-top: 0; }
+  .terms-p {
+    font-size: 13px; line-height: 1.7; color: var(--text2);
+  }
+  .terms-footer {
+    padding: 16px 22px 32px; border-top: 1px solid var(--border-solid);
+    background: var(--surface); flex-shrink: 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .terms-check-row {
+    display: flex; align-items: flex-start; gap: 12px; cursor: pointer;
+    font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .terms-check-row input { width: 18px; height: 18px; flex-shrink: 0; accent-color: var(--lime); margin-top: 2px; }
+  .terms-accept-btn {
+    width: 100%; padding: 14px; border-radius: 12px; border: none;
+    background: var(--lime); color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: 'Inter', 'DM Sans', sans-serif;
+    transition: opacity 0.2s; letter-spacing: 0.2px;
+  }
+  .terms-accept-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .terms-accept-btn:not(:disabled):active { background: var(--lime-dark); }
+
+  /* ══════════════════════════════════════════
+     HEADER (banner only, no text overlay)
+  ══════════════════════════════════════════ */
+  .header-top-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 44px 14px 0; display: flex; align-items: center; gap: 7px; z-index: 2;
+  }
+  .header-spacer { flex: 1; }
+  .hdr-btn {
+    background: rgba(255,255,255,0.18); color: #fff;
+    border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(12px);
+    border-radius: 9px; padding: 8px 14px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: 'Inter', 'DM Sans', sans-serif;
+    transition: background 0.15s; white-space: nowrap;
+  }
+  .hdr-btn:active { background: rgba(255,255,255,0.3); }
+  .hdr-btn-primary {
+    background: var(--lime); border-color: transparent;
+    box-shadow: 0 2px 10px rgba(90,140,10,0.45);
+  }
+  .hdr-btn-primary:active { background: var(--lime-dark); }
+
+  /* ══════════════════════════════════════════
+     BOTTOM NAVIGATION
+  ══════════════════════════════════════════ */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 1000;
+    background: var(--surface); border-top: 1px solid var(--border-solid);
+    display: flex; align-items: stretch;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .nav-tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 4px; padding: 10px 4px 11px;
+    background: none; border: none; cursor: pointer;
+    color: var(--n400); font-family: 'Inter', 'DM Sans', sans-serif;
+    position: relative; transition: color 0.15s;
+  }
+  .nav-tab::before {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+    background: var(--lime); border-radius: 0 0 3px 3px;
+    transform: scaleX(0); transition: transform 0.2s;
+  }
+  .nav-tab.active { color: var(--lime-dark); }
+  .nav-tab.active::before { transform: scaleX(1); }
+  .nav-icon { font-size: 20px; line-height: 1; }
+  .nav-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.2px;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+  }
+  [data-theme="dark"] .bottom-nav { background: var(--card-bg); border-color: var(--border); }
+  [data-theme="dark"] .nav-tab { color: var(--muted); }
 
   @media (max-width: 640px) {
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
@@ -566,21 +712,58 @@
   </div>
 </div>
 
-<!-- ═══════════════ HEADER ═══════════════ -->
-<header>
-  <div class="header-brand">
-    <div class="header-logo">R&S</div>
-    <div>
-      <div class="header-company">Drywall Solutions</div>
-      <div class="header-tagline">Professional Estimating System</div>
+<!-- ═══════════ SPLASH SCREEN ═══════════ -->
+<div id="splash" class="splash-screen" onclick="dismissSplash()">
+  <div class="splash-overlay"></div>
+  <div class="splash-body">
+    <div class="splash-badge">PROFESSIONAL ESTIMATING SYSTEM</div>
+    <div class="splash-version">v 2.0</div>
+    <div class="splash-tap">Tap anywhere to continue</div>
+    <div class="splash-dots">
+      <span></span><span></span><span></span>
     </div>
   </div>
-  <div class="header-toolbar">
-    <button class="btn btn-light btn-sm" onclick="clearEstimate()" data-i18n="new">+ New</button>
-    <button class="btn btn-light btn-sm" onclick="doPrint()" data-i18n="print">Print</button>
-    <button class="btn btn-primary btn-sm" onclick="doPDF()">Export PDF</button>
-    <button class="btn btn-ghost btn-sm" onclick="openEstimatesPage()" style="gap:5px;">Files <span class="saved-badge" id="savedCount">0</span></button>
-    <button class="btn btn-ghost btn-sm" onclick="openSettings()">⚙</button>
+</div>
+
+<!-- ═══════════ TERMS & CONDITIONS ═══════════ -->
+<div id="termsScreen" class="terms-screen" style="display:none;">
+  <div class="terms-header-bar">
+    <div class="terms-header-icon">📄</div>
+    <div>
+      <div class="terms-header-title">Terms &amp; Conditions</div>
+      <div class="terms-header-sub">R&amp;S Drywall Solutions LLC</div>
+    </div>
+  </div>
+  <div class="terms-scroll">
+    <div class="terms-section-title">License &amp; Use</div>
+    <p class="terms-p">This application ("R&amp;S Estimator") is proprietary software developed exclusively for R&amp;S Drywall Solutions LLC. Unauthorized copying, redistribution, or reverse engineering is strictly prohibited.</p>
+    <div class="terms-section-title">Data &amp; Privacy</div>
+    <p class="terms-p">All estimate data, client information, and photos are stored locally on this device. No information is transmitted to third-party servers without your explicit consent.</p>
+    <div class="terms-section-title">Accuracy of Estimates</div>
+    <p class="terms-p">Estimates generated by this app are for internal planning purposes only. Final pricing must be reviewed and approved by an authorized R&amp;S Drywall Solutions representative before being presented to clients.</p>
+    <div class="terms-section-title">Limitation of Liability</div>
+    <p class="terms-p">R&amp;S Drywall Solutions LLC is not liable for any financial decisions made solely based on estimates generated by this application. Always verify material costs and labor rates before submitting quotes.</p>
+    <div class="terms-section-title">Confidentiality</div>
+    <p class="terms-p">Profit margins, overhead data, and Owner Dashboard information are confidential and must not be disclosed to clients or third parties.</p>
+  </div>
+  <div class="terms-footer">
+    <label class="terms-check-row">
+      <input type="checkbox" id="termsCheck" onchange="document.getElementById('termsAcceptBtn').disabled=!this.checked">
+      <span>I have read and agree to the Terms &amp; Conditions</span>
+    </label>
+    <button id="termsAcceptBtn" class="terms-accept-btn" disabled onclick="acceptTerms()">
+      Continue to App →
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <div class="header-top-bar">
+    <button class="hdr-btn" onclick="clearEstimate()" data-i18n="new">+ New</button>
+    <div class="header-spacer"></div>
+    <button class="hdr-btn" onclick="doPrint()">Print</button>
+    <button class="hdr-btn hdr-btn-primary" onclick="doPDF()">Export PDF</button>
   </div>
 </header>
 
@@ -853,9 +1036,28 @@
 </div>
 
 <div class="footer">
-  © 2026 R&S Drywall Solutions LLC. All rights reserved.<br>
-  Developed exclusively for R&S Drywall Solutions LLC.
+  © 2026 R&S Drywall Solutions LLC · All rights reserved.
 </div>
+
+<!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="nav-tab active" id="navEstimate" onclick="navTo('estimate')">
+    <div class="nav-icon">📝</div>
+    <div class="nav-label" data-i18n="nav_estimate">Estimate</div>
+  </button>
+  <button class="nav-tab" id="navSaved" onclick="navTo('saved')">
+    <div class="nav-icon">📁</div>
+    <div class="nav-label">Files <span class="saved-badge" id="savedCount">0</span></div>
+  </button>
+  <button class="nav-tab" id="navOwner" onclick="navTo('owner')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Reports</div>
+  </button>
+  <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
+    <div class="nav-icon">⚙️</div>
+    <div class="nav-label">Settings</div>
+  </button>
+</nav>
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -983,6 +1185,8 @@ function openEstimatesPage() {
 
 function closeEstimatesPage() {
   $('estimatesPage').classList.remove('open');
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
 }
 
 function openSettings() {
@@ -992,6 +1196,8 @@ function openSettings() {
 function closeSettings() {
   $('settingsPanel').classList.remove('open');
   $('settingsOverlay').classList.remove('open');
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1356,6 +1562,8 @@ function openOwnerPage() {
 
 function closeOwnerPage() {
   $('ownerPage').classList.remove('open');
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
 }
 
 function refreshOwnerStats() {
@@ -1795,6 +2003,48 @@ function importBackup(e) {
 }
 
 // ═══════════════════════════════════════════════════════
+// SPLASH & TERMS
+// ═══════════════════════════════════════════════════════
+function dismissSplash() {
+  var splash = $('splash');
+  if (!splash) return;
+  splash.style.transition = 'opacity 0.4s ease';
+  splash.style.opacity = '0';
+  setTimeout(function() {
+    splash.style.display = 'none';
+    if (!localStorage.getItem('RS_TERMS_ACCEPTED')) {
+      $('termsScreen').style.display = 'flex';
+    }
+  }, 400);
+}
+
+function acceptTerms() {
+  localStorage.setItem('RS_TERMS_ACCEPTED', '1');
+  var ts = $('termsScreen');
+  ts.style.transition = 'opacity 0.3s ease';
+  ts.style.opacity = '0';
+  setTimeout(function() { ts.style.display = 'none'; }, 300);
+}
+
+// ═══════════════════════════════════════════════════════
+// BOTTOM NAV
+// ═══════════════════════════════════════════════════════
+function navTo(tab) {
+  document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+  var tabEl = $('nav' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  if (tabEl) tabEl.classList.add('active');
+  if (tab === 'saved') {
+    openEstimatesPage();
+  } else if (tab === 'owner') {
+    openPinModal('owner');
+  } else if (tab === 'settings') {
+    openSettings();
+  } else {
+    window.scrollTo(0, 0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init() {
@@ -1816,6 +2066,9 @@ function importBackup(e) {
   renderSaved();
   renderTemplates();
   updateTotal();
+
+  // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
+  setTimeout(dismissSplash, 2500);
 })();
 </script>
 </body>
