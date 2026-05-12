@@ -603,8 +603,7 @@
      HEADER (banner only, no text overlay)
   ══════════════════════════════════════════ */
   .header-top-bar {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 0 14px 20px; display: flex; align-items: center; gap: 7px; z-index: 2;
+    display: flex; align-items: center; gap: 7px;
   }
   .header-spacer { flex: 1; }
   .hdr-btn {
@@ -707,6 +706,11 @@
       <div class="setting-section-title">Owner</div>
       <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')">👑 Owner Dashboard</button>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
+    </div>
+
+    <div class="setting-section">
+      <div class="setting-section-title">Legal</div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="closeSettings();openTerms()">📄 Terms &amp; Conditions</button>
     </div>
 
   </div>
@@ -2018,6 +2022,20 @@ function acceptTerms() {
   ts.style.transition = 'opacity 0.3s ease';
   ts.style.opacity = '0';
   setTimeout(function() { ts.style.display = 'none'; }, 300);
+}
+
+function openTerms() {
+  var ts = $('termsScreen');
+  // If already accepted, show close button instead of checkbox flow
+  if (localStorage.getItem('RS_TERMS_ACCEPTED')) {
+    $('termsCheck').checked = true;
+    $('termsAcceptBtn').disabled = false;
+    $('termsAcceptBtn').textContent = '✕ Close';
+  }
+  ts.style.opacity = '0';
+  ts.style.display = 'flex';
+  ts.style.transition = 'opacity 0.3s ease';
+  requestAnimationFrame(function() { ts.style.opacity = '1'; });
 }
 
 // ═══════════════════════════════════════════════════════
