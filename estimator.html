@@ -603,8 +603,8 @@
      HEADER (banner only, no text overlay)
   ══════════════════════════════════════════ */
   .header-top-bar {
-    position: absolute; top: 0; left: 0; right: 0;
-    padding: 44px 14px 0; display: flex; align-items: center; gap: 7px; z-index: 2;
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 0 14px 20px; display: flex; align-items: center; gap: 7px; z-index: 2;
   }
   .header-spacer { flex: 1; }
   .hdr-btn {
@@ -758,10 +758,10 @@
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header>
   <div class="header-top-bar">
-    <button class="hdr-btn" onclick="clearEstimate()" data-i18n="new">+ New</button>
+    <button class="hdr-btn" onclick="clearEstimate()" data-i18n="new">✏️ New</button>
     <div class="header-spacer"></div>
-    <button class="hdr-btn" onclick="doPrint()">Print</button>
-    <button class="hdr-btn hdr-btn-primary" onclick="doPDF()">Export PDF</button>
+    <button class="hdr-btn" onclick="doPrint()">🖨️ Print</button>
+    <button class="hdr-btn hdr-btn-primary" onclick="doPDF()">📤 Export PDF</button>
   </div>
 </header>
 
@@ -775,7 +775,7 @@
   </div>
 
   <!-- PROJECT DETAILS -->
-  <div class="card ca-blue">
+  <div class="card">
     <div class="card-header"><div class="si si-blue">📋</div><h2 data-i18n="projectDetails">Project Details</h2></div>
     <div class="card-body">
       <div class="grid-2">
