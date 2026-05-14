@@ -2582,51 +2582,118 @@ function openSignedPreview() {
 // ── Contract document generation ──
 function getContractDoc(c) {
   var fmt = function(n){ return '$' + fmtMoney(n); };
-  var rows = c.schedule.map(function(s){
-    return '<tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">' + s.label + '</td>' +
-           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:right;">' + fmt(s.amount) + '</td>' +
-           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">' + s.due + '</td>' +
-           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#64748b;">' + s.note + '</td></tr>';
+  var payRows = c.schedule.map(function(s, i){
+    return '<tr>' +
+      '<td class="tc">' + (i+1) + '</td>' +
+      '<td class="tc"><strong>' + s.label + '</strong></td>' +
+      '<td class="tc" style="text-align:right;font-weight:700;">' + fmt(s.amount) + '</td>' +
+      '<td class="tc">' + s.due + '</td>' +
+    '</tr>';
   }).join('');
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
-    '@page{size:letter portrait;margin:15mm} *{box-sizing:border-box} body{font-family:Arial,sans-serif;color:#0f172a;font-size:13px;line-height:1.6}' +
-    'h1{font-size:22px;margin:0 0 4px} h2{font-size:14px;font-weight:800;color:#5a8c0a;border-bottom:2px solid #84cc16;padding-bottom:6px;margin:22px 0 10px}' +
-    'table{width:100%;border-collapse:collapse} th{background:#0f172a;color:#fff;padding:10px 14px;text-align:left;font-size:12px}' +
-    '.sig-line{border-top:1.5px solid #0f172a;margin-top:40px;padding-top:6px;font-size:12px;color:#475569}' +
-    '.note{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;font-size:11px;color:#92400e;margin:10px 0}' +
-    '</style></head><body>' +
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:6px;">' +
-      '<div><h1>R&amp;S Drywall Solutions LLC</h1><div style="color:#64748b;font-size:12px;">Denver, Colorado · (720) 761-8835 · roicegarcia14@gmail.com<br>Licensed &amp; Insured</div></div>' +
-      '<div style="text-align:right;"><div style="font-size:22px;font-weight:900;letter-spacing:1px;">SERVICE CONTRACT</div>' +
-      '<div style="font-size:12px;color:#64748b;">' + (c.estNum||'') + ' · ' + c.acceptedDate + '</div></div>' +
-    '</div>' +
-    '<h2>Parties</h2>' +
-    '<table style="margin-bottom:0;"><tr>' +
-      '<td style="padding:8px 14px 8px 0;width:50%;vertical-align:top;"><strong>Contractor:</strong><br>R&amp;S Drywall Solutions LLC<br>Denver, Colorado</td>' +
-      '<td style="padding:8px 0;vertical-align:top;"><strong>Client:</strong><br>' + escapeHtml(c.clientName) + '<br>' + escapeHtml(c.projectAddress||'') + '</td>' +
-    '</tr></table>' +
-    '<h2>Project Description</h2>' +
-    '<p><strong>Project:</strong> ' + escapeHtml(c.projectName||'') + '<br>' +
-    '<strong>Address:</strong> ' + escapeHtml(c.projectAddress||'') + '<br>' +
-    '<strong>Scope of Work:</strong> ' + escapeHtml(c.scopeWork||'As described in estimate ' + (c.estNum||'')) + '</p>' +
-    '<h2>Contract Value &amp; Payment Schedule</h2>' +
-    '<p><strong>Total Contract Amount: ' + fmt(c.totalAmount) + '</strong></p>' +
-    '<table><thead><tr><th>Payment</th><th>Amount</th><th>Due Date</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<div class="note">⚖️ <strong>C.R.S. § 38-22-127 – Trust Fund:</strong> All funds received by Contractor shall be held in trust for payment of subcontractors, laborers, and material suppliers. Misappropriation constitutes criminal theft under C.R.S. § 18-4-401.</div>' +
-    '<h2>Terms &amp; Conditions</h2>' +
-    '<p><strong>1. Scope:</strong> Work shall be performed as described above. Any changes must be agreed in writing.</p>' +
-    '<p><strong>2. Materials:</strong> Contractor shall supply all materials unless otherwise specified. Materials are held in trust per C.R.S. § 38-22-127.</p>' +
-    '<p><strong>3. Retainage:</strong> For projects exceeding $150,000, maximum retainage is 5% per C.R.S. § 38-46-103.</p>' +
-    '<p><strong>4. Late Payment:</strong> Unpaid balances after due date accrue interest at 1.5% per month per C.R.S. § 38-46-103.</p>' +
-    '<p><strong>5. Lien Rights:</strong> Contractor retains full mechanics\' lien rights under C.R.S. § 38-22-101. A lien waiver will be provided upon receipt of final payment.</p>' +
-    '<p><strong>6. Disputes:</strong> Disputes shall be resolved under Colorado law in Denver County.</p>' +
-    '<h2>Signatures</h2>' +
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:10px;">' +
-      '<div><div class="sig-line">Contractor Signature &amp; Date</div><div style="margin-top:24px;font-size:12px;color:#64748b;">R&amp;S Drywall Solutions LLC</div></div>' +
-      '<div><div class="sig-line">Client Signature &amp; Date</div><div style="margin-top:24px;font-size:12px;color:#64748b;">' + escapeHtml(c.clientName) + '</div></div>' +
-    '</div>' +
-    '<p style="margin-top:30px;font-size:10px;color:#94a3b8;text-align:center;">© 2026 R&amp;S Drywall Solutions LLC · This contract is governed by the laws of the State of Colorado</p>' +
-    '</body></html>';
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+  '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+  '<style>' +
+  '@page{size:letter portrait;margin:18mm 15mm}' +
+  '*{box-sizing:border-box;margin:0;padding:0}' +
+  'body{font-family:Georgia,"Times New Roman",serif;color:#0f172a;font-size:12.5px;line-height:1.7;background:#fff;padding:20px}' +
+  '.no-print{display:flex;gap:10px;margin-bottom:18px;}' +
+  '.btn-back{background:#0f172a;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;}' +
+  '.btn-print{background:#84cc16;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:Arial,sans-serif;}' +
+  '@media print{.no-print{display:none!important}}' +
+  '.letterhead{border-bottom:3px double #0f172a;padding-bottom:16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;}' +
+  '.co-name{font-family:Arial,sans-serif;font-size:20px;font-weight:900;letter-spacing:.5px;}' +
+  '.co-sub{font-size:11px;color:#475569;margin-top:3px;font-family:Arial,sans-serif;}' +
+  '.doc-title{text-align:right;}' +
+  '.doc-title h1{font-family:Arial,sans-serif;font-size:26px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#0f172a;}' +
+  '.doc-title .ref{font-size:11px;color:#64748b;font-family:Arial,sans-serif;margin-top:2px;}' +
+  '.parties-box{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1.5px solid #0f172a;margin:18px 0;}' +
+  '.party{padding:12px 16px;}' +
+  '.party+.party{border-left:1.5px solid #0f172a;}' +
+  '.party-label{font-family:Arial,sans-serif;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-bottom:6px;}' +
+  '.party-name{font-weight:700;font-size:13px;}' +
+  '.section{margin:20px 0;}' +
+  '.section-title{font-family:Arial,sans-serif;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:2px;color:#64748b;border-bottom:1px solid #cbd5e1;padding-bottom:5px;margin-bottom:12px;}' +
+  '.amount-banner{background:#0f172a;color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;margin:14px 0;border-radius:4px;}' +
+  '.amount-banner .lbl{font-family:Arial,sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.6;}' +
+  '.amount-banner .val{font-family:Arial,sans-serif;font-size:24px;font-weight:900;color:#84cc16;}' +
+  'table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px;}' +
+  'thead tr{background:#0f172a;color:#fff;}' +
+  'thead th{padding:9px 12px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.8px;}' +
+  '.tc{padding:9px 12px;border-bottom:1px solid #e2e8f0;}' +
+  'tbody tr:last-child .tc{border-bottom:none;}' +
+  '.clause{margin-bottom:10px;padding-left:0;}' +
+  '.clause strong{font-family:Arial,sans-serif;}' +
+  '.law-box{border-left:3px solid #84cc16;padding:10px 14px;background:#f8fafc;font-size:11px;color:#475569;margin:14px 0;font-family:Arial,sans-serif;}' +
+  '.sig-section{display:grid;grid-template-columns:1fr 1fr;gap:50px;margin-top:30px;}' +
+  '.sig-block .sig-line{border-bottom:1.5px solid #0f172a;margin-bottom:6px;height:44px;}' +
+  '.sig-block .sig-lbl{font-family:Arial,sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#64748b;}' +
+  '.sig-block .sig-name{font-size:11px;color:#0f172a;margin-top:2px;font-family:Arial,sans-serif;}' +
+  '.footer-note{margin-top:28px;border-top:1px solid #e2e8f0;padding-top:10px;font-size:10px;color:#94a3b8;text-align:center;font-family:Arial,sans-serif;}' +
+  '</style></head><body>' +
+
+  // Back/Print buttons (hidden on print)
+  '<div class="no-print">' +
+    '<button class="btn-back" onclick="window.close()">← Back</button>' +
+    '<button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>' +
+  '</div>' +
+
+  // Letterhead
+  '<div class="letterhead">' +
+    '<div><div class="co-name">R&amp;S Drywall Solutions LLC</div>' +
+    '<div class="co-sub">Denver, Colorado &nbsp;·&nbsp; (720) 761-8835 &nbsp;·&nbsp; roicegarcia14@gmail.com<br>Licensed &amp; Insured &nbsp;·&nbsp; State of Colorado</div></div>' +
+    '<div class="doc-title"><h1>Service Contract</h1><div class="ref">No. ' + escapeHtml(c.estNum||'N/A') + ' &nbsp;·&nbsp; Date: ' + c.acceptedDate + '</div></div>' +
+  '</div>' +
+
+  // Parties
+  '<div class="section"><div class="section-title">Article I — Parties</div>' +
+  '<div class="parties-box">' +
+    '<div class="party"><div class="party-label">Contractor</div><div class="party-name">R&amp;S Drywall Solutions LLC</div><div style="font-size:11px;color:#475569;margin-top:4px;">Denver, Colorado<br>Licensed &amp; Insured</div></div>' +
+    '<div class="party"><div class="party-label">Client</div><div class="party-name">' + escapeHtml(c.clientName) + '</div><div style="font-size:11px;color:#475569;margin-top:4px;">' + escapeHtml(c.projectAddress||'') + '</div></div>' +
+  '</div></div>' +
+
+  // Scope
+  '<div class="section"><div class="section-title">Article II — Scope of Work</div>' +
+  '<p style="margin-bottom:6px;"><strong>Project Name:</strong> ' + escapeHtml(c.projectName||'—') + '</p>' +
+  '<p style="margin-bottom:6px;"><strong>Project Address:</strong> ' + escapeHtml(c.projectAddress||'—') + '</p>' +
+  '<p><strong>Description:</strong> ' + escapeHtml(c.scopeWork || 'As detailed in Estimate No. ' + (c.estNum||'')) + '</p>' +
+  '<p style="margin-top:8px;font-size:11px;color:#475569;">Any modification to the scope of work must be agreed upon in writing by both parties prior to commencement of the additional work.</p>' +
+  '</div>' +
+
+  // Payment
+  '<div class="section"><div class="section-title">Article III — Contract Amount &amp; Payment Schedule</div>' +
+  '<div class="amount-banner"><span class="lbl">Total Contract Amount</span><span class="val">' + fmt(c.totalAmount) + '</span></div>' +
+  '<table><thead><tr><th>#</th><th>Payment Milestone</th><th>Amount</th><th>Due Date</th></tr></thead><tbody>' + payRows + '</tbody></table>' +
+  '<div class="law-box" style="margin-top:10px;"><strong>C.R.S. § 38-22-127 (Trust Fund):</strong> All funds received by Contractor are held in trust for payment of subcontractors, laborers, and suppliers. · <strong>C.R.S. § 38-46-103:</strong> Late payments accrue interest at 1.5%/month.</div>' +
+  '</div>' +
+
+  // Terms
+  '<div class="section"><div class="section-title">Article IV — Terms &amp; Conditions</div>' +
+  '<p class="clause"><strong>4.1 Changes:</strong> Any change in scope, materials, or schedule must be authorized by a written Change Order signed by both parties and may result in adjustment of price and schedule.</p>' +
+  '<p class="clause"><strong>4.2 Materials:</strong> Contractor shall furnish all labor and materials necessary to complete the work. Substitutions of equal or better quality may be made at Contractor\'s discretion unless otherwise specified in writing.</p>' +
+  '<p class="clause"><strong>4.3 Retainage:</strong> For contracts exceeding $150,000, Client shall not withhold more than five percent (5%) retainage at any tier pursuant to C.R.S. § 38-46-103.</p>' +
+  '<p class="clause"><strong>4.4 Access:</strong> Client shall provide Contractor with reasonable access to the project site. Delays caused by Client or third parties may extend the project schedule and result in additional charges.</p>' +
+  '<p class="clause"><strong>4.5 Lien Rights:</strong> Contractor expressly reserves all mechanics\' lien rights under C.R.S. § 38-22-101 et seq. A conditional lien waiver will be provided with each progress payment; an unconditional lien waiver will be provided upon receipt of the final payment in full.</p>' +
+  '<p class="clause"><strong>4.6 Warranty:</strong> Contractor warrants all workmanship for a period of one (1) year from the date of substantial completion. This warranty does not cover damage caused by Client, third parties, or normal wear and tear.</p>' +
+  '<p class="clause"><strong>4.7 Limitation of Liability:</strong> Contractor\'s total liability shall not exceed the total contract amount. Neither party shall be liable for consequential, incidental, or punitive damages.</p>' +
+  '<p class="clause"><strong>4.8 Governing Law:</strong> This Agreement shall be governed by and construed in accordance with the laws of the State of Colorado. Any disputes shall be resolved in Denver County, Colorado.</p>' +
+  '</div>' +
+
+  // Signatures
+  '<div class="section"><div class="section-title">Article V — Signatures</div>' +
+  '<p style="margin-bottom:16px;font-size:12px;">By signing below, both parties agree to the terms and conditions set forth in this Agreement.</p>' +
+  '<div class="sig-section">' +
+    '<div class="sig-block"><div class="sig-line"></div><div class="sig-lbl">Contractor Signature &amp; Date</div><div class="sig-name">R&amp;S Drywall Solutions LLC</div></div>' +
+    '<div class="sig-block"><div class="sig-line"></div><div class="sig-lbl">Client Signature &amp; Date</div><div class="sig-name">' + escapeHtml(c.clientName) + '</div></div>' +
+  '</div>' +
+  '<div class="sig-section" style="margin-top:24px;">' +
+    '<div class="sig-block"><div class="sig-line"></div><div class="sig-lbl">Printed Name &amp; Title</div></div>' +
+    '<div class="sig-block"><div class="sig-line"></div><div class="sig-lbl">Printed Name</div></div>' +
+  '</div>' +
+  '</div>' +
+
+  '<div class="footer-note">This contract is a legally binding agreement governed by the laws of the State of Colorado &nbsp;·&nbsp; © 2026 R&amp;S Drywall Solutions LLC &nbsp;·&nbsp; All rights reserved</div>' +
+  '</body></html>';
 }
 
 function viewContractDoc() {
