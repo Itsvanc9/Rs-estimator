@@ -2001,7 +2001,9 @@ var cameraContext = 'receipt';
 
 function openCamera(context) {
   cameraContext = context || 'receipt';
-  if (context === 'payReceipt')  $('payReceiptCamera').click();
+  if (window.AndroidBridge && AndroidBridge.takePhoto) {
+    AndroidBridge.takePhoto();
+  } else if (context === 'payReceipt')  $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
   else                           $('receiptInput').click();
 }
