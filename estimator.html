@@ -1209,6 +1209,16 @@
       </div>
     </div>
 
+    <!-- Original estimate -->
+    <div>
+      <div class="cd-section-title">Original Estimate</div>
+      <button class="btn btn-light" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="viewEstimateDoc()">📋 View Estimate</button>
+      <div id="cdEstimateReceipts" style="display:none;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">📷 Deposit Receipts</div>
+        <div id="cdEstimateReceiptsGrid" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+      </div>
+    </div>
+
     <!-- Signed contract upload -->
     <div class="pay-schedule" style="overflow:hidden;">
       <div class="pay-schedule-item" style="flex-direction:column;align-items:flex-start;gap:10px;">
@@ -1251,7 +1261,7 @@
 <div id="contractViewer" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10010;display:none;background:#fff;">
   <div style="position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0f172a;z-index:2;">
     <button onclick="closeContractViewer()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">← Back</button>
-    <span style="flex:1;color:#fff;font-weight:700;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Service Contract</span>
+    <span id="contractViewerTitle" style="flex:1;color:#fff;font-weight:700;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Service Contract</span>
     <button onclick="doPDFContract()" style="-webkit-tap-highlight-color:transparent;background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">📤 PDF</button>
     <button onclick="doPrintContract()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">🖨️ Print</button>
   </div>
@@ -2439,7 +2449,8 @@ function acceptEstimate(id) {
   contract.scopeWork    = est.scope || '';
   contract.estDate      = est.date  || today;
   contract.validUntil   = est.validUntil || '';
-  contract.signedPhoto  = null; // will hold base64 of signed contract image
+  contract.signedPhoto  = null;
+  contract.estimateData = JSON.parse(JSON.stringify(est)); // full snapshot incl. photos
   contracts.push(contract);
   saveContracts(contracts);
   // Remove from estimates
@@ -2531,9 +2542,23 @@ function openContractDetail(id) {
             '<div class="phi-meta">' + p.date + ' · ' + p.method + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
           '<button class="btn btn-danger btn-sm" style="font-size:11px;" onclick="deletePayment(\'' + id + '\',\'' + p.pid + '\')">🗑️</button>' +
         '</div>' +
-        (p.receiptPhoto ? '<img src="' + p.receiptPhoto + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">' : '') +
+        (p.receiptPhoto ? '<img src="' + p.receiptPhoto + '" onclick="viewPayReceipt(\'' + p.pid + '\',\'' + id + '\')" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer;" title="Tap to enlarge">' : '') +
       '</div>';
     }).join('');
+  }
+  // Estimate receipts
+  var estReceipts = (c.estimateData && c.estimateData.receipts) || [];
+  var recWrap = $('cdEstimateReceipts');
+  var recGrid = $('cdEstimateReceiptsGrid');
+  if (recGrid) {
+    if (estReceipts.length > 0) {
+      recGrid.innerHTML = estReceipts.map(function(src, i) {
+        return '<img src="' + src + '" onclick="viewEstimateReceipt(' + i + ')" style="height:80px;width:auto;max-width:120px;object-fit:cover;border-radius:10px;border:2px solid var(--border);cursor:pointer;">';
+      }).join('');
+      recWrap.style.display = '';
+    } else {
+      recWrap.style.display = 'none';
+    }
   }
   // Signed contract section
   renderSignedSection(c);
@@ -2766,6 +2791,44 @@ function closeSignedPhotoViewer() {
 // ═══════════════════════════════════════════════════════
 // STATE LAW DATA
 // ═══════════════════════════════════════════════════════
+// ── Generic photo viewer ──
+function viewPhoto(src) {
+  $('receiptModalImg').src = src;
+  $('receiptModal').classList.add('open');
+}
+function viewEstimateReceipt(idx) {
+  var c = getContracts().find(function(x){ return x.id===currentContractId; });
+  if (!c || !c.estimateData) return;
+  var src = (c.estimateData.receipts||[])[idx];
+  if (src) viewPhoto(src);
+}
+function viewPayReceipt(pid, contractId) {
+  var c = getContracts().find(function(x){ return x.id===contractId; });
+  if (!c) return;
+  var p = c.payments.find(function(x){ return x.pid===pid; });
+  if (p && p.receiptPhoto) viewPhoto(p.receiptPhoto);
+}
+
+// ── Unified document overlay ──
+var _viewerType = 'contract';
+function viewInOverlay(html, title, type) {
+  _viewerType = type || 'contract';
+  if ($('contractViewerTitle')) $('contractViewerTitle').textContent = title || 'Document';
+  $('contractFrame').srcdoc = html;
+  $('contractViewer').style.display = 'block';
+}
+function viewContractDoc() {
+  var c = getContracts().find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  viewInOverlay(getContractDoc(c), 'Service Contract', 'contract');
+}
+function viewEstimateDoc() {
+  var c = getContracts().find(function(x){ return x.id===currentContractId; });
+  if (!c) { showToast('No estimate data'); return; }
+  if (!c.estimateData) { showToast('Estimate not available for older contracts'); return; }
+  viewInOverlay(getEstimateDoc(c.estimateData), 'Original Estimate \xb7 ' + (c.estNum||''), 'estimate');
+}
+
 var STATE_LAW = {
   AL:{n:'Alabama',        ls:'Ala. Code § 35-11-210 et seq.',  v:'applicable county, State of Alabama'},
   AK:{n:'Alaska',         ls:'AS § 34.35.050 et seq.',          v:'applicable superior court, State of Alaska'},
@@ -2976,13 +3039,7 @@ function getContractDoc(c) {
   '</body></html>';
 }
 
-function viewContractDoc() {
-  var contracts = getContracts();
-  var c = contracts.find(function(x){ return x.id===currentContractId; });
-  if (!c) return;
-  $('contractFrame').srcdoc = getContractDoc(c);
-  $('contractViewer').style.display = 'block';
-}
+
 
 function printContractDoc() {
   doPrintContract();
@@ -2995,23 +3052,90 @@ function closeContractViewer() {
 }
 
 function doPDFContract() {
-  var contracts = getContracts();
-  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  var c = getContracts().find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  var html = getContractDoc(c);
-  var name = 'Contract_' + (c.estNum||'RS');
+  var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
+  var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
   if (window.AndroidBridge) { AndroidBridge.saveHtmlAsPdf(html, name); }
   else { showToast('AndroidBridge not connected'); }
 }
 
 function doPrintContract() {
-  var contracts = getContracts();
-  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  var c = getContracts().find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  var html = getContractDoc(c);
-  var name = 'Contract_' + (c.estNum||'RS');
+  var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
+  var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
   if (window.AndroidBridge) { AndroidBridge.printHtml(html, name); }
   else { showToast('AndroidBridge not connected'); }
+}
+
+function getEstimateDoc(est) {
+  var unit  = (parseFloat(est.unitQty)||0)*(parseFloat(est.unitPrice)||0);
+  var labor = (parseFloat(est.hours)||0)*(parseFloat(est.workers)||0)*(parseFloat(est.rate)||0);
+  var mat   = (est.materials||[]).reduce(function(s,m){return s+(parseFloat(m.qty)||0)*(parseFloat(m.cost)||0);},0);
+  var other = (est.others||[]).reduce(function(s,o){return s+(parseFloat(o.amount)||0);},0);
+  var sub   = unit+labor+mat+other;
+  var taxP  = parseFloat(est.tax)||0;
+  var tax   = sub*(taxP/100);
+  var grand = sub+tax;
+  var dep   = parseFloat(est.deposit)||0;
+  var bal   = grand-dep;
+  var fm    = function(n){ return '$'+(n||0).toFixed(2); };
+  var esc   = function(s){ return String(s||'').replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]);}); };
+  var dateStr = '';
+  try { if(est.date) dateStr = new Date(est.date+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}); } catch(e){}
+  var receipts = est.receipts || [];
+  var matRows = (est.materials||[]).filter(function(m){return (parseFloat(m.qty)||0)*(parseFloat(m.cost)||0)>0;})
+    .map(function(m){return '<tr><td>'+esc(m.desc||'Material')+'</td><td>'+fm((parseFloat(m.qty)||0)*(parseFloat(m.cost)||0))+'</td></tr>';}).join('');
+  var otherRows = (est.others||[]).filter(function(o){return parseFloat(o.amount)||0;})
+    .map(function(o){return '<tr><td>'+esc(o.desc||'Other')+'</td><td>'+fm(parseFloat(o.amount)||0)+'</td></tr>';}).join('');
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+  +'@page{size:letter portrait;margin:8mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background:white;font-size:13px;}'
+  +'.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}'
+  +'.brand{display:flex;gap:12px;align-items:flex-start;}.logo{width:72px;height:72px;object-fit:cover;border-radius:10px;}'
+  +'.company h1{margin:0;font-size:22px;font-weight:900;color:#0f172a;}.green{color:#84cc16;display:block;}'
+  +'.company p{margin:3px 0;font-size:11px;}.est-box{text-align:right;min-width:180px;}'
+  +'.est-box h2{margin:0 0 8px;font-size:28px;font-weight:900;color:#0f172a;}'
+  +'.er{display:flex;justify-content:space-between;gap:16px;font-size:12px;margin:4px 0;}'
+  +'.er strong{color:#0f172a;}.er span{color:#65a30d;font-weight:800;}'
+  +'.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}'
+  +'.info-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;}'
+  +'.ct{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:11px;}'
+  +'.ct span{color:#84cc16;margin-right:6px;}.cb{padding:10px 12px;font-size:11.5px;line-height:1.5;}'
+  +'.il{display:grid;grid-template-columns:110px 1fr;margin-bottom:4px;}.il strong{color:#111827;}'
+  +'.cost-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;margin-bottom:10px;}'
+  +'table{width:100%;border-collapse:collapse;}th{padding:7px 12px;color:#65a30d;text-align:left;font-size:11px;border-bottom:1px solid #d1d5db;}'
+  +'th:last-child,td:last-child{text-align:right;}td{padding:7px 12px;border-bottom:1px solid #e5e7eb;font-size:11.5px;}'
+  +'.bal{background:#84cc16;}.bal td{font-size:16px;font-weight:900;color:#0f172a;border-bottom:none;}'
+  +'.dep td:last-child{color:#dc2626;font-weight:800;}'
+  +'.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;}'
+  +'.sig-line{border-top:1px solid #111827;margin-top:28px;padding-top:4px;font-size:10px;color:#475569;}'
+  +'.footer{margin-top:10px;border-top:2px solid #0f172a;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10.5px;}'
+  +'.photos{margin-top:10px;padding:10px 14px;background:#f8fdf0;border:1px solid #c6e89a;border-radius:8px;}'
+  +'.photos div{font-weight:800;font-size:11px;color:#365314;margin-bottom:8px;}'
+  +'.photos img{height:110px;width:auto;max-width:160px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;margin-right:6px;}'
+  +'@media print{body{padding:0}}'
+  +'</style></head><body>'
+  +'<div class="top"><div class="brand"><img src="file:///android_asset/logo.png" class="logo"><div class="company"><h1>R&amp;S DRYWALL <span class="green">SOLUTIONS LLC</span></h1><p>Licensed &amp; Insured · Denver, Colorado</p><p>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</p></div></div>'
+  +'<div class="est-box"><h2>ESTIMATE</h2><div class="er"><strong>Estimate #:</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>Date:</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>Valid Until:</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
+  +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>CLIENT INFORMATION</div><div class="cb"><div class="il"><strong>Client:</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>Project:</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>Address:</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
+  +'<div class="info-card"><div class="ct"><span>▣</span>SCOPE OF WORK</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
+  +'<div class="cost-card"><div class="ct"><span>$</span>PROJECT COSTS</div><table><tr><th>Description</th><th>Total</th></tr>'
+  +(unit>0?'<tr><td>Unit Pricing ('+esc(est.unitType||'')+')</td><td>'+fm(unit)+'</td></tr>':'')
+  +(labor>0?'<tr><td>Labor</td><td>'+fm(labor)+'</td></tr>':'')
+  +(mat>0?'<tr><td>Materials</td><td>'+fm(mat)+'</td></tr>':'')
+  +matRows+otherRows
+  +'<tr style="font-weight:800;"><td>Subtotal</td><td>'+fm(sub)+'</td></tr>'
+  +'<tr style="font-weight:800;"><td>Tax ('+taxP+'%)</td><td>'+fm(tax)+'</td></tr>'
+  +(dep>0?'<tr class="dep"><td>Deposit Paid</td><td>-'+fm(dep)+'</td></tr>':'')
+  +'<tr class="bal"><td>BALANCE DUE</td><td>'+fm(bal)+'</td></tr></table></div>'
+  +(receipts.length>0?'<div class="photos"><div>📷 DEPOSIT RECEIPT'+(receipts.length>1?'S':'')+'</div>'+receipts.map(function(s){return '<img src="'+s+'">';}).join('')+'</div>':'')
+  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CONTRACTOR SIGNATURE</h3><div class="sig-line">Authorized Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div>'
+  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3><div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
+  +'<div class="footer"><div>📍 R&amp;S Drywall Solutions LLC · Denver, Colorado · Licensed &amp; Insured</div><div>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</div></div>'
+  +'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>'
+  +'</body></html>';
 }
 
 // ═══════════════════════════════════════════════════════
