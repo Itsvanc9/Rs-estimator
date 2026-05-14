@@ -1104,7 +1104,7 @@
       <button class="estimates-page-back" onclick="closeEstimatesPage()">✕ Close</button>
     </div>
     <div class="ep-tabs">
-      <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount">0</span></button>
+      <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount2">0</span></button>
       <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 Contracts <span class="saved-badge" id="contractCount">0</span></button>
     </div>
   </div>
@@ -1956,7 +1956,8 @@ function deleteEstimate(id) {
 
 function renderSaved() {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-  var sc = $('savedCount'); if (sc) sc.innerText = savedArray.length;
+  var sc = $('savedCount');  if (sc)  sc.innerText  = savedArray.length;
+  var sc2 = $('savedCount2'); if (sc2) sc2.innerText = savedArray.length;
   let container = $('savedList');
   if (savedArray.length === 0) {
     container.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);">No saved estimates</div>`;
