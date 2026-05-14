@@ -1029,7 +1029,7 @@
   <div class="card ca-indigo">
     <div class="card-header"><div class="si si-indigo">📷</div><h2 data-i18n="depositReceipt">Deposit Receipt</h2></div>
     <div class="card-body">
-      <input type="file" id="receiptInput" accept="image/*" style="display:none" onchange="handleReceiptFile(this)">
+      <input type="file" id="receiptInput" accept="image/*" capture="environment" style="display:none" onchange="handleReceiptFile(this)">
       <button class="add-row-btn" onclick="openReceiptCamera()" data-i18n="addPhoto">📷 Add Photo</button>
       <div class="receipt-grid" id="receiptGrid"></div>
     </div>
@@ -1314,6 +1314,43 @@
 
 <div class="footer">
   © 2026 R&S Drywall Solutions LLC · All rights reserved.
+</div>
+
+<!-- CUSTOM CONFIRM MODAL -->
+<div id="confirmOverlay" style="position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
+  <div style="background:var(--surface);border-radius:24px;padding:28px 22px 22px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);text-align:center;">
+    <div id="confirmIcon" style="font-size:40px;margin-bottom:12px;">⚠️</div>
+    <div id="confirmMsg" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.3;"></div>
+    <div id="confirmSub" style="font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.4;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="handleConfirm(false)" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">Cancel</button>
+      <button id="confirmOkBtn" onclick="handleConfirm(true)" style="flex:2;padding:13px;border-radius:14px;border:none;font-size:14px;font-weight:700;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent;">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE EDIT MODAL -->
+<div id="schedEditOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:340px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;">✏️ Edit Payment Milestone</div>
+    <div id="schedEditLabel" style="font-size:13px;font-weight:600;color:var(--lime-dark);margin-bottom:12px;"></div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Due Date</label>
+      <input type="date" id="schedEditDate" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Amount ($)</label>
+      <input type="number" id="schedEditAmount" inputmode="decimal" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+    </div>
+    <div style="margin-bottom:18px;">
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Note (optional)</label>
+      <input type="text" id="schedEditNote" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeSchedEdit()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+      <button onclick="saveSchedEdit()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;">💾 Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════ BOTTOM NAV ═══════════════ -->
@@ -1954,13 +1991,9 @@ var cameraContext = 'receipt';
 
 function openCamera(context) {
   cameraContext = context || 'receipt';
-  if (window.AndroidBridge && AndroidBridge.takePhoto) {
-    AndroidBridge.takePhoto();
-  } else {
-    if (context === 'payReceipt')  $('payReceiptCamera').click();
-    else if (context === 'signed') $('signedCameraInput').click();
-    else                           $('receiptInput').click();
-  }
+  if (context === 'payReceipt')  $('payReceiptCamera').click();
+  else if (context === 'signed') $('signedCameraInput').click();
+  else                           $('receiptInput').click();
 }
 
 function openReceiptCamera() { openCamera('receipt'); }
@@ -1994,12 +2027,12 @@ function handleReceiptFile(input) {
     let img = new Image();
     img.onload = function() {
       let canvas = document.createElement('canvas');
-      let maxDim = 1000;
+      let maxDim = 800;
       let scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
       canvas.width = Math.round(img.width * scale);
       canvas.height = Math.round(img.height * scale);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      receiptPhotos.push(canvas.toDataURL('image/jpeg', 0.72));
+      receiptPhotos.push(canvas.toDataURL('image/jpeg', 0.60));
       renderReceipts();
     };
     img.src = e.target.result;
@@ -2019,9 +2052,10 @@ function renderReceipts() {
 }
 
 function deleteReceipt(i) {
-  if (!confirm('Remove this photo?')) return;
-  receiptPhotos.splice(i, 1);
-  renderReceipts();
+  showConfirm('Remove this photo?', '', '📷', 'Remove', '#ef4444', function() {
+    receiptPhotos.splice(i, 1);
+    renderReceipts();
+  });
 }
 
 function viewReceipt(i) {
@@ -2135,17 +2169,18 @@ function resetFields(newFolio) {
 }
 
 function clearEstimate() {
-  if (!confirm(t('confirmNew'))) return;
-  resetFields(getNextEstimateNumber());
-  showToast(t('toastNew'));
+  showConfirm('Start a new estimate?', 'Unsaved data will be lost.', '✏️', 'New Estimate', 'var(--lime-dark)', function() {
+    resetFields(getNextEstimateNumber());
+    showToast(t('toastNew'));
+  });
 }
 
 function discardEstimate() {
-  if (!confirm('Discard this estimate? All data will be cleared.')) return;
-  // Keep current folio — it was never saved, so recycle it
-  var folio = $('estNum').value || getNextEstimateNumber();
-  resetFields(folio);
-  showToast('🗑️ Estimate discarded');
+  showConfirm('Discard this estimate?', 'All data will be cleared.', '🗑️', 'Discard', '#ef4444', function() {
+    var folio = $('estNum').value || getNextEstimateNumber();
+    resetFields(folio);
+    showToast('🗑️ Estimate discarded');
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2475,7 +2510,11 @@ function openContractDetail(id) {
       '<div class="psi-indicator ' + (isPaid?'paid':'pending') + '">' + (isPaid?'✅':'🔔') + '</div>' +
       '<div class="psi-info"><div class="psi-label">' + escapeHtml(s.label) + '</div>' +
         '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">Paid</span>':'Due: ' + s.due) + ' · ' + escapeHtml(s.note) + '</div></div>' +
-      '<div class="psi-amount"><strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong><span>' + s.pct + '%</span></div>' +
+      '<div class="psi-amount" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
+        '<strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong>' +
+        '<span>' + s.pct + '%</span>' +
+        (!isPaid ? '<button onclick="openSchedEdit(' + s.sid + ')" style="-webkit-tap-highlight-color:transparent;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;">✏️ Edit</button>' : '') +
+      '</div>' +
     '</div>';
   }).join('');
   // History
@@ -2514,10 +2553,11 @@ function markContractComplete(id) {
 }
 
 function deleteContract(id) {
-  if (!confirm('Delete this contract?')) return;
-  saveContracts(getContracts().filter(function(c){ return c.id!==id; }));
-  renderContracts();
-  showToast('Contract deleted');
+  showConfirm('Delete this contract?', 'This action cannot be undone.', '📜', 'Delete', '#ef4444', function() {
+    saveContracts(getContracts().filter(function(c){ return c.id!==id; }));
+    renderContracts();
+    showToast('Contract deleted');
+  });
 }
 
 function openPaymentModal() {
@@ -2578,14 +2618,68 @@ function savePayment() {
 }
 
 function deletePayment(contractId, pid) {
-  if (!confirm('Delete this payment?')) return;
+  showConfirm('Delete this payment?', 'This action cannot be undone.', '💵', 'Delete', '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id===contractId; });
+    if (!c) return;
+    c.payments = c.payments.filter(function(p){ return p.pid!==pid; });
+    saveContracts(contracts);
+    openContractDetail(contractId);
+    showToast('Payment deleted');
+  });
+}
+
+// ── Custom confirm modal ──
+var _confirmCb = null;
+function showConfirm(msg, sub, icon, okLabel, okColor, onOk) {
+  $('confirmMsg').textContent  = msg;
+  $('confirmSub').textContent  = sub  || '';
+  $('confirmIcon').textContent = icon || '⚠️';
+  $('confirmOkBtn').textContent       = okLabel || 'Confirm';
+  $('confirmOkBtn').style.background  = okColor || '#ef4444';
+  _confirmCb = onOk || null;
+  $('confirmOverlay').style.display = 'flex';
+}
+function handleConfirm(ok) {
+  $('confirmOverlay').style.display = 'none';
+  if (ok && _confirmCb) _confirmCb();
+  _confirmCb = null;
+}
+
+// ── Schedule edit modal ──
+var _schedEditSid = null;
+function openSchedEdit(sid) {
   var contracts = getContracts();
-  var c = contracts.find(function(x){ return x.id===contractId; });
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  c.payments = c.payments.filter(function(p){ return p.pid!==pid; });
+  var s = c.schedule.find(function(x){ return x.sid===sid; });
+  if (!s) return;
+  _schedEditSid = sid;
+  $('schedEditLabel').textContent = s.label + ' — ' + s.pct + '%';
+  $('schedEditDate').value   = s.due;
+  $('schedEditAmount').value = s.amount;
+  $('schedEditNote').value   = s.note || '';
+  $('schedEditOverlay').style.display = 'flex';
+}
+function closeSchedEdit() {
+  $('schedEditOverlay').style.display = 'none';
+  _schedEditSid = null;
+}
+function saveSchedEdit() {
+  if (_schedEditSid === null) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  var s = c.schedule.find(function(x){ return x.sid===_schedEditSid; });
+  if (!s) return;
+  var newAmt = parseFloat($('schedEditAmount').value);
+  if (!isNaN(newAmt) && newAmt >= 0) s.amount = newAmt;
+  s.due  = $('schedEditDate').value  || s.due;
+  s.note = $('schedEditNote').value;
   saveContracts(contracts);
-  openContractDetail(contractId);
-  showToast('Payment deleted');
+  closeSchedEdit();
+  openContractDetail(currentContractId);
+  showToast('✅ Schedule updated');
 }
 
 function fmtMoney(n) {
@@ -2648,13 +2742,14 @@ function renderSignedSection(c) {
   }
 }
 function removeSignedContract() {
-  if (!confirm('Remove signed contract?')) return;
-  var contracts = getContracts();
-  var c = contracts.find(function(x){ return x.id===currentContractId; });
-  if (!c) return;
-  c.signedPhoto = null; c.signedDate = null;
-  saveContracts(contracts);
-  renderSignedSection(c);
+  showConfirm('Remove signed contract?', 'The uploaded file will be deleted.', '✍️', 'Remove', '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id===currentContractId; });
+    if (!c) return;
+    c.signedPhoto = null; c.signedDate = null;
+    saveContracts(contracts);
+    renderSignedSection(c);
+  });
 }
 function openSignedPreview() {
   var contracts = getContracts();
