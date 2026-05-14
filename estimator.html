@@ -358,18 +358,29 @@
     line-height: 1; text-shadow: 0 2px 8px rgba(0,0,0,0.15);
     font-variant-numeric: tabular-nums;
   }
+  .summary-btn-row { display: flex; margin: 0 20px 20px; gap: 0; }
   .summary-save-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: calc(100% - 40px); margin: 0 20px 20px;
+    flex: 1;
     background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.12); border-top: none;
+    border: 1px solid rgba(255,255,255,0.12); border-top: none; border-right: none;
     color: rgba(255,255,255,0.85);
-    border-radius: 0 0 14px 14px; padding: 13px;
+    border-radius: 0 0 0 14px; padding: 13px;
     font-size: 14px; font-weight: 600; cursor: pointer;
     letter-spacing: 0.2px; font-family: 'Inter', 'DM Sans', sans-serif;
     transition: background 0.15s;
   }
   .summary-save-btn:active { background: rgba(255,255,255,0.16); color: #fff; }
+  .summary-discard-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.25); border-top: none;
+    color: rgba(252,165,165,0.9);
+    border-radius: 0 0 14px 0; padding: 13px 18px;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', 'DM Sans', sans-serif; transition: background 0.15s;
+  }
+  .summary-discard-btn:active { background: rgba(239,68,68,0.25); }
 
   /* ══════════════════════════════════════════
      SAVED ITEMS
@@ -1019,7 +1030,10 @@
       <div class="summary-total-label">GRAND TOTAL</div>
       <div class="summary-total-amount" id="grandTotal">$0.00</div>
     </div>
-    <button class="summary-save-btn" onclick="saveEstimate()">💾 <span data-i18n="save">Save Estimate</span></button>
+    <div class="summary-btn-row">
+      <button class="summary-save-btn" onclick="saveEstimate()">💾 <span data-i18n="save">Save Estimate</span></button>
+      <button class="summary-discard-btn" onclick="discardEstimate()">🗑️ Discard</button>
+    </div>
   </div>
 
   <!-- HIDDEN PROFIT INPUTS (used by updateTotal/saveEstimate) -->
@@ -1662,11 +1676,25 @@ function updateDashboard() {
 // SAVE / LOAD / DELETE ESTIMATES
 // ═══════════════════════════════════════════════════════
 function getNextEstimateNumber() {
-  let year = new Date().getFullYear();
-  let saved = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-  let max = 0;
-  saved.forEach(s => { let m = String(s.estNum||'').match(/RS-\d{4}-(\d+)/); if(m && parseInt(m[1])>max) max=parseInt(m[1]); });
-  return 'RS-' + year + '-' + String(max+1).padStart(3,'0');
+  var year = new Date().getFullYear();
+  var max = 0;
+  var rx = /RS-\d{4}-(\d+)/;
+  // Check saved estimates
+  JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').forEach(function(s) {
+    var m = String(s.estNum||'').match(rx); if (m && parseInt(m[1]) > max) max = parseInt(m[1]);
+  });
+  // Check contracts (accepted estimates move here)
+  JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]').forEach(function(c) {
+    var m = String(c.estNum||'').match(rx); if (m && parseInt(m[1]) > max) max = parseInt(m[1]);
+  });
+  // Check if current folio on screen was already saved; if not, reuse it
+  var current = ($('estNum') && $('estNum').value) || '';
+  var cm = current.match(rx);
+  if (cm) {
+    var n = parseInt(cm[1]);
+    if (n > max) return current; // not saved yet, recycle it
+  }
+  return 'RS-' + year + '-' + String(max + 1).padStart(3, '0');
 }
 
 // ── PIN / PROFIT LOCK ────────────────────────────────────────────────────────
@@ -2019,17 +2047,29 @@ function renderSaved() {
     </div>`).join('');
 }
 
-function clearEstimate() {
-  if (!confirm(t('confirmNew'))) return;
-  $('estNum').value = getNextEstimateNumber();
+function resetFields(newFolio) {
+  $('estNum').value = newFolio;
   $('estDate').value = new Date().toISOString().slice(0,10);
-  ['clientName','projectName','projectAddress','validUntil','scopeWork','notes','unitType','clientPhone','clientEmail'].forEach(id => $(id).value = '');
-  ['depositPaid','unitQty','unitPrice','laborHours','workersCount','hourlyRate','realJobCost'].forEach(id => $(id).value = 0);
+  ['clientName','projectName','projectAddress','validUntil','scopeWork','notes','unitType','clientPhone','clientEmail'].forEach(function(id){ $(id).value = ''; });
+  ['depositPaid','unitQty','unitPrice','laborHours','workersCount','hourlyRate','realJobCost'].forEach(function(id){ $(id).value = 0; });
   $('taxRate').value = 9.15;
   materials = []; otherCosts = []; receiptPhotos = [];
   renderReceipts();
   updateTotal();
+}
+
+function clearEstimate() {
+  if (!confirm(t('confirmNew'))) return;
+  resetFields(getNextEstimateNumber());
   showToast(t('toastNew'));
+}
+
+function discardEstimate() {
+  if (!confirm('Discard this estimate? All data will be cleared.')) return;
+  // Keep current folio — it was never saved, so recycle it
+  var folio = $('estNum').value || getNextEstimateNumber();
+  resetFields(folio);
+  showToast('🗑️ Estimate discarded');
 }
 
 // ═══════════════════════════════════════════════════════
