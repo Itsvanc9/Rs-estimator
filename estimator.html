@@ -1263,18 +1263,6 @@
   </div>
 </div>
 
-<!-- IN-PAGE CAMERA OVERLAY -->
-<div id="inPageCamera" style="position:fixed;inset:0;z-index:25000;display:none;flex-direction:column;background:#000;">
-  <div style="position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;padding:0 16px;z-index:2;">
-    <button onclick="closeCameraOverlay()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✕ Cancel</button>
-  </div>
-  <video id="cameraVideo" autoplay playsinline muted style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;"></video>
-  <canvas id="cameraCanvas" style="display:none;"></canvas>
-  <div style="position:absolute;bottom:44px;left:0;right:0;display:flex;justify-content:center;z-index:2;">
-    <button onclick="captureFromCamera()" style="-webkit-tap-highlight-color:transparent;width:76px;height:76px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.45);cursor:pointer;touch-action:manipulation;"></button>
-  </div>
-</div>
-
 <!-- CONTRACT VIEWER -->
 <div id="contractViewer" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10010;display:none;background:#fff;">
   <div style="position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0f172a;z-index:2;">
@@ -1792,24 +1780,20 @@ function updateDashboard() {
 // ═══════════════════════════════════════════════════════
 // SAVE / LOAD / DELETE ESTIMATES
 // ═══════════════════════════════════════════════════════
-function getNextEstimateNumber() {
+function getNextEstimateNumber(forceNew) {
   var year = new Date().getFullYear();
   var max = 0;
   var rx = /RS-\d{4}-(\d+)/;
-  // Check saved estimates
   JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').forEach(function(s) {
     var m = String(s.estNum||'').match(rx); if (m && parseInt(m[1]) > max) max = parseInt(m[1]);
   });
-  // Check contracts (accepted estimates move here)
   JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]').forEach(function(c) {
     var m = String(c.estNum||'').match(rx); if (m && parseInt(m[1]) > max) max = parseInt(m[1]);
   });
-  // Check if current folio on screen was already saved; if not, reuse it
-  var current = ($('estNum') && $('estNum').value) || '';
-  var cm = current.match(rx);
-  if (cm) {
-    var n = parseInt(cm[1]);
-    if (n > max) return current; // not saved yet, recycle it
+  if (!forceNew) {
+    var current = ($('estNum') && $('estNum').value) || '';
+    var cm = current.match(rx);
+    if (cm && parseInt(cm[1]) > max) return current;
   }
   return 'RS-' + year + '-' + String(max + 1).padStart(3, '0');
 }
@@ -2016,57 +2000,12 @@ function calcEstimateGrand(e) {
 }
 
 var cameraContext = 'receipt';
-var _cameraStream = null;
 
 function openCamera(context) {
   cameraContext = context || 'receipt';
-  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    var constraints = { video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 960 } } };
-    navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-      _cameraStream = stream;
-      var video = $('cameraVideo');
-      video.srcObject = stream;
-      history.pushState({ panel: 'camera' }, '');
-      $('inPageCamera').style.display = 'flex';
-    }).catch(function() {
-      _fallbackCameraInput(context);
-    });
-  } else {
-    _fallbackCameraInput(context);
-  }
-}
-
-function _fallbackCameraInput(context) {
   if (context === 'payReceipt') $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
   else $('receiptInput').click();
-}
-
-function closeCameraOverlay() {
-  if (_cameraStream) { _cameraStream.getTracks().forEach(function(t){ t.stop(); }); _cameraStream = null; }
-  $('inPageCamera').style.display = 'none';
-}
-
-function captureFromCamera() {
-  var video = $('cameraVideo');
-  var canvas = $('cameraCanvas');
-  canvas.width  = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  var maxDim = 800;
-  var dataUrl;
-  if (canvas.width > maxDim || canvas.height > maxDim) {
-    var scale = maxDim / Math.max(canvas.width, canvas.height);
-    var c2 = document.createElement('canvas');
-    c2.width  = Math.round(canvas.width  * scale);
-    c2.height = Math.round(canvas.height * scale);
-    c2.getContext('2d').drawImage(canvas, 0, 0, c2.width, c2.height);
-    dataUrl = c2.toDataURL('image/jpeg', 0.60);
-  } else {
-    dataUrl = canvas.toDataURL('image/jpeg', 0.60);
-  }
-  closeCameraOverlay();
-  receiveNativePhoto(dataUrl);
 }
 
 function openReceiptCamera() { openCamera('receipt'); }
@@ -2243,15 +2182,14 @@ function resetFields(newFolio) {
 
 function clearEstimate() {
   showConfirm('Start a new estimate?', 'Unsaved data will be lost.', '✏️', 'New Estimate', 'var(--lime-dark)', function() {
-    resetFields(getNextEstimateNumber());
+    resetFields(getNextEstimateNumber(true));
     showToast(t('toastNew'));
   });
 }
 
 function discardEstimate() {
   showConfirm('Discard this estimate?', 'All data will be cleared.', '🗑️', 'Discard', '#ef4444', function() {
-    var folio = $('estNum').value || getNextEstimateNumber();
-    resetFields(folio);
+    resetFields(getNextEstimateNumber(true));
     showToast('🗑️ Estimate discarded');
   });
 }
@@ -2521,6 +2459,7 @@ function acceptEstimate(id) {
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(remaining));
   renderSaved();
   updateContractCount();
+  resetFields(getNextEstimateNumber(true));
   showToast('✅ Contract created');
   switchEpTab('contracts');
   openContractDetail(contract.id);
@@ -3318,7 +3257,6 @@ function navTo(tab) {
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
-    if ($('inPageCamera').style.display !== 'none')            { closeCameraOverlay(); return; }
     if ($('confirmOverlay').style.display !== 'none')          { handleConfirm(false); return; }
     if ($('contractViewer').style.display !== 'none')          { closeContractViewer(); return; }
     if ($('signedPhotoViewer').style.display !== 'none')       { closeSignedPhotoViewer(); return; }
