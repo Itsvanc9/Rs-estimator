@@ -2007,11 +2007,9 @@ var cameraContext = 'receipt';
 
 function openCamera(context) {
   cameraContext = context || 'receipt';
-  if (window.AndroidBridge && AndroidBridge.takePhoto) {
-    AndroidBridge.takePhoto();
-  } else if (context === 'payReceipt')  $('payReceiptCamera').click();
+  if (context === 'payReceipt') $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
-  else                           $('receiptInput').click();
+  else $('receiptInput').click();
 }
 
 function openReceiptCamera() { openCamera('receipt'); }
