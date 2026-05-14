@@ -1250,6 +1250,12 @@
       <div class="pay-schedule" id="cdHistory"></div>
     </div>
 
+    <!-- Photo gallery -->
+    <div id="cdPhotoGalleryWrap" style="display:none;">
+      <div class="cd-section-title">📷 Photos</div>
+      <div id="cdPhotoGallery" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0;"></div>
+    </div>
+
     <!-- Colorado law note -->
     <div class="cd-law-note">
       ⚖️ <strong>U.S. Construction Law:</strong> All funds received must be applied to payment of subcontractors and suppliers. Retainage is capped by applicable state law (typically 5–10%). Contractor has mechanics' lien rights in all 50 states. Always request a signed lien waiver at final payment.
@@ -2561,6 +2567,28 @@ function openContractDetail(id) {
     } else {
       recWrap.style.display = 'none';
     }
+  }
+  // Photo gallery — all deposit receipts + payment proof photos
+  var galleryWrap = $('cdPhotoGalleryWrap');
+  var galleryEl   = $('cdPhotoGallery');
+  if (galleryEl) {
+    var galleryHtml = '';
+    estReceipts.forEach(function(src, i) {
+      galleryHtml += '<div style="position:relative;cursor:pointer;" onclick="viewEstimateReceipt(' + i + ')">' +
+        '<img src="' + src + '" style="height:90px;width:90px;object-fit:cover;border-radius:12px;border:2px solid var(--border);display:block;">' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:2px 0;border-radius:0 0 10px 10px;">Deposit</div>' +
+      '</div>';
+    });
+    c.payments.forEach(function(p) {
+      if (!p.receiptPhoto) return;
+      var label = (p.date || '') + (p.method ? ' · ' + p.method : '');
+      galleryHtml += '<div style="position:relative;cursor:pointer;" onclick="viewPayReceipt(\'' + p.pid + '\',\'' + id + '\')">' +
+        '<img src="' + p.receiptPhoto + '" style="height:90px;width:90px;object-fit:cover;border-radius:12px;border:2px solid var(--border);display:block;">' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:2px 0;border-radius:0 0 10px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(label) + '</div>' +
+      '</div>';
+    });
+    galleryEl.innerHTML = galleryHtml;
+    galleryWrap.style.display = galleryHtml ? '' : 'none';
   }
   // Signed contract section
   renderSignedSection(c);
