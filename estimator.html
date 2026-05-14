@@ -402,12 +402,94 @@
   /* ── ESTIMATES PAGE ── */
   .estimates-page { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9990; display:none; overflow-y:scroll; -webkit-overflow-scrolling:touch; }
   .estimates-page.open { display:block; }
-  .estimates-page-header { position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 18px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .estimates-page-header { position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#1a3a1a,#2d5a1b); padding:52px 20px 0; box-shadow:0 4px 16px rgba(0,0,0,.25); }
+  .ep-header-row { display:flex; align-items:center; gap:14px; padding-bottom:14px; }
   .estimates-page-title { flex:1; color:white; font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; }
   .estimates-page-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:white; border-radius:12px; padding:8px 16px; font-size:13px; font-weight:700; cursor:pointer; }
+  .ep-tabs { display:flex; border-top:1px solid rgba(255,255,255,.12); }
+  .ep-tab { flex:1; padding:10px 8px; background:none; border:none; color:rgba(255,255,255,.55); font-size:12px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; border-bottom:2px solid transparent; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:6px; }
+  .ep-tab.active { color:#fff; border-bottom-color:#84cc16; }
   .estimates-page-body { padding:16px; }
   .estimates-page-footer { padding:14px 16px; border-top:1px solid var(--border); display:flex; gap:10px; }
   .saved-badge { background:#84cc16; color:#0f172a; border-radius:20px; font-size:11px; font-weight:800; padding:1px 7px; min-width:18px; text-align:center; }
+
+  /* ── CONTRACTS ── */
+  .contract-card {
+    background:var(--surface); border-radius:16px; border:1px solid var(--border);
+    overflow:hidden; margin-bottom:12px; box-shadow:var(--shadow-sm);
+  }
+  .contract-card-header {
+    padding:14px 16px; display:flex; align-items:center; gap:12px;
+    border-bottom:1px solid var(--border);
+  }
+  .contract-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .contract-status-dot.active { background:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+  .contract-status-dot.completed { background:#94a3b8; }
+  .contract-card-name { flex:1; }
+  .contract-card-name strong { font-size:14px; font-weight:700; display:block; }
+  .contract-card-name span { font-size:11px; color:var(--muted); }
+  .contract-card-total { font-family:'Bebas Neue',sans-serif; font-size:22px; color:var(--lime); }
+  .contract-progress-wrap { padding:12px 16px; }
+  .contract-progress-labels { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px; font-weight:600; }
+  .contract-progress-bar { height:8px; background:var(--border-solid); border-radius:4px; overflow:hidden; }
+  .contract-progress-fill { height:100%; background:linear-gradient(90deg,#84cc16,#5a8c0a); border-radius:4px; transition:width .4s; }
+  .contract-card-footer { padding:10px 16px; display:flex; gap:8px; border-top:1px solid var(--border); background:var(--n50); }
+
+  /* ── CONTRACT DETAIL PAGE ── */
+  .contract-detail { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9995; display:none; overflow-y:scroll; -webkit-overflow-scrolling:touch; }
+  .contract-detail.open { display:block; }
+  .cd-header { position:sticky; top:0; z-index:2; background:linear-gradient(135deg,#0d2a0d,#1a4a1a); padding:48px 18px 16px; box-shadow:0 4px 16px rgba(0,0,0,.3); display:flex; align-items:center; gap:12px; }
+  .cd-title { flex:1; color:#fff; }
+  .cd-title strong { font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:1px; display:block; }
+  .cd-title span { font-size:12px; color:rgba(255,255,255,.55); }
+  .cd-back { background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.3); color:#fff; border-radius:10px; padding:8px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .cd-body { padding:16px; display:flex; flex-direction:column; gap:14px; padding-bottom:60px; }
+  .cd-summary { background:var(--surface); border-radius:14px; border:1px solid var(--border); overflow:hidden; }
+  .cd-summary-header { background:linear-gradient(135deg,#0c1526,#162035); padding:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; }
+  .cd-kpi { text-align:center; padding:8px 4px; }
+  .cd-kpi-val { font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--lime); line-height:1; }
+  .cd-kpi-lbl { font-size:9px; color:rgba(255,255,255,.45); font-weight:700; text-transform:uppercase; margin-top:3px; }
+  .cd-progress-block { padding:14px 16px; }
+  .cd-section-title { font-size:10px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:10px; }
+  .cd-progress-bar-lg { height:12px; background:var(--border-solid); border-radius:6px; overflow:hidden; margin-bottom:6px; }
+  .cd-progress-fill-lg { height:100%; background:linear-gradient(90deg,#84cc16,#5a8c0a); border-radius:6px; transition:width .4s; }
+  .cd-progress-pct { font-size:12px; font-weight:700; color:var(--lime-dark); text-align:right; }
+
+  /* payment schedule */
+  .pay-schedule { background:var(--surface); border-radius:14px; border:1px solid var(--border); overflow:hidden; }
+  .pay-schedule-item { display:flex; align-items:center; gap:12px; padding:14px 16px; border-bottom:1px solid var(--border); }
+  .pay-schedule-item:last-child { border-bottom:none; }
+  .psi-indicator { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .psi-indicator.paid { background:rgba(16,185,129,.12); }
+  .psi-indicator.pending { background:rgba(245,158,11,.1); }
+  .psi-info { flex:1; }
+  .psi-label { font-size:13px; font-weight:700; }
+  .psi-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+  .psi-amount { text-align:right; }
+  .psi-amount strong { font-size:15px; font-weight:800; display:block; font-variant-numeric:tabular-nums; }
+  .psi-amount span { font-size:10px; color:var(--muted); }
+
+  /* payment history */
+  .pay-history-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .pay-history-item:last-child { border-bottom:none; }
+  .phi-icon { width:32px; height:32px; border-radius:50%; background:rgba(16,185,129,.1); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .phi-info { flex:1; }
+  .phi-amount { font-size:14px; font-weight:800; color:#10b981; }
+  .phi-meta { font-size:11px; color:var(--muted); margin-top:1px; }
+
+  /* payment modal */
+  .pay-modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:10005; display:none; align-items:flex-end; justify-content:center; }
+  .pay-modal-overlay.open { display:flex; }
+  .pay-modal { background:var(--surface); border-radius:20px 20px 0 0; width:100%; padding:24px 22px 40px; box-shadow:0 -8px 40px rgba(0,0,0,.3); }
+  .pay-modal-title { font-size:17px; font-weight:800; margin-bottom:4px; }
+  .pay-modal-sub { font-size:12px; color:var(--muted); margin-bottom:18px; }
+  .pay-modal-field { margin-bottom:14px; }
+  .pay-modal-field label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; display:block; margin-bottom:6px; }
+  .pay-method-btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .pay-method-btn { padding:8px 14px; border-radius:10px; border:1.5px solid var(--border-solid); background:var(--input-bg); color:var(--text); font-size:12px; font-weight:700; cursor:pointer; transition:all .15s; }
+  .pay-method-btn.active { background:var(--lime); border-color:var(--lime); color:#fff; }
+  .cd-law-note { background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2); border-radius:12px; padding:12px 14px; font-size:11px; color:#92400e; line-height:1.6; }
+  [data-theme="dark"] .cd-law-note { color:#fbbf24; background:rgba(245,158,11,.05); }
 
   /* ── RECEIPT PHOTOS ── */
   .receipt-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
@@ -1017,16 +1099,108 @@
 <!-- SAVED ESTIMATES FULL PAGE -->
 <div id="estimatesPage" class="estimates-page">
   <div class="estimates-page-header">
-    <span class="estimates-page-title">📁 Saved Estimates</span>
-    <button class="estimates-page-back" onclick="closeEstimatesPage()">✕ Close</button>
+    <div class="ep-header-row">
+      <span class="estimates-page-title">📁 Files</span>
+      <button class="estimates-page-back" onclick="closeEstimatesPage()">✕ Close</button>
+    </div>
+    <div class="ep-tabs">
+      <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount">0</span></button>
+      <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 Contracts <span class="saved-badge" id="contractCount">0</span></button>
+    </div>
   </div>
   <div class="estimates-page-body">
-    <div class="saved-list" id="savedList"></div>
+    <div id="epEstimatesPanel">
+      <div class="saved-list" id="savedList"></div>
+      <div style="padding:14px 0 0; display:flex; gap:10px;">
+        <button class="btn btn-light btn-sm" onclick="exportBackup()">⬇ Backup</button>
+        <button class="btn btn-light btn-sm" onclick="AndroidBridge.pickBackupFile()">⬆ Import</button>
+        <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="importBackup(event)">
+      </div>
+    </div>
+    <div id="epContractsPanel" style="display:none;">
+      <div id="contractsList"></div>
+    </div>
   </div>
-  <div class="estimates-page-footer">
-    <button class="btn btn-light btn-sm" onclick="exportBackup()" data-i18n="backup">⬇ Backup</button>
-    <button class="btn btn-light btn-sm" onclick="AndroidBridge.pickBackupFile()" data-i18n="importBtn">⬆ Import</button>
-    <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="importBackup(event)">
+</div>
+
+<!-- CONTRACT DETAIL PAGE -->
+<div id="contractDetail" class="contract-detail">
+  <div class="cd-header">
+    <div class="cd-title">
+      <strong id="cdClientName">Client</strong>
+      <span id="cdProjectName">Project</span>
+    </div>
+    <button class="cd-back" onclick="closeContractDetail()">← Back</button>
+  </div>
+  <div class="cd-body">
+    <!-- KPI summary -->
+    <div class="cd-summary">
+      <div class="cd-summary-header">
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdTotal">$0</div><div class="cd-kpi-lbl">Total</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdPaid">$0</div><div class="cd-kpi-lbl">Paid</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdBalance">$0</div><div class="cd-kpi-lbl">Balance</div></div>
+      </div>
+      <div class="cd-progress-block">
+        <div class="cd-section-title">Payment Progress</div>
+        <div class="cd-progress-bar-lg"><div class="cd-progress-fill-lg" id="cdProgressFill" style="width:0%"></div></div>
+        <div class="cd-progress-pct" id="cdProgressPct">0% collected</div>
+      </div>
+    </div>
+
+    <!-- Payment schedule -->
+    <div>
+      <div class="cd-section-title">Payment Schedule</div>
+      <div class="pay-schedule" id="cdSchedule"></div>
+    </div>
+
+    <!-- Record payment button -->
+    <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;" onclick="openPaymentModal()">
+      💵 Record Payment Received
+    </button>
+
+    <!-- Payment history -->
+    <div id="cdHistoryWrap">
+      <div class="cd-section-title">Payment History</div>
+      <div class="pay-schedule" id="cdHistory"></div>
+    </div>
+
+    <!-- Colorado law note -->
+    <div class="cd-law-note">
+      ⚖️ <strong>Colorado Law (C.R.S. § 38-22-127):</strong> All funds received must be held in trust for payment of subcontractors and suppliers. On projects over $150K, retainage is capped at 5% per tier (C.R.S. § 38-46-103). Request a signed lien waiver at final payment.
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="pay-modal-overlay" id="payModalOverlay">
+  <div class="pay-modal">
+    <div class="pay-modal-title">💵 Record Payment</div>
+    <div class="pay-modal-sub" id="payModalSub">Enter payment details</div>
+    <div class="pay-modal-field">
+      <label>Amount Received ($)</label>
+      <input type="number" id="payAmount" placeholder="0.00" inputmode="decimal" style="font-size:22px;font-weight:700;text-align:center;">
+    </div>
+    <div class="pay-modal-field">
+      <label>Date</label>
+      <input type="date" id="payDate">
+    </div>
+    <div class="pay-modal-field">
+      <label>Payment Method</label>
+      <div class="pay-method-btns">
+        <button class="pay-method-btn active" onclick="selectPayMethod(this,'cash')">💵 Cash</button>
+        <button class="pay-method-btn" onclick="selectPayMethod(this,'check')">🏦 Check</button>
+        <button class="pay-method-btn" onclick="selectPayMethod(this,'zelle')">📱 Zelle</button>
+        <button class="pay-method-btn" onclick="selectPayMethod(this,'card')">💳 Card</button>
+      </div>
+    </div>
+    <div class="pay-modal-field">
+      <label>Note (optional)</label>
+      <input type="text" id="payNote" placeholder="e.g. Check #1234">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:6px;">
+      <button class="btn btn-light" style="flex:1;" onclick="closePaymentModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="savePayment()">✓ Save Payment</button>
+    </div>
   </div>
 </div>
 
@@ -1792,10 +1966,11 @@ function renderSaved() {
     <div class="saved-item">
       <div>
         <div class="saved-title">${escapeHtml(s.estNum)} · ${escapeHtml(s.client||'No Client')}</div>
-        <div class="saved-meta">${escapeHtml(s.project||'')}</div>
+        <div class="saved-meta">${escapeHtml(s.project||'')} · $${fmtMoney(s.grand||0)}</div>
       </div>
       <div class="saved-actions">
         <button class="btn btn-light btn-sm" onclick="loadEstimate('${s.id}')">📂 Open</button>
+        <button class="btn btn-primary btn-sm" onclick="acceptEstimate('${s.id}')" title="Convert to Contract">✅ Accept</button>
         <button class="btn btn-danger btn-sm" onclick="deleteEstimate('${s.id}')">🗑️</button>
       </div>
     </div>`).join('');
@@ -2002,6 +2177,235 @@ function importBackup(e) {
 }
 
 // ═══════════════════════════════════════════════════════
+// ESTIMATES PAGE TABS
+// ═══════════════════════════════════════════════════════
+function switchEpTab(tab) {
+  $('epTabEstimates').classList.toggle('active', tab==='estimates');
+  $('epTabContracts').classList.toggle('active', tab==='contracts');
+  $('epEstimatesPanel').style.display = tab==='estimates' ? '' : 'none';
+  $('epContractsPanel').style.display = tab==='contracts' ? '' : 'none';
+  if (tab==='contracts') renderContracts();
+}
+
+// ═══════════════════════════════════════════════════════
+// CONTRACTS
+// ═══════════════════════════════════════════════════════
+var currentContractId = null;
+var selectedPayMethod = 'cash';
+
+function getContracts() {
+  return JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
+}
+function saveContracts(arr) {
+  localStorage.setItem('RS_CONTRACTS', JSON.stringify(arr));
+}
+
+function acceptEstimate(id) {
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  var est = estimates.find(function(e){ return e.id === id; });
+  if (!est) return;
+  var contracts = getContracts();
+  var already = contracts.find(function(c){ return c.estimateId === id; });
+  if (already) { showToast('Already converted to contract'); openContractDetail(already.id); return; }
+  var total = est.grand || 0;
+  var dep   = Math.round(total * 0.30 * 100) / 100;
+  var prog  = Math.round(total * 0.40 * 100) / 100;
+  var fin   = Math.round((total - dep - prog) * 100) / 100;
+  var today = new Date().toISOString().slice(0,10);
+  var addDays = function(d,n){ var dt=new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); };
+  var contract = {
+    id: 'c_' + Date.now(),
+    estimateId: id,
+    estNum: est.estNum || '',
+    clientName: est.client || 'No Client',
+    projectName: est.project || '',
+    projectAddress: est.address || '',
+    totalAmount: total,
+    acceptedDate: today,
+    status: 'active',
+    schedule: [
+      { sid:1, label:'Deposit (30%)',  pct:30, amount:dep,  due: today,           note:'Due at contract signing. C.R.S. § 38-22-127: hold in trust.' },
+      { sid:2, label:'Progress (40%)', pct:40, amount:prog, due: addDays(today,14), note:'Due at mid-project milestone.' },
+      { sid:3, label:'Final (30%)',    pct:30, amount:fin,  due: addDays(today,30), note:'Due on completion. Request signed lien waiver.' }
+    ],
+    payments: []
+  };
+  contracts.push(contract);
+  saveContracts(contracts);
+  updateContractCount();
+  showToast('✅ Contract created');
+  switchEpTab('contracts');
+  openContractDetail(contract.id);
+}
+
+function updateContractCount() {
+  var cc = $('contractCount');
+  if (cc) cc.innerText = getContracts().filter(function(c){ return c.status==='active'; }).length;
+}
+
+function renderContracts() {
+  var contracts = getContracts();
+  updateContractCount();
+  var el = $('contractsList');
+  if (!el) return;
+  if (contracts.length === 0) {
+    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">No contracts yet.<br>Accept an estimate to create one.</div>';
+    return;
+  }
+  el.innerHTML = contracts.slice().reverse().map(function(c) {
+    var paid = c.payments.reduce(function(s,p){ return s + (p.amount||0); }, 0);
+    var pct  = c.totalAmount > 0 ? Math.min(100, Math.round(paid/c.totalAmount*100)) : 0;
+    return '<div class="contract-card">' +
+      '<div class="contract-card-header">' +
+        '<div class="contract-status-dot ' + c.status + '"></div>' +
+        '<div class="contract-card-name"><strong>' + escapeHtml(c.clientName) + '</strong><span>' + escapeHtml(c.estNum) + ' · ' + escapeHtml(c.projectName) + '</span></div>' +
+        '<div class="contract-card-total">$' + fmtMoney(c.totalAmount) + '</div>' +
+      '</div>' +
+      '<div class="contract-progress-wrap">' +
+        '<div class="contract-progress-labels"><span>$' + fmtMoney(paid) + ' received</span><span>' + pct + '%</span></div>' +
+        '<div class="contract-progress-bar"><div class="contract-progress-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="contract-card-footer">' +
+        '<button class="btn btn-primary btn-sm" onclick="openContractDetail(\'' + c.id + '\')">📋 View Details</button>' +
+        (c.status==='active' ? '<button class="btn btn-light btn-sm" onclick="markContractComplete(\'' + c.id + '\')">✓ Mark Complete</button>' : '<span style="font-size:11px;color:var(--muted);padding:4px 8px;">Completed</span>') +
+        '<button class="btn btn-danger btn-sm" onclick="deleteContract(\'' + c.id + '\')">🗑️</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openContractDetail(id) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===id; });
+  if (!c) return;
+  currentContractId = id;
+  var paid = c.payments.reduce(function(s,p){ return s+(p.amount||0); }, 0);
+  var balance = c.totalAmount - paid;
+  var pct = c.totalAmount > 0 ? Math.min(100, Math.round(paid/c.totalAmount*100)) : 0;
+  $('cdClientName').textContent = c.clientName;
+  $('cdProjectName').textContent = c.estNum + (c.projectName ? ' · ' + c.projectName : '');
+  $('cdTotal').textContent   = '$' + fmtMoney(c.totalAmount);
+  $('cdPaid').textContent    = '$' + fmtMoney(paid);
+  $('cdBalance').textContent = '$' + fmtMoney(Math.max(0, balance));
+  $('cdProgressFill').style.width = pct + '%';
+  $('cdProgressPct').textContent  = pct + '% collected';
+  // Schedule
+  $('cdSchedule').innerHTML = c.schedule.map(function(s) {
+    var isPaid = c.payments.some(function(p){ return p.scheduleId===s.sid; });
+    return '<div class="pay-schedule-item">' +
+      '<div class="psi-indicator ' + (isPaid?'paid':'pending') + '">' + (isPaid?'✅':'🔔') + '</div>' +
+      '<div class="psi-info"><div class="psi-label">' + escapeHtml(s.label) + '</div>' +
+        '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">Paid</span>':'Due: ' + s.due) + ' · ' + escapeHtml(s.note) + '</div></div>' +
+      '<div class="psi-amount"><strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong><span>' + s.pct + '%</span></div>' +
+    '</div>';
+  }).join('');
+  // History
+  var histWrap = $('cdHistoryWrap');
+  if (c.payments.length === 0) {
+    histWrap.style.display = 'none';
+  } else {
+    histWrap.style.display = '';
+    $('cdHistory').innerHTML = c.payments.slice().reverse().map(function(p) {
+      return '<div class="pay-history-item">' +
+        '<div class="phi-icon">💵</div>' +
+        '<div class="phi-info"><div class="phi-amount">+ $' + fmtMoney(p.amount) + '</div>' +
+          '<div class="phi-meta">' + p.date + ' · ' + p.method + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
+        '<button class="btn btn-danger btn-sm" style="font-size:11px;" onclick="deletePayment(\'' + id + '\',\'' + p.pid + '\')">🗑️</button>' +
+      '</div>';
+    }).join('');
+  }
+  $('contractDetail').classList.add('open');
+  $('contractDetail').scrollTop = 0;
+}
+
+function closeContractDetail() {
+  $('contractDetail').classList.remove('open');
+  renderContracts();
+}
+
+function markContractComplete(id) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===id; });
+  if (c) { c.status = 'completed'; saveContracts(contracts); renderContracts(); showToast('Contract marked complete'); }
+}
+
+function deleteContract(id) {
+  if (!confirm('Delete this contract?')) return;
+  saveContracts(getContracts().filter(function(c){ return c.id!==id; }));
+  renderContracts();
+  showToast('Contract deleted');
+}
+
+function openPaymentModal() {
+  if (!currentContractId) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  var paid = c.payments.reduce(function(s,p){ return s+(p.amount||0); }, 0);
+  var balance = Math.max(0, c.totalAmount - paid);
+  $('payModalSub').textContent = 'Balance due: $' + fmtMoney(balance);
+  $('payAmount').value = '';
+  $('payDate').value = new Date().toISOString().slice(0,10);
+  $('payNote').value = '';
+  selectedPayMethod = 'cash';
+  document.querySelectorAll('.pay-method-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.querySelector('.pay-method-btn').classList.add('active');
+  $('payModalOverlay').classList.add('open');
+}
+
+function closePaymentModal() {
+  $('payModalOverlay').classList.remove('open');
+}
+
+function selectPayMethod(btn, method) {
+  selectedPayMethod = method;
+  document.querySelectorAll('.pay-method-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function savePayment() {
+  var amount = parseFloat($('payAmount').value);
+  if (!amount || amount <= 0) { showToast('Enter a valid amount'); return; }
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  // auto-match to schedule
+  var schedId = null;
+  for (var i=0; i<c.schedule.length; i++) {
+    var s = c.schedule[i];
+    var alreadyPaid = c.payments.some(function(p){ return p.scheduleId===s.sid; });
+    if (!alreadyPaid) { schedId = s.sid; break; }
+  }
+  c.payments.push({
+    pid: 'p_' + Date.now(),
+    scheduleId: schedId,
+    amount: amount,
+    date: $('payDate').value,
+    method: selectedPayMethod,
+    note: $('payNote').value
+  });
+  saveContracts(contracts);
+  closePaymentModal();
+  openContractDetail(currentContractId);
+  showToast('✅ Payment recorded: $' + fmtMoney(amount));
+}
+
+function deletePayment(contractId, pid) {
+  if (!confirm('Delete this payment?')) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===contractId; });
+  if (!c) return;
+  c.payments = c.payments.filter(function(p){ return p.pid!==pid; });
+  saveContracts(contracts);
+  openContractDetail(contractId);
+  showToast('Payment deleted');
+}
+
+function fmtMoney(n) {
+  return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ═══════════════════════════════════════════════════════
 // SPLASH & TERMS
 // ═══════════════════════════════════════════════════════
 function dismissSplash() {
@@ -2079,6 +2483,7 @@ function navTo(tab) {
   renderSaved();
   renderTemplates();
   updateTotal();
+  updateContractCount();
 
   // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
   setTimeout(dismissSplash, 2500);
