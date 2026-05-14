@@ -796,6 +796,39 @@
     </div>
 
     <div class="setting-section">
+      <div class="setting-section-title">📍 State / Jurisdiction</div>
+      <select id="stateSelect" onchange="setAppState(this.value)" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:6px;">
+        <option value="AL">Alabama</option><option value="AK">Alaska</option>
+        <option value="AZ">Arizona</option><option value="AR">Arkansas</option>
+        <option value="CA">California</option><option value="CO">Colorado</option>
+        <option value="CT">Connecticut</option><option value="DE">Delaware</option>
+        <option value="FL">Florida</option><option value="GA">Georgia</option>
+        <option value="HI">Hawaii</option><option value="ID">Idaho</option>
+        <option value="IL">Illinois</option><option value="IN">Indiana</option>
+        <option value="IA">Iowa</option><option value="KS">Kansas</option>
+        <option value="KY">Kentucky</option><option value="LA">Louisiana</option>
+        <option value="ME">Maine</option><option value="MD">Maryland</option>
+        <option value="MA">Massachusetts</option><option value="MI">Michigan</option>
+        <option value="MN">Minnesota</option><option value="MS">Mississippi</option>
+        <option value="MO">Missouri</option><option value="MT">Montana</option>
+        <option value="NE">Nebraska</option><option value="NV">Nevada</option>
+        <option value="NH">New Hampshire</option><option value="NJ">New Jersey</option>
+        <option value="NM">New Mexico</option><option value="NY">New York</option>
+        <option value="NC">North Carolina</option><option value="ND">North Dakota</option>
+        <option value="OH">Ohio</option><option value="OK">Oklahoma</option>
+        <option value="OR">Oregon</option><option value="PA">Pennsylvania</option>
+        <option value="RI">Rhode Island</option><option value="SC">South Carolina</option>
+        <option value="SD">South Dakota</option><option value="TN">Tennessee</option>
+        <option value="TX">Texas</option><option value="UT">Utah</option>
+        <option value="VT">Vermont</option><option value="VA">Virginia</option>
+        <option value="WA">Washington</option><option value="WV">West Virginia</option>
+        <option value="WI">Wisconsin</option><option value="WY">Wyoming</option>
+        <option value="DC">Washington D.C.</option>
+      </select>
+      <div style="font-size:11px;color:var(--muted);">⚖️ Contracts adapt to the selected state's jurisdiction</div>
+    </div>
+
+    <div class="setting-section">
       <div class="setting-section-title">Owner</div>
       <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')">👑 Owner Dashboard</button>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
@@ -2635,8 +2668,75 @@ function closeSignedPhotoViewer() {
   $('signedPhotoViewerImg').src = '';
 }
 
+// ═══════════════════════════════════════════════════════
+// STATE LAW DATA
+// ═══════════════════════════════════════════════════════
+var STATE_LAW = {
+  AL:{n:'Alabama',        ls:'Ala. Code § 35-11-210 et seq.',  v:'applicable county, State of Alabama'},
+  AK:{n:'Alaska',         ls:'AS § 34.35.050 et seq.',          v:'applicable superior court, State of Alaska'},
+  AZ:{n:'Arizona',        ls:'A.R.S. § 33-981 et seq.',         v:'applicable county superior court, State of Arizona'},
+  AR:{n:'Arkansas',       ls:'Ark. Code § 18-44-101 et seq.',   v:'applicable county, State of Arkansas'},
+  CA:{n:'California',     ls:'Cal. Civil Code § 8000 et seq.',  v:'applicable county superior court, State of California'},
+  CO:{n:'Colorado',       ls:'C.R.S. § 38-22-101 et seq.',      v:'applicable county district court, State of Colorado'},
+  CT:{n:'Connecticut',    ls:'Conn. Gen. Stat. § 49-33 et seq.',v:'applicable judicial district, State of Connecticut'},
+  DE:{n:'Delaware',       ls:'25 Del. C. § 2701 et seq.',       v:'applicable county, State of Delaware'},
+  FL:{n:'Florida',        ls:'Fla. Stat. § 713.01 et seq.',     v:'applicable county, State of Florida'},
+  GA:{n:'Georgia',        ls:'O.C.G.A. § 44-14-361 et seq.',   v:'applicable county, State of Georgia'},
+  HI:{n:'Hawaii',         ls:'HRS § 507-41 et seq.',            v:'applicable circuit court, State of Hawaii'},
+  ID:{n:'Idaho',          ls:'Idaho Code § 45-501 et seq.',     v:'applicable county, State of Idaho'},
+  IL:{n:'Illinois',       ls:'770 ILCS 60/1 et seq.',           v:'applicable county, State of Illinois'},
+  IN:{n:'Indiana',        ls:'Ind. Code § 32-28-3-1 et seq.',  v:'applicable county, State of Indiana'},
+  IA:{n:'Iowa',           ls:'Iowa Code § 572.1 et seq.',       v:'applicable county, State of Iowa'},
+  KS:{n:'Kansas',         ls:'K.S.A. § 60-1101 et seq.',        v:'applicable county, State of Kansas'},
+  KY:{n:'Kentucky',       ls:'KRS § 376.010 et seq.',           v:'applicable county, State of Kentucky'},
+  LA:{n:'Louisiana',      ls:'La. R.S. § 9:4801 et seq.',       v:'applicable parish, State of Louisiana'},
+  ME:{n:'Maine',          ls:'14 M.R.S.A. § 3251 et seq.',      v:'applicable county, State of Maine'},
+  MD:{n:'Maryland',       ls:'Md. Real Prop. Code § 9-101 et seq.',v:'applicable county, State of Maryland'},
+  MA:{n:'Massachusetts',  ls:'M.G.L. c. 254 § 1 et seq.',       v:'applicable county, State of Massachusetts'},
+  MI:{n:'Michigan',       ls:'MCL § 570.1101 et seq.',           v:'applicable county, State of Michigan'},
+  MN:{n:'Minnesota',      ls:'Minn. Stat. § 514.01 et seq.',    v:'applicable county, State of Minnesota'},
+  MS:{n:'Mississippi',    ls:'Miss. Code § 85-7-131 et seq.',   v:'applicable county, State of Mississippi'},
+  MO:{n:'Missouri',       ls:'Mo. Rev. Stat. § 429.010 et seq.',v:'applicable county, State of Missouri'},
+  MT:{n:'Montana',        ls:'MCA § 71-3-101 et seq.',           v:'applicable county, State of Montana'},
+  NE:{n:'Nebraska',       ls:'Neb. Rev. Stat. § 52-101 et seq.',v:'applicable county, State of Nebraska'},
+  NV:{n:'Nevada',         ls:'NRS § 108.221 et seq.',            v:'applicable county, State of Nevada'},
+  NH:{n:'New Hampshire',  ls:'RSA § 447:2 et seq.',              v:'applicable county, State of New Hampshire'},
+  NJ:{n:'New Jersey',     ls:'N.J.S.A. 2A:44A-1 et seq.',       v:'applicable county, State of New Jersey'},
+  NM:{n:'New Mexico',     ls:'NMSA § 48-2-1 et seq.',            v:'applicable county, State of New Mexico'},
+  NY:{n:'New York',       ls:'NY Lien Law § 3 et seq.',          v:'applicable county, State of New York'},
+  NC:{n:'North Carolina', ls:'N.C.G.S. § 44A-7 et seq.',        v:'applicable county, State of North Carolina'},
+  ND:{n:'North Dakota',   ls:'N.D.C.C. § 35-27-01 et seq.',     v:'applicable county, State of North Dakota'},
+  OH:{n:'Ohio',           ls:'ORC § 1311.01 et seq.',            v:'applicable county, State of Ohio'},
+  OK:{n:'Oklahoma',       ls:'12 O.S. § 143 et seq.',            v:'applicable county, State of Oklahoma'},
+  OR:{n:'Oregon',         ls:'ORS § 87.001 et seq.',             v:'applicable county, State of Oregon'},
+  PA:{n:'Pennsylvania',   ls:'49 P.S. § 1101 et seq.',           v:'applicable county, State of Pennsylvania'},
+  RI:{n:'Rhode Island',   ls:'R.I. Gen. Laws § 34-28-1 et seq.',v:'applicable county, State of Rhode Island'},
+  SC:{n:'South Carolina', ls:'S.C. Code § 29-5-10 et seq.',     v:'applicable county, State of South Carolina'},
+  SD:{n:'South Dakota',   ls:'SDCL § 44-9-1 et seq.',            v:'applicable county, State of South Dakota'},
+  TN:{n:'Tennessee',      ls:'Tenn. Code § 66-11-101 et seq.',  v:'applicable county, State of Tennessee'},
+  TX:{n:'Texas',          ls:'Tex. Prop. Code § 53.001 et seq.',v:'applicable county, State of Texas'},
+  UT:{n:'Utah',           ls:'Utah Code § 38-1a-101 et seq.',   v:'applicable county, State of Utah'},
+  VT:{n:'Vermont',        ls:'9 V.S.A. § 1921 et seq.',          v:'applicable county, State of Vermont'},
+  VA:{n:'Virginia',       ls:'Va. Code § 43-1 et seq.',          v:'applicable county/city, State of Virginia'},
+  WA:{n:'Washington',     ls:'RCW § 60.04.011 et seq.',          v:'applicable county, State of Washington'},
+  WV:{n:'West Virginia',  ls:'W. Va. Code § 38-2-1 et seq.',    v:'applicable county, State of West Virginia'},
+  WI:{n:'Wisconsin',      ls:'Wis. Stat. § 779.01 et seq.',     v:'applicable county, State of Wisconsin'},
+  WY:{n:'Wyoming',        ls:'Wyo. Stat. § 29-2-101 et seq.',   v:'applicable county, State of Wyoming'},
+  DC:{n:'Washington D.C.',ls:'D.C. Code § 40-301.01 et seq.',  v:'D.C. Superior Court, District of Columbia'}
+};
+
+function getStateLaw() {
+  var code = localStorage.getItem('RS_STATE') || 'CO';
+  return STATE_LAW[code] || STATE_LAW['CO'];
+}
+function setAppState(code) {
+  localStorage.setItem('RS_STATE', code);
+  showToast('✅ ' + (STATE_LAW[code]||{n:code}).n);
+}
+
 // ── Contract document generation ──
 function getContractDoc(c) {
+  var sl  = getStateLaw();
   var fmt = function(n){ return '$' + fmtMoney(n); };
   var payRows = c.schedule.map(function(s){
     return '<tr><td>' + escapeHtml(s.label) + '</td><td style="text-align:right;font-weight:800;color:#65a30d;">' + fmt(s.amount) + '</td><td>' + s.due + '</td></tr>';
@@ -2742,7 +2842,7 @@ function getContractDoc(c) {
       '<p class="clause"><strong>1. Payment &amp; Late Fees.</strong> Payments are due per schedule above. Balances unpaid after the due date accrue interest at 1.5% per month (18% per year), or the maximum rate permitted by applicable law. Contractor may stop all work without penalty if any payment is 5 days past due, and Client shall be liable for all costs of remobilization.</p>' +
       '<p class="clause"><strong>2. Construction Trust Fund.</strong> All funds received by Contractor shall be applied to payment of subcontractors, laborers, and material suppliers for this project. Misappropriation of construction funds is a criminal offense under applicable state law and may give rise to civil liability and personal liability of the principals involved.</p>' +
       '<p class="clause"><strong>3. Change Orders.</strong> Any change to scope, materials, or schedule must be agreed in writing via a signed Change Order before work begins. Verbal changes do not bind Contractor. Additional work is billed at Contractor\'s then-current rates plus 20% overhead and profit.</p>' +
-      '<p class="clause"><strong>4. Mechanics\' Lien Rights.</strong> Contractor expressly reserves all mechanics\' lien rights available under the laws of the applicable state. A conditional lien waiver will be issued with each payment; an unconditional lien waiver only upon receipt of the final payment in full. Client waives any claim against Contractor for filing a valid lien. NOTE: Preliminary notice requirements vary by state; Contractor shall comply with all applicable notice deadlines to preserve lien rights.</p>' +
+      '<p class="clause"><strong>4. Mechanics\' Lien Rights.</strong> Contractor expressly reserves all mechanics\' lien rights under ' + sl.ls + '. A conditional lien waiver will be issued with each payment; an unconditional lien waiver only upon receipt of the final payment in full. Client waives any claim against Contractor for filing a valid lien. Preliminary notice requirements vary by state; Contractor shall comply with all applicable notice deadlines to preserve lien rights.</p>' +
       '<p class="clause"><strong>5. Client Responsibilities.</strong> Client shall provide clear, unobstructed access to all work areas, adequate utilities, and a safe working environment. Delays caused by Client\'s failure to meet these obligations will extend the schedule and may result in additional daily standby charges of $350/day.</p>' +
       '<p class="clause"><strong>6. Client-Caused Delays.</strong> If Contractor\'s work is delayed by Client, other trades, inspectors, or conditions beyond Contractor\'s control, the completion date is extended by an equal period and Contractor is entitled to reasonable additional compensation for extended overhead and remobilization costs.</p>' +
       '<p class="clause"><strong>7. Termination by Client.</strong> If Client terminates this contract for any reason other than Contractor\'s material uncured breach, Client shall pay: (a) all work completed to date at contract rates; (b) all materials ordered or on site; (c) 20% of the remaining contract balance as lost profit and overhead compensation. This remedy is agreed and reasonable under UCC § 2-708.</p>' +
@@ -2754,7 +2854,7 @@ function getContractDoc(c) {
       '<p class="clause"><strong>13. Limitation of Liability.</strong> Contractor\'s maximum liability for any claim shall not exceed the total amount paid to Contractor under this contract. Contractor is not liable for consequential, incidental, special, or punitive damages of any kind.</p>' +
       '<p class="clause"><strong>14. Retainage.</strong> Unless otherwise agreed in writing, Client shall not withhold more than 10% of any payment as retainage, or such lesser amount as required by applicable state law. Retainage shall be released within 30 days of substantial completion and acceptance of the work.</p>' +
       '<p class="clause"><strong>15. Attorney\'s Fees.</strong> In any legal action to enforce this contract, the prevailing party shall be entitled to recover reasonable attorney\'s fees, court costs, and collection expenses from the non-prevailing party. This clause is intended to discourage non-payment.</p>' +
-      '<p class="clause"><strong>16. Dispute Resolution.</strong> Parties agree to attempt mediation before litigation. If mediation fails, disputes shall be resolved by binding arbitration under AAA Construction Industry Rules, or at Contractor\'s election, in the court of competent jurisdiction in the county where the project is located, which both parties submit to as exclusive jurisdiction and venue.</p>' +
+      '<p class="clause"><strong>16. Dispute Resolution.</strong> Parties agree to attempt mediation before litigation. If mediation fails, disputes shall be resolved by binding arbitration under AAA Construction Industry Rules, or at Contractor\'s election, in ' + sl.v + ', which both parties submit to as exclusive jurisdiction and venue.</p>' +
       '<p class="clause"><strong>17. Entire Agreement.</strong> This contract, including any attached Change Orders and exhibits, constitutes the entire agreement between the parties. No oral representations or prior agreements are binding. Amendments must be in writing signed by both parties.</p>' +
       '<p class="clause"><strong>18. Severability &amp; Waiver.</strong> If any provision is held unenforceable, the remaining provisions remain in full force. Failure to enforce any provision is not a waiver of future enforcement rights.</p>' +
     '</div>' +
@@ -2777,7 +2877,7 @@ function getContractDoc(c) {
     '<div>📍 R&amp;S Drywall Solutions LLC · Denver, Colorado · Licensed &amp; Insured</div>' +
     '<div>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</div>' +
   '</div>' +
-  '<div class="copyright">This is a legally binding contract governed by applicable state and federal law of the United States · © 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>' +
+  '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>' +
   '</body></html>';
 }
 
@@ -2892,6 +2992,9 @@ function navTo(tab) {
   if (!$('estNum').value || $('estNum').value === 'RS-2026-001') {
     $('estNum').value = getNextEstimateNumber();
   }
+
+  var ss = $('stateSelect');
+  if (ss) ss.value = localStorage.getItem('RS_STATE') || 'CO';
 
   renderClients();
   renderSaved();
