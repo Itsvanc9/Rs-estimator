@@ -2026,6 +2026,7 @@ function openCamera(context) {
       _cameraStream = stream;
       var video = $('cameraVideo');
       video.srcObject = stream;
+      history.pushState({ panel: 'camera' }, '');
       $('inPageCamera').style.display = 'flex';
     }).catch(function() {
       _fallbackCameraInput(context);
@@ -2646,6 +2647,7 @@ function openContractDetail(id) {
   }
   // Signed contract section
   renderSignedSection(c);
+  history.pushState({ panel: 'contractDetail' }, '');
   $('contractDetail').classList.add('open');
   $('contractDetail').scrollTop = 0;
 }
@@ -2683,6 +2685,7 @@ function openPaymentModal() {
   selectedPayMethod = 'cash';
   document.querySelectorAll('.pay-method-btn').forEach(function(b){ b.classList.remove('active'); });
   document.querySelector('.pay-method-btn').classList.add('active');
+  history.pushState({ panel: 'payModal' }, '');
   $('payModalOverlay').classList.add('open');
 }
 
@@ -2747,6 +2750,7 @@ function showConfirm(msg, sub, icon, okLabel, okColor, onOk) {
   $('confirmOkBtn').textContent       = okLabel || 'Confirm';
   $('confirmOkBtn').style.background  = okColor || '#ef4444';
   _confirmCb = onOk || null;
+  history.pushState({ panel: 'confirm' }, '');
   $('confirmOverlay').style.display = 'flex';
 }
 function handleConfirm(ok) {
@@ -2768,6 +2772,7 @@ function openSchedEdit(sid) {
   $('schedEditDate').value   = s.due;
   $('schedEditAmount').value = s.amount;
   $('schedEditNote').value   = s.note || '';
+  history.pushState({ panel: 'schedEdit' }, '');
   $('schedEditOverlay').style.display = 'flex';
 }
 function closeSchedEdit() {
@@ -2865,6 +2870,7 @@ function openSignedPreview() {
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c || !c.signedPhoto) return;
   $('signedPhotoViewerImg').src = c.signedPhoto;
+  history.pushState({ panel: 'signedPhoto' }, '');
   $('signedPhotoViewer').style.display = 'block';
 }
 function closeSignedPhotoViewer() {
@@ -2878,6 +2884,7 @@ function closeSignedPhotoViewer() {
 // ── Generic photo viewer ──
 function viewPhoto(src) {
   $('receiptModalImg').src = src;
+  history.pushState({ panel: 'receiptModal' }, '');
   $('receiptModal').classList.add('open');
 }
 function viewEstimateReceipt(idx) {
@@ -2899,6 +2906,7 @@ function viewInOverlay(html, title, type) {
   _viewerType = type || 'contract';
   if ($('contractViewerTitle')) $('contractViewerTitle').textContent = title || 'Document';
   $('contractFrame').srcdoc = html;
+  history.pushState({ panel: 'contractViewer' }, '');
   $('contractViewer').style.display = 'block';
 }
 function viewContractDoc() {
@@ -3307,6 +3315,18 @@ function navTo(tab) {
 
   // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
   setTimeout(dismissSplash, 2500);
+
+  // Android hardware back button — close topmost visible panel
+  window.addEventListener('popstate', function() {
+    if ($('inPageCamera').style.display !== 'none')            { closeCameraOverlay(); return; }
+    if ($('confirmOverlay').style.display !== 'none')          { handleConfirm(false); return; }
+    if ($('contractViewer').style.display !== 'none')          { closeContractViewer(); return; }
+    if ($('signedPhotoViewer').style.display !== 'none')       { closeSignedPhotoViewer(); return; }
+    if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
+    if ($('schedEditOverlay').style.display !== 'none')        { closeSchedEdit(); return; }
+    if ($('payModalOverlay').classList.contains('open'))        { closePaymentModal(); return; }
+    if ($('contractDetail').classList.contains('open'))         { closeContractDetail(); return; }
+  });
 })();
 </script>
 </body>
