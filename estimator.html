@@ -481,7 +481,7 @@
   .psi-amount span { font-size:10px; color:var(--muted); }
 
   /* payment history */
-  .pay-history-item { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--border); }
+  .pay-history-item { display:flex; flex-direction:column; align-items:flex-start; gap:8px; padding:12px 16px; border-bottom:1px solid var(--border); }
   .pay-history-item:last-child { border-bottom:none; }
   .phi-icon { width:32px; height:32px; border-radius:50%; background:rgba(16,185,129,.1); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
   .phi-info { flex:1; }
@@ -1127,7 +1127,7 @@
       <div class="saved-list" id="savedList"></div>
       <div style="padding:14px 0 0; display:flex; gap:10px;">
         <button class="btn btn-light btn-sm" onclick="exportBackup()">⬇ Backup</button>
-        <button class="btn btn-light btn-sm" onclick="AndroidBridge.pickBackupFile()">⬆ Import</button>
+        <button class="btn btn-light btn-sm" onclick="if(window.AndroidBridge)AndroidBridge.pickBackupFile();else $('importFileInput').click()">⬆ Import</button>
         <input type="file" id="importFileInput" style="display:none" accept=".json" onchange="importBackup(event)">
       </div>
     </div>
@@ -1561,7 +1561,7 @@ function saveNamedTemplate() {
   if (!name) { showToast(t('enterTemplateName')); return; }
   if (materials.length === 0) { showToast(t('noMaterials')); return; }
   let templates = JSON.parse(localStorage.getItem('RS_TEMPLATES') || '[]');
-  templates = templates.filter(t => t.name !== name);
+  templates = templates.filter(tmpl => tmpl.name !== name);
   templates.push({ name, materials: JSON.parse(JSON.stringify(materials)) });
   localStorage.setItem('RS_TEMPLATES', JSON.stringify(templates));
   $('templateNameInput').value = '';
@@ -1980,6 +1980,7 @@ function saveEstimate() {
   savedArray.unshift(current);
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
   renderSaved(); updateDashboard();
+  $('estNum').value = getNextEstimateNumber();
   showToast(t('toastSaved'));
 }
 
@@ -2314,8 +2315,8 @@ function acceptEstimate(id) {
     payments: []
   };
   // Store full estimate data for contract generation
-  contract.scopeWork    = est.scopeWork || '';
-  contract.estDate      = est.estDate || today;
+  contract.scopeWork    = est.scope || '';
+  contract.estDate      = est.date  || today;
   contract.validUntil   = est.validUntil || '';
   contract.signedPhoto  = null; // will hold base64 of signed contract image
   contracts.push(contract);
@@ -2398,7 +2399,7 @@ function openContractDetail(id) {
   } else {
     histWrap.style.display = '';
     $('cdHistory').innerHTML = c.payments.slice().reverse().map(function(p) {
-      return '<div class="pay-history-item" style="flex-direction:column;align-items:flex-start;gap:8px;">' +
+      return '<div class="pay-history-item">' +
         '<div style="display:flex;align-items:center;gap:12px;width:100%;">' +
           '<div class="phi-icon">💵</div>' +
           '<div class="phi-info"><div class="phi-amount">+ $' + fmtMoney(p.amount) + '</div>' +
