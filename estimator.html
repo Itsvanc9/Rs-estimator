@@ -1214,6 +1214,17 @@
   </div>
 </div>
 
+<!-- CONTRACT VIEWER -->
+<div id="contractViewer" style="position:fixed;inset:0;z-index:10010;display:none;flex-direction:column;background:#fff;">
+  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0f172a;flex-shrink:0;">
+    <button onclick="closeContractViewer()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">← Back</button>
+    <span style="flex:1;color:#fff;font-weight:700;font-size:14px;">Service Contract</span>
+    <button onclick="doPDFContract()" style="background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">📤 Export PDF</button>
+    <button onclick="doPrintContract()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">🖨️ Print</button>
+  </div>
+  <iframe id="contractFrame" style="flex:1;border:none;width:100%;"></iframe>
+</div>
+
 <!-- PAYMENT MODAL -->
 <div class="pay-modal-overlay" id="payModalOverlay">
   <div class="pay-modal">
@@ -2592,10 +2603,7 @@ function getContractDoc(c) {
   '@page{size:letter portrait;margin:8mm}' +
   '*{box-sizing:border-box;margin:0;padding:0}' +
   'body{font-family:Arial,sans-serif;color:#0f172a;font-size:12px;line-height:1.5;background:#fff;padding:14px}' +
-  '.no-print{display:flex;gap:10px;margin-bottom:14px;}' +
-  '.btn-back{background:#0f172a;color:#fff;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}' +
-  '.btn-print{background:#84cc16;color:#0f172a;border:none;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}' +
-  '@media print{.no-print{display:none!important}}' +
+  '@media print{body{padding:0}}' +
   '.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}' +
   '.brand{display:flex;gap:12px;align-items:flex-start;}' +
   '.logo{width:72px;height:72px;object-fit:cover;border-radius:10px;}' +
@@ -2639,10 +2647,6 @@ function getContractDoc(c) {
   '.copyright{text-align:center;font-size:9.5px;color:#64748b;margin-top:6px;}' +
   '</style></head><body>' +
 
-  '<div class="no-print">' +
-    '<button class="btn-back" onclick="window.close()">← Back</button>' +
-    '<button class="btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>' +
-  '</div>' +
 
   '<div class="top">' +
     '<div class="brand">' +
@@ -2736,19 +2740,38 @@ function viewContractDoc() {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  var w = window.open('', '_blank');
-  w.document.write(getContractDoc(c));
-  w.document.close();
+  $('contractFrame').srcdoc = getContractDoc(c);
+  $('contractViewer').style.display = 'flex';
 }
 
 function printContractDoc() {
+  doPrintContract();
+}
+
+function closeContractViewer() {
+  var cv = $('contractViewer');
+  cv.style.display = 'none';
+  $('contractFrame').srcdoc = '';
+}
+
+function doPDFContract() {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  var w = window.open('', '_blank');
-  w.document.write(getContractDoc(c));
-  w.document.close();
-  w.onload = function(){ w.print(); };
+  var html = getContractDoc(c);
+  var name = 'Contract_' + (c.estNum||'RS');
+  if (window.AndroidBridge) { AndroidBridge.saveHtmlAsPdf(html, name); }
+  else { showToast('AndroidBridge not connected'); }
+}
+
+function doPrintContract() {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  var html = getContractDoc(c);
+  var name = 'Contract_' + (c.estNum||'RS');
+  if (window.AndroidBridge) { AndroidBridge.printHtml(html, name); }
+  else { showToast('AndroidBridge not connected'); }
 }
 
 // ═══════════════════════════════════════════════════════
