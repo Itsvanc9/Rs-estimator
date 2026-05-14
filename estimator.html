@@ -1512,6 +1512,7 @@ function updateDarkToggleUI() {
 // ═══════════════════════════════════════════════════════
 function openEstimatesPage() {
   renderSaved();
+  history.pushState({ panel: 'estimatesPage' }, '');
   var el = $('estimatesPage');
   el.classList.add('open');
   el.scrollTop = 0;
@@ -1524,6 +1525,7 @@ function closeEstimatesPage() {
 }
 
 function openSettings() {
+  history.pushState({ panel: 'settings' }, '');
   $('settingsPanel').classList.add('open');
   $('settingsOverlay').classList.add('open');
 }
@@ -1889,6 +1891,7 @@ function unlockProfit() { openOwnerPage(); }
 function lockProfit() { closeOwnerPage(); }
 
 function openOwnerPage() {
+  history.pushState({ panel: 'ownerPage' }, '');
   try {
     let t = computeTotals();
     let autoCost = t.mat + t.labor + t.other;
@@ -2541,7 +2544,7 @@ function openContractDetail(id) {
         '<div style="display:flex;align-items:center;gap:12px;width:100%;">' +
           '<div class="phi-icon">💵</div>' +
           '<div class="phi-info"><div class="phi-amount">+ $' + fmtMoney(p.amount) + '</div>' +
-            '<div class="phi-meta">' + p.date + ' · ' + p.method + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
+            '<div class="phi-meta">' + escapeHtml(p.date||'') + ' · ' + escapeHtml(p.method||'') + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
           '<button class="btn btn-danger btn-sm" style="font-size:11px;" onclick="deletePayment(\'' + id + '\',\'' + p.pid + '\')">🗑️</button>' +
         '</div>' +
         (p.receiptPhoto ? '<img src="' + p.receiptPhoto + '" onclick="viewPayReceipt(\'' + p.pid + '\',\'' + id + '\')" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:pointer;" title="Tap to enlarge">' : '') +
@@ -2740,7 +2743,6 @@ function fmtMoney(n) {
 }
 
 // ── Receipt photo helpers ──
-var payReceiptDataUrl = null;
 function previewPayReceipt(e) {
   var file = e.target.files[0]; if (!file) return;
   var reader = new FileReader();
@@ -3257,13 +3259,16 @@ function navTo(tab) {
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
-    if ($('confirmOverlay').style.display !== 'none')          { handleConfirm(false); return; }
-    if ($('contractViewer').style.display !== 'none')          { closeContractViewer(); return; }
-    if ($('signedPhotoViewer').style.display !== 'none')       { closeSignedPhotoViewer(); return; }
+    if ($('confirmOverlay').style.display !== 'none')              { handleConfirm(false); return; }
+    if ($('contractViewer').style.display !== 'none')              { closeContractViewer(); return; }
+    if ($('signedPhotoViewer').style.display !== 'none')           { closeSignedPhotoViewer(); return; }
     if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
-    if ($('schedEditOverlay').style.display !== 'none')        { closeSchedEdit(); return; }
-    if ($('payModalOverlay').classList.contains('open'))        { closePaymentModal(); return; }
-    if ($('contractDetail').classList.contains('open'))         { closeContractDetail(); return; }
+    if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
+    if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
+    if ($('contractDetail').classList.contains('open'))             { closeContractDetail(); return; }
+    if ($('ownerPage') && $('ownerPage').classList.contains('open')) { closeOwnerPage(); return; }
+    if ($('settingsPanel') && $('settingsPanel').classList.contains('open')) { closeSettings(); return; }
+    if ($('estimatesPage') && $('estimatesPage').classList.contains('open')) { closeEstimatesPage(); return; }
   });
 })();
 </script>
