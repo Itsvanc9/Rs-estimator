@@ -1188,10 +1188,10 @@
         </div>
         <div style="display:flex;gap:8px;width:100%;">
           <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedUploadInput').click()">📁 Upload File</button>
-          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedCameraInput').click()">📷 Take Photo</button>
+          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('signed')">📷 Take Photo</button>
         </div>
         <input type="file" id="signedUploadInput" style="display:none" accept="image/*,application/pdf" onchange="uploadSignedContract(event)">
-        <input type="file" id="signedCameraInput" style="display:none" accept="image/*" capture="camera" onchange="uploadSignedContract(event)">
+        <input type="file" id="signedCameraInput" style="display:none" accept="image/*" capture="environment" onchange="uploadSignedContract(event)">
         <div id="signedPreview" style="display:none;width:100%;"></div>
       </div>
     </div>
@@ -1215,14 +1215,22 @@
 </div>
 
 <!-- CONTRACT VIEWER -->
-<div id="contractViewer" style="position:fixed;inset:0;z-index:10010;display:none;flex-direction:column;background:#fff;">
-  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0f172a;flex-shrink:0;">
-    <button onclick="closeContractViewer()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">← Back</button>
-    <span style="flex:1;color:#fff;font-weight:700;font-size:14px;">Service Contract</span>
-    <button onclick="doPDFContract()" style="background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">📤 Export PDF</button>
-    <button onclick="doPrintContract()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;">🖨️ Print</button>
+<div id="contractViewer" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:10010;display:none;background:#fff;">
+  <div style="position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0f172a;z-index:2;">
+    <button onclick="closeContractViewer()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">← Back</button>
+    <span style="flex:1;color:#fff;font-weight:700;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">Service Contract</span>
+    <button onclick="doPDFContract()" style="-webkit-tap-highlight-color:transparent;background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">📤 PDF</button>
+    <button onclick="doPrintContract()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">🖨️ Print</button>
   </div>
-  <iframe id="contractFrame" style="flex:1;border:none;width:100%;"></iframe>
+  <iframe id="contractFrame" style="position:absolute;top:56px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 56px);border:none;display:block;"></iframe>
+</div>
+
+<!-- SIGNED CONTRACT FULL-SCREEN PREVIEW -->
+<div id="signedPhotoViewer" style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10020;display:none;background:#000;flex-direction:column;">
+  <div style="position:absolute;top:0;left:0;right:0;height:56px;display:flex;align-items:center;padding:0 14px;background:rgba(0,0,0,.7);z-index:1;">
+    <button onclick="closeSignedPhotoViewer()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">← Back</button>
+  </div>
+  <img id="signedPhotoViewerImg" src="" style="position:absolute;top:56px;left:0;right:0;bottom:0;width:100%;height:calc(100% - 56px);object-fit:contain;">
 </div>
 
 <!-- PAYMENT MODAL -->
@@ -1255,10 +1263,10 @@
       <label>Receipt / Proof of Payment</label>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptUpload').click()">📁 Upload</button>
-        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptCamera').click()">📷 Camera</button>
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('payReceipt')">📷 Camera</button>
       </div>
       <input type="file" id="payReceiptUpload" style="display:none" accept="image/*" onchange="previewPayReceipt(event)">
-      <input type="file" id="payReceiptCamera" style="display:none" accept="image/*" capture="camera" onchange="previewPayReceipt(event)">
+      <input type="file" id="payReceiptCamera" style="display:none" accept="image/*" capture="environment" onchange="previewPayReceipt(event)">
       <div id="payReceiptPreview" style="margin-top:8px;display:none;">
         <img id="payReceiptImg" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
         <button onclick="clearPayReceipt()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ Remove photo</button>
@@ -1909,17 +1917,40 @@ function calcEstimateGrand(e) {
   return sub + tax;
 }
 
-function openReceiptCamera() {
+var cameraContext = 'receipt';
+
+function openCamera(context) {
+  cameraContext = context || 'receipt';
   if (window.AndroidBridge && AndroidBridge.takePhoto) {
     AndroidBridge.takePhoto();
   } else {
-    $('receiptInput').click();
+    if (context === 'payReceipt')  $('payReceiptCamera').click();
+    else if (context === 'signed') $('signedCameraInput').click();
+    else                           $('receiptInput').click();
   }
 }
 
+function openReceiptCamera() { openCamera('receipt'); }
+
 function receiveNativePhoto(base64) {
-  receiptPhotos.push(base64);
-  renderReceipts();
+  var ctx = cameraContext;
+  cameraContext = 'receipt';
+  if (ctx === 'payReceipt') {
+    $('payReceiptImg').src = base64;
+    $('payReceiptPreview').style.display = '';
+  } else if (ctx === 'signed') {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id===currentContractId; });
+    if (!c) return;
+    c.signedPhoto = base64;
+    c.signedDate  = new Date().toISOString().slice(0,10);
+    saveContracts(contracts);
+    renderSignedSection(c);
+    showToast('✅ Signed contract saved');
+  } else {
+    receiptPhotos.push(base64);
+    renderReceipts();
+  }
 }
 
 function handleReceiptFile(input) {
@@ -2231,10 +2262,13 @@ function doPrint() {
 // BACKUP / IMPORT
 // ═══════════════════════════════════════════════════════
 function exportBackup() {
-  let saved = localStorage.getItem('RS_ESTIMATES') || '[]';
-  let filename = 'backup_' + new Date().toISOString().slice(0,10) + '.json';
+  var data = {
+    RS_ESTIMATES: JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]'),
+    RS_CONTRACTS: JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]')
+  };
+  var filename = 'RS_backup_' + new Date().toISOString().slice(0,10) + '.json';
   if (window.AndroidBridge && AndroidBridge.saveTextFile) {
-    AndroidBridge.saveTextFile(saved, filename, 'application/json');
+    AndroidBridge.saveTextFile(JSON.stringify(data), filename, 'application/json');
   } else {
     showToast('AndroidBridge not connected');
   }
@@ -2244,12 +2278,15 @@ function importBackupBase64(base64Text) {
   try {
     let jsonText = decodeURIComponent(escape(atob(base64Text)));
     let data = JSON.parse(jsonText);
-    let imported = Array.isArray(data) ? data : (data.estimates || data.RS_ESTIMATES || []);
-    if (imported.length === 0) { showToast('Empty or invalid backup'); return; }
-    let current = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-    localStorage.setItem('RS_ESTIMATES', JSON.stringify(current.concat(imported)));
-    renderSaved(); updateDashboard();
-    showToast('✅ Imported: ' + imported.length);
+    let estimates = Array.isArray(data) ? data : (data.RS_ESTIMATES || data.estimates || []);
+    let contracts = Array.isArray(data) ? [] : (data.RS_CONTRACTS || []);
+    let currentEst = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+    let currentCon = JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
+    localStorage.setItem('RS_ESTIMATES', JSON.stringify(currentEst.concat(estimates)));
+    if (contracts.length > 0)
+      localStorage.setItem('RS_CONTRACTS', JSON.stringify(currentCon.concat(contracts)));
+    renderSaved(); updateDashboard(); updateContractCount();
+    showToast('✅ Imported: ' + estimates.length + ' estimates, ' + contracts.length + ' contracts');
   } catch(err) { showToast('Import error: ' + err.message); }
 }
 
@@ -2263,7 +2300,12 @@ function importBackup(e) {
       if (Array.isArray(data)) {
         localStorage.setItem('RS_ESTIMATES', JSON.stringify(data));
         renderSaved(); updateDashboard();
-        showToast('✓ Backup imported');
+        showToast('✓ Backup imported: ' + data.length + ' estimates');
+      } else if (data.RS_ESTIMATES || data.RS_CONTRACTS) {
+        if (data.RS_ESTIMATES) localStorage.setItem('RS_ESTIMATES', JSON.stringify(data.RS_ESTIMATES));
+        if (data.RS_CONTRACTS) localStorage.setItem('RS_CONTRACTS', JSON.stringify(data.RS_CONTRACTS));
+        renderSaved(); updateDashboard(); updateContractCount();
+        showToast('✓ Backup imported: ' + (data.RS_ESTIMATES||[]).length + ' estimates, ' + (data.RS_CONTRACTS||[]).length + ' contracts');
       } else { showToast('Invalid backup file'); }
     } catch(err) { showToast('Error: ' + err.message); }
   };
@@ -2585,9 +2627,12 @@ function openSignedPreview() {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c || !c.signedPhoto) return;
-  var w = window.open('', '_blank');
-  w.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="' + c.signedPhoto + '" style="max-width:100%;max-height:100vh;"></body></html>');
-  w.document.close();
+  $('signedPhotoViewerImg').src = c.signedPhoto;
+  $('signedPhotoViewer').style.display = 'block';
+}
+function closeSignedPhotoViewer() {
+  $('signedPhotoViewer').style.display = 'none';
+  $('signedPhotoViewerImg').src = '';
 }
 
 // ── Contract document generation ──
@@ -2741,7 +2786,7 @@ function viewContractDoc() {
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c) return;
   $('contractFrame').srcdoc = getContractDoc(c);
-  $('contractViewer').style.display = 'flex';
+  $('contractViewer').style.display = 'block';
 }
 
 function printContractDoc() {
