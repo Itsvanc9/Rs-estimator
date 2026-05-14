@@ -1153,6 +1153,35 @@
       <div class="pay-schedule" id="cdSchedule"></div>
     </div>
 
+    <!-- Contract document buttons -->
+    <div>
+      <div class="cd-section-title">Contract Document</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="viewContractDoc()">📄 View Contract</button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="printContractDoc()">🖨️ Print / PDF</button>
+      </div>
+    </div>
+
+    <!-- Signed contract upload -->
+    <div class="pay-schedule" style="overflow:hidden;">
+      <div class="pay-schedule-item" style="flex-direction:column;align-items:flex-start;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;width:100%;">
+          <div class="psi-indicator pending" id="signedIndicator">✍️</div>
+          <div class="psi-info">
+            <div class="psi-label">Signed Contract</div>
+            <div class="psi-meta" id="signedMeta">Not yet uploaded</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;width:100%;">
+          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedUploadInput').click()">📁 Upload File</button>
+          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedCameraInput').click()">📷 Take Photo</button>
+        </div>
+        <input type="file" id="signedUploadInput" style="display:none" accept="image/*,application/pdf" onchange="uploadSignedContract(event)">
+        <input type="file" id="signedCameraInput" style="display:none" accept="image/*" capture="camera" onchange="uploadSignedContract(event)">
+        <div id="signedPreview" style="display:none;width:100%;"></div>
+      </div>
+    </div>
+
     <!-- Record payment button -->
     <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;" onclick="openPaymentModal()">
       💵 Record Payment Received
@@ -1196,6 +1225,19 @@
     <div class="pay-modal-field">
       <label>Note (optional)</label>
       <input type="text" id="payNote" placeholder="e.g. Check #1234">
+    </div>
+    <div class="pay-modal-field">
+      <label>Receipt / Proof of Payment</label>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptUpload').click()">📁 Upload</button>
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptCamera').click()">📷 Camera</button>
+      </div>
+      <input type="file" id="payReceiptUpload" style="display:none" accept="image/*" onchange="previewPayReceipt(event)">
+      <input type="file" id="payReceiptCamera" style="display:none" accept="image/*" capture="camera" onchange="previewPayReceipt(event)">
+      <div id="payReceiptPreview" style="margin-top:8px;display:none;">
+        <img id="payReceiptImg" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+        <button onclick="clearPayReceipt()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ Remove photo</button>
+      </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:6px;">
       <button class="btn btn-light" style="flex:1;" onclick="closePaymentModal()">Cancel</button>
@@ -2231,8 +2273,17 @@ function acceptEstimate(id) {
     ],
     payments: []
   };
+  // Store full estimate data for contract generation
+  contract.scopeWork    = est.scopeWork || '';
+  contract.estDate      = est.estDate || today;
+  contract.validUntil   = est.validUntil || '';
+  contract.signedPhoto  = null; // will hold base64 of signed contract image
   contracts.push(contract);
   saveContracts(contracts);
+  // Remove from estimates
+  var remaining = estimates.filter(function(e){ return e.id !== id; });
+  localStorage.setItem('RS_ESTIMATES', JSON.stringify(remaining));
+  renderSaved();
   updateContractCount();
   showToast('✅ Contract created');
   switchEpTab('contracts');
@@ -2307,14 +2358,19 @@ function openContractDetail(id) {
   } else {
     histWrap.style.display = '';
     $('cdHistory').innerHTML = c.payments.slice().reverse().map(function(p) {
-      return '<div class="pay-history-item">' +
-        '<div class="phi-icon">💵</div>' +
-        '<div class="phi-info"><div class="phi-amount">+ $' + fmtMoney(p.amount) + '</div>' +
-          '<div class="phi-meta">' + p.date + ' · ' + p.method + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
-        '<button class="btn btn-danger btn-sm" style="font-size:11px;" onclick="deletePayment(\'' + id + '\',\'' + p.pid + '\')">🗑️</button>' +
+      return '<div class="pay-history-item" style="flex-direction:column;align-items:flex-start;gap:8px;">' +
+        '<div style="display:flex;align-items:center;gap:12px;width:100%;">' +
+          '<div class="phi-icon">💵</div>' +
+          '<div class="phi-info"><div class="phi-amount">+ $' + fmtMoney(p.amount) + '</div>' +
+            '<div class="phi-meta">' + p.date + ' · ' + p.method + (p.note?' · '+escapeHtml(p.note):'') + '</div></div>' +
+          '<button class="btn btn-danger btn-sm" style="font-size:11px;" onclick="deletePayment(\'' + id + '\',\'' + p.pid + '\')">🗑️</button>' +
+        '</div>' +
+        (p.receiptPhoto ? '<img src="' + p.receiptPhoto + '" style="width:100%;max-height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">' : '') +
       '</div>';
     }).join('');
   }
+  // Signed contract section
+  renderSignedSection(c);
   $('contractDetail').classList.add('open');
   $('contractDetail').scrollTop = 0;
 }
@@ -2356,6 +2412,7 @@ function openPaymentModal() {
 
 function closePaymentModal() {
   $('payModalOverlay').classList.remove('open');
+  clearPayReceipt();
 }
 
 function selectPayMethod(btn, method) {
@@ -2377,13 +2434,15 @@ function savePayment() {
     var alreadyPaid = c.payments.some(function(p){ return p.scheduleId===s.sid; });
     if (!alreadyPaid) { schedId = s.sid; break; }
   }
+  var receiptPhoto = $('payReceiptImg').src && $('payReceiptPreview').style.display !== 'none' ? $('payReceiptImg').src : null;
   c.payments.push({
     pid: 'p_' + Date.now(),
     scheduleId: schedId,
     amount: amount,
     date: $('payDate').value,
     method: selectedPayMethod,
-    note: $('payNote').value
+    note: $('payNote').value,
+    receiptPhoto: receiptPhoto
   });
   saveContracts(contracts);
   closePaymentModal();
@@ -2404,6 +2463,148 @@ function deletePayment(contractId, pid) {
 
 function fmtMoney(n) {
   return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+// ── Receipt photo helpers ──
+var payReceiptDataUrl = null;
+function previewPayReceipt(e) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    $('payReceiptImg').src = ev.target.result;
+    $('payReceiptPreview').style.display = '';
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function clearPayReceipt() {
+  $('payReceiptImg').src = '';
+  $('payReceiptPreview').style.display = 'none';
+  $('payReceiptUpload').value = '';
+  $('payReceiptCamera').value = '';
+}
+
+// ── Signed contract upload ──
+function uploadSignedContract(e) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id===currentContractId; });
+    if (!c) return;
+    c.signedPhoto = ev.target.result;
+    c.signedDate  = new Date().toISOString().slice(0,10);
+    saveContracts(contracts);
+    renderSignedSection(c);
+    showToast('✅ Signed contract saved');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function renderSignedSection(c) {
+  var indicator = $('signedIndicator');
+  var meta      = $('signedMeta');
+  var preview   = $('signedPreview');
+  if (c.signedPhoto) {
+    indicator.textContent = '✅';
+    indicator.className   = 'psi-indicator paid';
+    meta.textContent      = 'Signed · ' + (c.signedDate || '');
+    preview.style.display = '';
+    preview.innerHTML     = '<img src="' + c.signedPhoto + '" style="width:100%;border-radius:10px;border:1px solid var(--border);margin-top:4px;" onclick="openSignedPreview()">' +
+      '<button onclick="removeSignedContract()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ Remove</button>';
+  } else {
+    indicator.textContent = '✍️';
+    indicator.className   = 'psi-indicator pending';
+    meta.textContent      = 'Not yet uploaded';
+    preview.style.display = 'none';
+    preview.innerHTML     = '';
+  }
+}
+function removeSignedContract() {
+  if (!confirm('Remove signed contract?')) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  c.signedPhoto = null; c.signedDate = null;
+  saveContracts(contracts);
+  renderSignedSection(c);
+}
+function openSignedPreview() {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c || !c.signedPhoto) return;
+  var w = window.open('', '_blank');
+  w.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="' + c.signedPhoto + '" style="max-width:100%;max-height:100vh;"></body></html>');
+  w.document.close();
+}
+
+// ── Contract document generation ──
+function getContractDoc(c) {
+  var fmt = function(n){ return '$' + fmtMoney(n); };
+  var rows = c.schedule.map(function(s){
+    return '<tr><td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">' + s.label + '</td>' +
+           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;text-align:right;">' + fmt(s.amount) + '</td>' +
+           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">' + s.due + '</td>' +
+           '<td style="padding:10px 14px;border-bottom:1px solid #e2e8f0;font-size:11px;color:#64748b;">' + s.note + '</td></tr>';
+  }).join('');
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' +
+    '@page{size:letter portrait;margin:15mm} *{box-sizing:border-box} body{font-family:Arial,sans-serif;color:#0f172a;font-size:13px;line-height:1.6}' +
+    'h1{font-size:22px;margin:0 0 4px} h2{font-size:14px;font-weight:800;color:#5a8c0a;border-bottom:2px solid #84cc16;padding-bottom:6px;margin:22px 0 10px}' +
+    'table{width:100%;border-collapse:collapse} th{background:#0f172a;color:#fff;padding:10px 14px;text-align:left;font-size:12px}' +
+    '.sig-line{border-top:1.5px solid #0f172a;margin-top:40px;padding-top:6px;font-size:12px;color:#475569}' +
+    '.note{background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:10px 14px;font-size:11px;color:#92400e;margin:10px 0}' +
+    '</style></head><body>' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:6px;">' +
+      '<div><h1>R&amp;S Drywall Solutions LLC</h1><div style="color:#64748b;font-size:12px;">Denver, Colorado · (720) 761-8835 · roicegarcia14@gmail.com<br>Licensed &amp; Insured</div></div>' +
+      '<div style="text-align:right;"><div style="font-size:22px;font-weight:900;letter-spacing:1px;">SERVICE CONTRACT</div>' +
+      '<div style="font-size:12px;color:#64748b;">' + (c.estNum||'') + ' · ' + c.acceptedDate + '</div></div>' +
+    '</div>' +
+    '<h2>Parties</h2>' +
+    '<table style="margin-bottom:0;"><tr>' +
+      '<td style="padding:8px 14px 8px 0;width:50%;vertical-align:top;"><strong>Contractor:</strong><br>R&amp;S Drywall Solutions LLC<br>Denver, Colorado</td>' +
+      '<td style="padding:8px 0;vertical-align:top;"><strong>Client:</strong><br>' + escapeHtml(c.clientName) + '<br>' + escapeHtml(c.projectAddress||'') + '</td>' +
+    '</tr></table>' +
+    '<h2>Project Description</h2>' +
+    '<p><strong>Project:</strong> ' + escapeHtml(c.projectName||'') + '<br>' +
+    '<strong>Address:</strong> ' + escapeHtml(c.projectAddress||'') + '<br>' +
+    '<strong>Scope of Work:</strong> ' + escapeHtml(c.scopeWork||'As described in estimate ' + (c.estNum||'')) + '</p>' +
+    '<h2>Contract Value &amp; Payment Schedule</h2>' +
+    '<p><strong>Total Contract Amount: ' + fmt(c.totalAmount) + '</strong></p>' +
+    '<table><thead><tr><th>Payment</th><th>Amount</th><th>Due Date</th><th>Notes</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+    '<div class="note">⚖️ <strong>C.R.S. § 38-22-127 – Trust Fund:</strong> All funds received by Contractor shall be held in trust for payment of subcontractors, laborers, and material suppliers. Misappropriation constitutes criminal theft under C.R.S. § 18-4-401.</div>' +
+    '<h2>Terms &amp; Conditions</h2>' +
+    '<p><strong>1. Scope:</strong> Work shall be performed as described above. Any changes must be agreed in writing.</p>' +
+    '<p><strong>2. Materials:</strong> Contractor shall supply all materials unless otherwise specified. Materials are held in trust per C.R.S. § 38-22-127.</p>' +
+    '<p><strong>3. Retainage:</strong> For projects exceeding $150,000, maximum retainage is 5% per C.R.S. § 38-46-103.</p>' +
+    '<p><strong>4. Late Payment:</strong> Unpaid balances after due date accrue interest at 1.5% per month per C.R.S. § 38-46-103.</p>' +
+    '<p><strong>5. Lien Rights:</strong> Contractor retains full mechanics\' lien rights under C.R.S. § 38-22-101. A lien waiver will be provided upon receipt of final payment.</p>' +
+    '<p><strong>6. Disputes:</strong> Disputes shall be resolved under Colorado law in Denver County.</p>' +
+    '<h2>Signatures</h2>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:10px;">' +
+      '<div><div class="sig-line">Contractor Signature &amp; Date</div><div style="margin-top:24px;font-size:12px;color:#64748b;">R&amp;S Drywall Solutions LLC</div></div>' +
+      '<div><div class="sig-line">Client Signature &amp; Date</div><div style="margin-top:24px;font-size:12px;color:#64748b;">' + escapeHtml(c.clientName) + '</div></div>' +
+    '</div>' +
+    '<p style="margin-top:30px;font-size:10px;color:#94a3b8;text-align:center;">© 2026 R&amp;S Drywall Solutions LLC · This contract is governed by the laws of the State of Colorado</p>' +
+    '</body></html>';
+}
+
+function viewContractDoc() {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  var w = window.open('', '_blank');
+  w.document.write(getContractDoc(c));
+  w.document.close();
+}
+
+function printContractDoc() {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  var w = window.open('', '_blank');
+  w.document.write(getContractDoc(c));
+  w.document.close();
+  w.onload = function(){ w.print(); };
 }
 
 // ═══════════════════════════════════════════════════════
