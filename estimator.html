@@ -902,7 +902,7 @@
     <div class="card-header"><div class="si si-blue">📋</div><h2 data-i18n="projectDetails">Project Details</h2></div>
     <div class="card-body">
       <div class="grid-2">
-        <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal();validateFolio()" autocomplete="off"><div id="folioWarn" style="display:none;font-size:11px;margin-top:5px;padding:6px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;"></div></div>
         <div class="field"><label data-i18n="date">Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="client">Client</label><input id="clientName" placeholder="Client Name" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="project">Project</label><input id="projectName" placeholder="Project Name" oninput="updateTotal()"></div>
@@ -2085,7 +2085,31 @@ function closeReceiptModal() {
   $('receiptModalImg').src = '';
 }
 
+function validateFolio() {
+  var val = ($('estNum') && $('estNum').value || '').trim();
+  var warn = $('folioWarn');
+  if (!warn) return false;
+  if (!val) { warn.style.display = 'none'; $('estNum').style.outline = ''; return false; }
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  var contracts = JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
+  // Exclude the currently open estimate from the duplicate check
+  var usedInEst = estimates.some(function(e){ return e.estNum === val && e.id !== currentEstimateId; });
+  var usedInCon = contracts.some(function(c){ return c.estNum === val; });
+  if (usedInEst || usedInCon) {
+    var next = getNextEstimateNumber(true);
+    warn.innerHTML = '⚠️ Folio <strong>' + escapeHtml(val) + '</strong> ya está en uso.&nbsp;&nbsp;'
+      + '<button onclick="$(\'estNum\').value=\'' + next + '\';validateFolio()" style="-webkit-tap-highlight-color:transparent;background:#dc2626;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;">Usar ' + next + '</button>';
+    warn.style.display = 'block';
+    $('estNum').style.outline = '2px solid #ef4444';
+    return true;
+  }
+  warn.style.display = 'none';
+  $('estNum').style.outline = '';
+  return false;
+}
+
 function saveEstimate() {
+  if (validateFolio()) { showToast('⚠️ Folio repetido — usa el sugerido'); return; }
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   let current = {
     id: Date.now().toString(), grand: computeTotals().grand,
@@ -2105,8 +2129,10 @@ function saveEstimate() {
   };
   savedArray.unshift(current);
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
+  currentEstimateId = current.id;
   renderSaved(); updateDashboard();
   $('estNum').value = getNextEstimateNumber();
+  currentEstimateId = null;
   showToast(t('toastSaved'));
 }
 
@@ -2114,6 +2140,7 @@ function loadEstimate(id) {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   let item = savedArray.find(s => s.id == id);
   if (!item) return;
+  currentEstimateId = item.id;
   $('estNum').value = item.estNum;
   $('estDate').value = item.date || new Date().toISOString().slice(0,10);
   $('clientName').value = item.client || '';
@@ -2175,6 +2202,9 @@ function renderSaved() {
 }
 
 function resetFields(newFolio) {
+  currentEstimateId = null;
+  if ($('folioWarn')) { $('folioWarn').style.display = 'none'; }
+  if ($('estNum'))    { $('estNum').style.outline = ''; }
   $('estNum').value = newFolio;
   $('estDate').value = new Date().toISOString().slice(0,10);
   ['clientName','projectName','projectAddress','validUntil','scopeWork','notes','unitType','clientPhone','clientEmail'].forEach(function(id){ $(id).value = ''; });
@@ -2411,7 +2441,8 @@ function switchEpTab(tab) {
 // ═══════════════════════════════════════════════════════
 // CONTRACTS
 // ═══════════════════════════════════════════════════════
-var currentContractId = null;
+var currentContractId  = null;
+var currentEstimateId  = null;
 var selectedPayMethod = 'cash';
 
 function getContracts() {
