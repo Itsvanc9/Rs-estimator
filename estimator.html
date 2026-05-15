@@ -1206,6 +1206,7 @@
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="viewContractDoc()">📄 View Contract</button>
         <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="printContractDoc()">🖨️ Print / PDF</button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="shareEstimate()">📨 Share</button>
       </div>
     </div>
 
@@ -1334,19 +1335,33 @@
 
 <!-- SHARE MODAL -->
 <div id="shareModalOverlay" style="position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
-  <div style="background:var(--surface);border-radius:24px;padding:28px 20px 20px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);text-align:center;">
-    <div style="font-size:36px;margin-bottom:10px;">📨</div>
-    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">Share Estimate</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:22px;">Choose how to send it</div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
-      <button onclick="doShareWa(true)" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#25d366;border:none;color:#fff;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
-        <span style="font-size:22px;">💬</span> WhatsApp
-      </button>
-      <button onclick="doShareEmail()" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
-        <span style="font-size:22px;">✉️</span> Email
-      </button>
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 18px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <!-- Step 1: choose document -->
+    <div id="shareStep1">
+      <div style="text-align:center;font-size:34px;margin-bottom:8px;">📨</div>
+      <div style="text-align:center;font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">¿Qué quieres enviar?</div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:18px;">Se enviará como PDF</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <button onclick="sharePickMethod('estimate')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
+          <span style="font-size:22px;">📋</span><div style="text-align:left;"><div>Estimado</div><div style="font-size:11px;font-weight:500;opacity:.75;">Con fotos de depósito</div></div>
+        </button>
+        <button id="shareContractBtn" onclick="sharePickMethod('contract')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#0f172a;border:none;color:#fff;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
+          <span style="font-size:22px;">📜</span><div style="text-align:left;"><div>Contrato</div><div style="font-size:11px;font-weight:500;opacity:.75;">Con fotos de pagos</div></div>
+        </button>
+      </div>
+      <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancelar</button>
     </div>
-    <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancel</button>
+    <!-- Step 2: choose send method -->
+    <div id="shareStep2" style="display:none;">
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:6px;">Enviando</div>
+      <div id="shareStep2Label" style="text-align:center;font-size:15px;font-weight:800;color:var(--text);margin-bottom:18px;"></div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+        <button onclick="doShareSend('whatsapp')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#25d366;border:none;color:#fff;border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">💬</span>WhatsApp</button>
+        <button onclick="doShareSend('email')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">✉️</span>Email</button>
+        <button onclick="doShareSend('copy')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">📋</span>Copiar texto</button>
+      </div>
+      <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancelar</button>
+    </div>
   </div>
 </div>
 
@@ -2433,35 +2448,85 @@ function getEstimateShareText() {
 }
 
 function shareEstimate() {
-  var text  = getEstimateShareText();
-  var title = 'Estimate ' + ($('estNum').value || '');
-  if (navigator.share) {
-    navigator.share({ title: title, text: text }).catch(function(){});
-    return;
-  }
-  // Fallback: show share options modal
-  var email = ($('clientEmail') && $('clientEmail').value) || '';
-  var phone = ($('clientPhone') && $('clientPhone').value) || '';
-  var enc   = encodeURIComponent(text);
-  var wa    = 'whatsapp://send?text=' + enc;
-  var ml    = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(title) + '&body=' + enc;
-  showShareModal(wa, ml, phone ? 'whatsapp://send?phone=' + phone.replace(/\D/g,'') + '&text=' + enc : null);
-}
-
-var _shareWa, _shareMl, _shareWaPhone;
-function showShareModal(wa, ml, waPhone) {
-  _shareWa = wa; _shareMl = ml; _shareWaPhone = waPhone;
+  var contractBtn = $('shareContractBtn');
+  if (contractBtn) contractBtn.style.opacity = currentContractId ? '1' : '0.4';
+  $('shareStep1').style.display = '';
+  $('shareStep2').style.display = 'none';
   $('shareModalOverlay').style.display = 'flex';
   history.pushState({ panel: 'shareModal' }, '');
 }
-function closeShareModal() { $('shareModalOverlay').style.display = 'none'; }
-function doShareWa(usePhone) {
-  closeShareModal();
-  window.location.href = usePhone && _shareWaPhone ? _shareWaPhone : _shareWa;
+
+var _shareDocType = 'estimate';
+function sharePickMethod(docType) {
+  _shareDocType = docType;
+  if (docType === 'contract' && !currentContractId) {
+    showToast('Abre un contrato primero'); return;
+  }
+  $('shareStep2Label').textContent = docType === 'contract' ? '📜 Contrato' : '📋 Estimado';
+  $('shareStep1').style.display = 'none';
+  $('shareStep2').style.display = '';
 }
-function doShareEmail() {
+
+function _getShareHtml() {
+  if (_shareDocType === 'contract' && currentContractId) {
+    var c = getContracts().find(function(x){ return x.id === currentContractId; });
+    return c ? { html: getContractDoc(c), name: 'Contrato_' + (c.estNum||'RS') } : null;
+  }
+  return { html: getPrintHTML(), name: 'Estimado_' + ($('estNum').value||'RS') };
+}
+
+function _openIntentUrl(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ document.body.removeChild(a); }, 500);
+}
+
+function doShareSend(method) {
   closeShareModal();
-  window.location.href = _shareMl;
+  var doc = _getShareHtml();
+  if (!doc) { showToast('Sin datos para compartir'); return; }
+
+  // Try native PDF share via AndroidBridge
+  if (method !== 'copy' && window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
+    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name);
+    return;
+  }
+
+  // Fallback: save PDF and show toast with instructions
+  if (method !== 'copy' && window.AndroidBridge && AndroidBridge.saveHtmlAsPdf) {
+    AndroidBridge.saveHtmlAsPdf(doc.html, doc.name);
+    showToast('📄 PDF guardado — abre Descargas y compártelo desde ahí');
+    return;
+  }
+
+  // Text-only fallback (no AndroidBridge)
+  var text  = getEstimateShareText();
+  var title = doc.name;
+  var enc   = encodeURIComponent(text);
+  if (method === 'copy') {
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); showToast('📋 Copiado — pégalo en WhatsApp o Email'); }
+    catch(e) { showToast('No se pudo copiar'); }
+    document.body.removeChild(ta);
+  } else if (method === 'whatsapp') {
+    var phone = ($('clientPhone') && $('clientPhone').value || '').replace(/\D/g,'');
+    var waUrl = phone
+      ? 'intent://send/' + phone + '?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end'
+      : 'intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end';
+    _openIntentUrl(waUrl);
+  } else if (method === 'email') {
+    var email = ($('clientEmail') && $('clientEmail').value) || '';
+    _openIntentUrl('intent://compose?to=' + encodeURIComponent(email) + '&subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end');
+  }
+}
+
+function closeShareModal() {
+  $('shareModalOverlay').style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════════
