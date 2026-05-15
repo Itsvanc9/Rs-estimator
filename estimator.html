@@ -2249,6 +2249,11 @@ function saveEstimate() {
   currentEstimateId = current.id;
   renderSaved(); updateDashboard();
   showToast(t('toastSaved'));
+  if (existingIdx < 0) {
+    $('estNum').value = getNextEstimateNumber();
+    validateFolio();
+    currentEstimateId = null;
+  }
 }
 
 function loadEstimate(id) {
