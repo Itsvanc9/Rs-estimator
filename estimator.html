@@ -3150,7 +3150,7 @@ function openSchedEdit(sid) {
   var s = c.schedule.find(function(x){ return x.sid===sid; });
   if (!s) return;
   _schedEditSid   = sid;
-  _schedEditTotal = parseFloat(c.grand) || 0;
+  _schedEditTotal = parseFloat(c.totalAmount) || 0;
   $('schedEditLabel').textContent = s.label;
   $('schedEditPct').value    = s.pct;
   $('schedEditDate').value   = s.due;
