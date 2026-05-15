@@ -1811,15 +1811,23 @@ function saveClient() {
   let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
   let client = { name:$('clientName').value, phone:$('clientPhone').value, email:$('clientEmail').value, address:$('projectAddress').value };
   if (!client.name) { showToast('Add client name first'); return; }
-  clients = clients.filter(c => c.name !== client.name);
-  clients.push(client);
-  localStorage.setItem('RS_CLIENTS', JSON.stringify(clients));
-  renderClients();
-  let sel = $('clientSelect');
-  for (let i = 0; i < sel.options.length; i++) {
-    if (sel.options[i].text === client.name) { sel.selectedIndex = i; break; }
+  let existing = clients.find(c => c.name === client.name);
+  function _doSaveClient() {
+    clients = clients.filter(c => c.name !== client.name);
+    clients.push(client);
+    localStorage.setItem('RS_CLIENTS', JSON.stringify(clients));
+    renderClients();
+    let sel = $('clientSelect');
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].text === client.name) { sel.selectedIndex = i; break; }
+    }
+    showToast(t('toastClientSaved'));
   }
-  showToast(t('toastClientSaved'));
+  if (existing) {
+    showConfirm('Client "' + client.name + '" already exists. Replace?', '', '👤', 'Replace', '#f59e0b', _doSaveClient);
+  } else {
+    _doSaveClient();
+  }
 }
 
 function renderClients() {
@@ -2227,12 +2235,15 @@ function saveEstimate() {
     receipts: JSON.parse(JSON.stringify(receiptPhotos)),
     signatures: { authorized: estimateSignatures.authorized, client: estimateSignatures.client }
   };
-  savedArray.unshift(current);
+  var existingIdx = savedArray.findIndex(function(s){ return s.id === currentEstimateId; });
+  if (existingIdx >= 0) {
+    savedArray[existingIdx] = current;
+  } else {
+    savedArray.unshift(current);
+  }
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
   currentEstimateId = current.id;
   renderSaved(); updateDashboard();
-  $('estNum').value = getNextEstimateNumber();
-  currentEstimateId = null;
   showToast(t('toastSaved'));
 }
 
@@ -3347,6 +3358,11 @@ function getStateLaw() {
 function setAppState(code) {
   localStorage.setItem('RS_STATE', code);
   showToast('✅ ' + (STATE_LAW[code]||{n:code}).n);
+  if ($('contractDetail') && $('contractDetail').classList.contains('open') && currentContractId) {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id === currentContractId; });
+    if (c) $('contractFrame').srcdoc = getContractDoc(c);
+  }
 }
 
 // ── Contract document generation ──
