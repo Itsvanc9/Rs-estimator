@@ -44,7 +44,38 @@ public class MainActivity extends Activity {
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
 
-        webView.setWebViewClient(new WebViewClient());
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, android.webkit.WebResourceRequest request) {
+                return handleUrl(request.getUrl().toString());
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return handleUrl(url);
+            }
+
+            private boolean handleUrl(String url) {
+                if (url.startsWith("intent://")) {
+                    try {
+                        Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        // app not installed, ignore
+                    }
+                    return true;
+                }
+                if (url.startsWith("whatsapp://") || url.startsWith("mailto:")) {
+                    try {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                    return true;
+                }
+                return false;
+            }
+        });
 
         androidBridge = new AndroidBridge(this, webView);
         webView.addJavascriptInterface(androidBridge, "AndroidBridge");
