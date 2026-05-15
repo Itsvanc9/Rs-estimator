@@ -1035,6 +1035,27 @@
     </div>
   </div>
 
+  <!-- ESTIMATE SIGNATURES -->
+  <div class="card" style="border:1px solid var(--border);">
+    <div class="card-header"><div class="si">✍️</div><h2>Firmas Electrónicas</h2></div>
+    <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:130px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
+        <div id="estSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-auth')">
+          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+        </div>
+        <button id="estSigAuthClear" onclick="clearEstSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+      </div>
+      <div style="flex:1;min-width:130px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
+        <div id="estSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-client')">
+          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+        </div>
+        <button id="estSigClientClear" onclick="clearEstSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- RECEIPT VIEWER MODAL -->
   <div id="receiptModal" class="receipt-modal" onclick="closeReceiptModal()">
     <button class="receipt-modal-close" onclick="closeReceiptModal()">✕</button>
@@ -1257,6 +1278,25 @@
       <div id="cdPhotoGallery" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0;"></div>
     </div>
 
+    <!-- Contract electronic signatures -->
+    <div class="cd-section-title">✍️ Firmas Electrónicas</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+      <div style="flex:1;min-width:130px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
+        <div id="conSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-auth')">
+          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+        </div>
+        <button id="conSigAuthClear" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+      </div>
+      <div style="flex:1;min-width:130px;text-align:center;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
+        <div id="conSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-client')">
+          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+        </div>
+        <button id="conSigClientClear" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+      </div>
+    </div>
+
     <!-- Colorado law note -->
     <div class="cd-law-note">
       ⚖️ <strong>U.S. Construction Law:</strong> All funds received must be applied to payment of subcontractors and suppliers. Retainage is capped by applicable state law (typically 5–10%). Contractor has mechanics' lien rights in all 50 states. Always request a signed lien waiver at final payment.
@@ -1333,32 +1373,39 @@
   © 2026 R&S Drywall Solutions LLC · All rights reserved.
 </div>
 
+<!-- SIGNATURE PAD -->
+<div id="sigPadOverlay" style="position:fixed;inset:0;z-index:35000;display:none;flex-direction:column;background:#fff;">
+  <div style="height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0f172a;flex-shrink:0;">
+    <button onclick="closeSigPad()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✕</button>
+    <span id="sigPadTitle" style="flex:1;color:#fff;font-weight:700;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;"></span>
+    <button onclick="clearSigPad()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">🔄 Borrar</button>
+    <button onclick="saveSigPad()" style="-webkit-tap-highlight-color:transparent;background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✅ Guardar</button>
+  </div>
+  <div style="flex:1;position:relative;background:#fafafa;">
+    <canvas id="sigPadCanvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;"></canvas>
+    <div style="position:absolute;bottom:28%;left:8%;right:8%;border-bottom:2px solid #cbd5e1;pointer-events:none;"></div>
+    <div style="position:absolute;bottom:calc(28% + 10px);left:8%;font-size:13px;color:#94a3b8;pointer-events:none;">Firma aquí ↓</div>
+  </div>
+</div>
+
 <!-- SHARE MODAL -->
 <div id="shareModalOverlay" style="position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
-  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 18px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
-    <!-- Step 1: choose document -->
-    <div id="shareStep1">
-      <div style="text-align:center;font-size:34px;margin-bottom:8px;">📨</div>
-      <div style="text-align:center;font-size:16px;font-weight:800;color:var(--text);margin-bottom:4px;">¿Qué quieres enviar?</div>
-      <div style="text-align:center;font-size:12px;color:var(--muted);margin-bottom:18px;">Se enviará como PDF</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
-        <button onclick="sharePickMethod('estimate')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
-          <span style="font-size:22px;">📋</span><div style="text-align:left;"><div>Estimado</div><div style="font-size:11px;font-weight:500;opacity:.75;">Con fotos de depósito</div></div>
-        </button>
-        <button id="shareContractBtn" onclick="sharePickMethod('contract')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#0f172a;border:none;color:#fff;border-radius:14px;padding:14px 16px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
-          <span style="font-size:22px;">📜</span><div style="text-align:left;"><div>Contrato</div><div style="font-size:11px;font-weight:500;opacity:.75;">Con fotos de pagos</div></div>
-        </button>
-      </div>
+  <div style="background:var(--surface);border-radius:24px;padding:20px 16px 16px;width:100%;max-width:340px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <!-- Step 1: document list -->
+    <div id="shareStep1" style="display:flex;flex-direction:column;overflow:hidden;">
+      <div style="text-align:center;font-size:30px;margin-bottom:6px;">📨</div>
+      <div style="text-align:center;font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">¿Qué quieres enviar?</div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px;">Elige el documento — se enviará como PDF</div>
+      <div id="shareDocList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
       <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancelar</button>
     </div>
-    <!-- Step 2: choose send method -->
+    <!-- Step 2: send method -->
     <div id="shareStep2" style="display:none;">
-      <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:6px;">Enviando</div>
-      <div id="shareStep2Label" style="text-align:center;font-size:15px;font-weight:800;color:var(--text);margin-bottom:18px;"></div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:4px;">Enviando</div>
+      <div id="shareStep2Label" style="text-align:center;font-size:14px;font-weight:800;color:var(--text);margin-bottom:18px;line-height:1.3;"></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
         <button onclick="doShareSend('whatsapp')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#25d366;border:none;color:#fff;border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">💬</span>WhatsApp</button>
         <button onclick="doShareSend('email')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">✉️</span>Email</button>
-        <button onclick="doShareSend('copy')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">📋</span>Copiar texto</button>
       </div>
       <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancelar</button>
     </div>
@@ -2162,7 +2209,8 @@ function saveEstimate() {
     realJobCost:$('realJobCost').value,
     materials: JSON.parse(JSON.stringify(materials)),
     others: JSON.parse(JSON.stringify(otherCosts)),
-    receipts: JSON.parse(JSON.stringify(receiptPhotos))
+    receipts: JSON.parse(JSON.stringify(receiptPhotos)),
+    signatures: { authorized: estimateSignatures.authorized, client: estimateSignatures.client }
   };
   savedArray.unshift(current);
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
@@ -2200,7 +2248,9 @@ function loadEstimate(id) {
   materials = item.materials || [];
   otherCosts = item.others || [];
   receiptPhotos = item.receipts || [];
+  estimateSignatures = { authorized: (item.signatures&&item.signatures.authorized)||null, client: (item.signatures&&item.signatures.client)||null };
   renderReceipts();
+  renderEstSigs();
   updateTotal();
   lockProfit();
   closeEstimatesPage();
@@ -2248,6 +2298,8 @@ function resetFields(newFolio) {
   ['depositPaid','unitQty','unitPrice','laborHours','workersCount','hourlyRate','realJobCost'].forEach(function(id){ $(id).value = 0; });
   $('taxRate').value = 9.15;
   materials = []; otherCosts = []; receiptPhotos = [];
+  estimateSignatures = { authorized: null, client: null };
+  renderEstSigs();
   renderReceipts();
   updateTotal();
 }
@@ -2381,7 +2433,9 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
     </div>
     <div class="bottom-box">
       <h3><span>✎</span>SIGNATURES</h3>
+      ${estimateSignatures.authorized ? '<img src="'+estimateSignatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : ''}
       <div class="sig-line">Authorized Signature</div>
+      ${estimateSignatures.client ? '<img src="'+estimateSignatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-top:14px;margin-bottom:2px;">' : ''}
       <div class="sig-line">Client Signature</div>
     </div>
   </div>
@@ -2447,86 +2501,213 @@ function getEstimateShareText() {
   return lines.join('\n');
 }
 
+// ── Share ─────────────────────────────────────────────────
+var _shareDocId   = null;
+var _shareDocType = 'estimate';
+
 function shareEstimate() {
-  var contractBtn = $('shareContractBtn');
-  if (contractBtn) contractBtn.style.opacity = currentContractId ? '1' : '0.4';
-  $('shareStep1').style.display = '';
+  var list = $('shareDocList');
+  var html = '';
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  var contracts  = getContracts();
+  if (estimates.length) {
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:2px 0 4px;">📋 Estimados</div>';
+    estimates.slice(0,6).forEach(function(e) {
+      html += '<button onclick="sharePickDoc(\'estimate\',\'' + e.id + '\')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;">'
+        + '<span style="font-size:18px;">📋</span>'
+        + '<div><div style="color:var(--text);">' + escapeHtml(e.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(e.client||'Sin cliente') + ' · $' + fmtMoney(e.grand||0) + '</div></div>'
+        + '</button>';
+    });
+  }
+  if (contracts.length) {
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📜 Contratos</div>';
+    contracts.slice(0,6).forEach(function(c) {
+      html += '<button onclick="sharePickDoc(\'contract\',\'' + c.id + '\')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;">'
+        + '<span style="font-size:18px;">📜</span>'
+        + '<div><div style="color:var(--text);">' + escapeHtml(c.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(c.clientName||'Sin cliente') + ' · $' + fmtMoney(c.totalAmount||0) + '</div></div>'
+        + '</button>';
+    });
+  }
+  if (!html) html = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No hay documentos guardados</div>';
+  list.innerHTML = html;
+  $('shareStep1').style.display = 'flex';
   $('shareStep2').style.display = 'none';
   $('shareModalOverlay').style.display = 'flex';
   history.pushState({ panel: 'shareModal' }, '');
 }
 
-var _shareDocType = 'estimate';
-function sharePickMethod(docType) {
-  _shareDocType = docType;
-  if (docType === 'contract' && !currentContractId) {
-    showToast('Abre un contrato primero'); return;
+function sharePickDoc(type, id) {
+  _shareDocType = type;
+  _shareDocId   = id;
+  var label = '';
+  if (type === 'estimate') {
+    var e = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').find(function(x){ return x.id === id; });
+    label = e ? '📋 ' + (e.estNum||'Estimado') + '\n' + (e.client||'') : '📋 Estimado';
+  } else {
+    var c = getContracts().find(function(x){ return x.id === id; });
+    label = c ? '📜 ' + (c.estNum||'Contrato') + '\n' + (c.clientName||'') : '📜 Contrato';
   }
-  $('shareStep2Label').textContent = docType === 'contract' ? '📜 Contrato' : '📋 Estimado';
+  $('shareStep2Label').textContent = label;
   $('shareStep1').style.display = 'none';
   $('shareStep2').style.display = '';
 }
 
-function _getShareHtml() {
-  if (_shareDocType === 'contract' && currentContractId) {
-    var c = getContracts().find(function(x){ return x.id === currentContractId; });
+function _getShareDoc() {
+  if (_shareDocType === 'contract') {
+    var c = getContracts().find(function(x){ return x.id === _shareDocId; });
     return c ? { html: getContractDoc(c), name: 'Contrato_' + (c.estNum||'RS') } : null;
   }
+  var e = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').find(function(x){ return x.id === _shareDocId; });
+  if (e) {
+    // temporarily load estimate data for getPrintHTML
+    return { html: getEstimateDoc(e), name: 'Estimado_' + (e.estNum||'RS') };
+  }
+  // fallback: current form
   return { html: getPrintHTML(), name: 'Estimado_' + ($('estNum').value||'RS') };
 }
 
 function _openIntentUrl(url) {
   var a = document.createElement('a');
-  a.href = url;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
+  a.href = url; a.style.display = 'none';
+  document.body.appendChild(a); a.click();
   setTimeout(function(){ document.body.removeChild(a); }, 500);
 }
 
 function doShareSend(method) {
   closeShareModal();
-  var doc = _getShareHtml();
+  var doc = _getShareDoc();
   if (!doc) { showToast('Sin datos para compartir'); return; }
-
-  // Try native PDF share via AndroidBridge
-  if (method !== 'copy' && window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
-    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name);
-    return;
+  if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
+    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name); return;
   }
-
-  // Fallback: save PDF and show toast with instructions
-  if (method !== 'copy' && window.AndroidBridge && AndroidBridge.saveHtmlAsPdf) {
+  if (window.AndroidBridge && AndroidBridge.saveHtmlAsPdf) {
     AndroidBridge.saveHtmlAsPdf(doc.html, doc.name);
-    showToast('📄 PDF guardado — abre Descargas y compártelo desde ahí');
+    showToast('📄 PDF guardado — abre Descargas y compártelo');
     return;
   }
-
-  // Text-only fallback (no AndroidBridge)
-  var text  = getEstimateShareText();
-  var title = doc.name;
-  var enc   = encodeURIComponent(text);
-  if (method === 'copy') {
-    var ta = document.createElement('textarea');
-    ta.value = text; ta.style.cssText = 'position:fixed;opacity:0;';
-    document.body.appendChild(ta); ta.select();
-    try { document.execCommand('copy'); showToast('📋 Copiado — pégalo en WhatsApp o Email'); }
-    catch(e) { showToast('No se pudo copiar'); }
-    document.body.removeChild(ta);
-  } else if (method === 'whatsapp') {
-    var phone = ($('clientPhone') && $('clientPhone').value || '').replace(/\D/g,'');
-    var waUrl = phone
-      ? 'intent://send/' + phone + '?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end'
-      : 'intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end';
-    _openIntentUrl(waUrl);
-  } else if (method === 'email') {
-    var email = ($('clientEmail') && $('clientEmail').value) || '';
-    _openIntentUrl('intent://compose?to=' + encodeURIComponent(email) + '&subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end');
+  // No AndroidBridge — intent:// fallback
+  var text = doc.name;
+  var enc  = encodeURIComponent(text);
+  if (method === 'whatsapp') {
+    _openIntentUrl('intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end');
+  } else {
+    _openIntentUrl('intent://compose?subject=' + enc + '#Intent;scheme=mailto;end');
   }
 }
 
-function closeShareModal() {
-  $('shareModalOverlay').style.display = 'none';
+function closeShareModal() { $('shareModalOverlay').style.display = 'none'; }
+
+// ── Signature Pad ─────────────────────────────────────────
+var estimateSignatures = { authorized: null, client: null };
+var _sigCtx = null, _sigDrawing = false, _sigContext = '';
+
+function openSigPad(context) {
+  _sigContext = context;
+  var titles = {
+    'est-auth':'✍️ Firma Contratista — Estimado', 'est-client':'✍️ Firma Cliente — Estimado',
+    'con-auth':'✍️ Firma Contratista — Contrato',  'con-client':'✍️ Firma Cliente — Contrato'
+  };
+  $('sigPadTitle').textContent = titles[context] || '✍️ Firma';
+  var canvas = $('sigPadCanvas');
+  var overlay = $('sigPadOverlay');
+  overlay.style.display = 'flex';
+  // Size canvas after display
+  requestAnimationFrame(function() {
+    var w = canvas.offsetWidth, h = canvas.offsetHeight;
+    canvas.width = w; canvas.height = h;
+    _sigCtx = canvas.getContext('2d');
+    _sigCtx.fillStyle = '#fafafa';
+    _sigCtx.fillRect(0, 0, w, h);
+    _sigCtx.strokeStyle = '#0f172a';
+    _sigCtx.lineWidth = 2.5;
+    _sigCtx.lineCap = 'round';
+    _sigCtx.lineJoin = 'round';
+  });
+  history.pushState({ panel: 'sigPad' }, '');
+}
+function closeSigPad() { $('sigPadOverlay').style.display = 'none'; _sigCtx = null; _sigDrawing = false; }
+function clearSigPad() {
+  if (!_sigCtx) return;
+  var c = $('sigPadCanvas'); _sigCtx.fillStyle = '#fafafa'; _sigCtx.fillRect(0,0,c.width,c.height);
+}
+function saveSigPad() {
+  if (!_sigCtx) return;
+  var c = $('sigPadCanvas');
+  var d = _sigCtx.getImageData(0,0,c.width,c.height).data;
+  var blank = true;
+  for (var i=0;i<d.length;i+=4){ if(d[i]<240||d[i+1]<240||d[i+2]<240){blank=false;break;} }
+  if (blank) { showToast('Dibuja tu firma primero'); return; }
+  var img = c.toDataURL('image/png');
+  var ctx = _sigContext;
+  closeSigPad();
+  if (ctx === 'est-auth')   { estimateSignatures.authorized = img; renderEstSigs(); }
+  else if (ctx === 'est-client') { estimateSignatures.client = img; renderEstSigs(); }
+  else if (ctx === 'con-auth' || ctx === 'con-client') {
+    var contracts = getContracts();
+    var con = contracts.find(function(x){ return x.id===currentContractId; });
+    if (con) {
+      if (!con.signatures) con.signatures = {};
+      if (ctx === 'con-auth') con.signatures.authorized = img;
+      else con.signatures.client = img;
+      saveContracts(contracts);
+      renderConSigs(con);
+    }
+  }
+  showToast('✅ Firma guardada');
+}
+
+function _sigPos(e, canvas) {
+  var r = canvas.getBoundingClientRect();
+  var t = e.touches ? e.touches[0] : e;
+  return { x: (t.clientX-r.left)*canvas.width/r.width, y: (t.clientY-r.top)*canvas.height/r.height };
+}
+(function() {
+  function setup() {
+    var canvas = $('sigPadCanvas');
+    if (!canvas) return;
+    function down(e){ e.preventDefault(); if(!_sigCtx)return; _sigDrawing=true; var p=_sigPos(e,canvas); _sigCtx.beginPath(); _sigCtx.moveTo(p.x,p.y); }
+    function move(e){ e.preventDefault(); if(!_sigDrawing||!_sigCtx)return; var p=_sigPos(e,canvas); _sigCtx.lineTo(p.x,p.y); _sigCtx.stroke(); _sigCtx.beginPath(); _sigCtx.moveTo(p.x,p.y); }
+    function up(e){ e.preventDefault(); _sigDrawing=false; if(_sigCtx){_sigCtx.beginPath();} }
+    canvas.addEventListener('touchstart',down,{passive:false});
+    canvas.addEventListener('touchmove',move,{passive:false});
+    canvas.addEventListener('touchend',up,{passive:false});
+    canvas.addEventListener('mousedown',down);
+    canvas.addEventListener('mousemove',move);
+    canvas.addEventListener('mouseup',up);
+  }
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',setup); else setup();
+})();
+
+function renderEstSigs() {
+  function setSlot(elId, clearId, img) {
+    var el = $(elId), cl = $(clearId); if (!el) return;
+    if (img) { el.innerHTML='<img src="'+img+'" style="width:100%;height:100%;object-fit:contain;">'; if(cl)cl.style.display=''; }
+    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">Toca para firmar</span>'; if(cl)cl.style.display='none'; }
+  }
+  setSlot('estSigAuth','estSigAuthClear', estimateSignatures.authorized);
+  setSlot('estSigClient','estSigClientClear', estimateSignatures.client);
+}
+function clearEstSig(role) {
+  estimateSignatures[role] = null; renderEstSigs();
+}
+function renderConSigs(c) {
+  var sigs = c.signatures || {};
+  function setSlot(elId, clearId, img) {
+    var el = $(elId), cl = $(clearId); if (!el) return;
+    if (img) { el.innerHTML='<img src="'+img+'" style="width:100%;height:100%;object-fit:contain;">'; if(cl)cl.style.display=''; }
+    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">Toca para firmar</span>'; if(cl)cl.style.display='none'; }
+  }
+  setSlot('conSigAuth','conSigAuthClear', sigs.authorized);
+  setSlot('conSigClient','conSigClientClear', sigs.client);
+}
+function clearConSig(role) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  if (!c.signatures) c.signatures = {};
+  c.signatures[role] = null;
+  saveContracts(contracts);
+  renderConSigs(c);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2779,6 +2960,8 @@ function openContractDetail(id) {
   }
   // Signed contract section
   renderSignedSection(c);
+  // Electronic signatures
+  renderConSigs(c);
   history.pushState({ panel: 'contractDetail' }, '');
   $('contractDetail').classList.add('open');
   $('contractDetail').scrollTop = 0;
@@ -3243,11 +3426,13 @@ function getContractDoc(c) {
 
   '<div class="bottom-grid">' +
     '<div class="bottom-box"><h3><span>✎</span>CONTRACTOR SIGNATURE</h3>' +
+      ((c.signatures&&c.signatures.authorized) ? '<img src="'+c.signatures.authorized+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
       '<div class="sig-line">Authorized Signature &amp; Date</div>' +
       '<div class="sig-name">R&amp;S Drywall Solutions LLC</div>' +
       '<div class="sig-line" style="margin-top:18px;">Printed Name &amp; Title</div>' +
     '</div>' +
     '<div class="bottom-box"><h3><span>✎</span>CLIENT SIGNATURE</h3>' +
+      ((c.signatures&&c.signatures.client) ? '<img src="'+c.signatures.client+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
       '<div class="sig-line">Client Signature &amp; Date</div>' +
       '<div class="sig-name">' + escapeHtml(c.clientName) + '</div>' +
       '<div class="sig-line" style="margin-top:18px;">Printed Name</div>' +
@@ -3354,8 +3539,12 @@ function getEstimateDoc(est) {
   +(dep>0?'<tr class="dep"><td>Deposit Paid</td><td>-'+fm(dep)+'</td></tr>':'')
   +'<tr class="bal"><td>BALANCE DUE</td><td>'+fm(bal)+'</td></tr></table></div>'
   +(receipts.length>0?'<div class="photos"><div>📷 DEPOSIT RECEIPT'+(receipts.length>1?'S':'')+'</div>'+receipts.map(function(s){return '<img src="'+s+'">';}).join('')+'</div>':'')
-  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CONTRACTOR SIGNATURE</h3><div class="sig-line">Authorized Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div>'
-  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3><div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
+  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CONTRACTOR SIGNATURE</h3>'
+  +((est.signatures&&est.signatures.authorized)?'<img src="'+est.signatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
+  +'<div class="sig-line">Authorized Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div>'
+  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3>'
+  +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
+  +'<div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
   +'<div class="footer"><div>📍 R&amp;S Drywall Solutions LLC · Denver, Colorado · Licensed &amp; Insured</div><div>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</div></div>'
   +'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>'
   +'</body></html>';
@@ -3449,6 +3638,7 @@ function navTo(tab) {
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
+    if ($('sigPadOverlay') && $('sigPadOverlay').style.display !== 'none') { closeSigPad(); return; }
     if ($('shareModalOverlay') && $('shareModalOverlay').style.display !== 'none') { closeShareModal(); return; }
     if ($('confirmOverlay').style.display !== 'none')              { handleConfirm(false); return; }
     if ($('contractViewer').style.display !== 'none')              { closeContractViewer(); return; }
