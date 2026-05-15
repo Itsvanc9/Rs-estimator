@@ -1332,6 +1332,24 @@
   © 2026 R&S Drywall Solutions LLC · All rights reserved.
 </div>
 
+<!-- SHARE MODAL -->
+<div id="shareModalOverlay" style="position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
+  <div style="background:var(--surface);border-radius:24px;padding:28px 20px 20px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);text-align:center;">
+    <div style="font-size:36px;margin-bottom:10px;">📨</div>
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;">Share Estimate</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:22px;">Choose how to send it</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+      <button onclick="doShareWa(true)" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#25d366;border:none;color:#fff;border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
+        <span style="font-size:22px;">💬</span> WhatsApp
+      </button>
+      <button onclick="doShareEmail()" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 18px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">
+        <span style="font-size:22px;">✉️</span> Email
+      </button>
+    </div>
+    <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancel</button>
+  </div>
+</div>
+
 <!-- CUSTOM CONFIRM MODAL -->
 <div id="confirmOverlay" style="position:fixed;inset:0;z-index:30000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
   <div style="background:var(--surface);border-radius:24px;padding:28px 22px 22px;width:100%;max-width:320px;box-shadow:0 24px 60px rgba(0,0,0,0.5);text-align:center;">
@@ -1386,6 +1404,10 @@
   <button class="nav-tab" onclick="doPDF()">
     <div class="nav-icon">📤</div>
     <div class="nav-label">Export</div>
+  </button>
+  <button class="nav-tab" onclick="shareEstimate()">
+    <div class="nav-icon">📨</div>
+    <div class="nav-label">Share</div>
   </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
@@ -2372,6 +2394,76 @@ function doPrint() {
   AndroidBridge.printHtml(getPrintHTML(), 'R&S_Estimate_' + ($('estNum').value||'estimate'));
 }
 
+function getEstimateShareText() {
+  var t = computeTotals();
+  var folio   = $('estNum').value || '-';
+  var date    = $('estDate').value || '-';
+  var client  = $('clientName').value || '-';
+  var project = $('projectName').value || '';
+  var address = $('projectAddress').value || '';
+  var scope   = $('scopeWork').value || '';
+  var valid   = $('validUntil').value || '';
+  var dep     = parseFloat($('depositPaid').value) || 0;
+  var lines = [];
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📋 ESTIMATE ' + folio);
+  lines.push('R&S Drywall Solutions LLC');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📅 Date: ' + date);
+  lines.push('👤 Client: ' + client);
+  if (project) lines.push('🏗️ Project: ' + project);
+  if (address) lines.push('📍 Address: ' + address);
+  if (valid)   lines.push('⏳ Valid Until: ' + valid);
+  lines.push('');
+  if (scope) { lines.push('📝 Scope of Work:'); lines.push(scope); lines.push(''); }
+  lines.push('── Breakdown ──');
+  if (t.unit   > 0) lines.push('  Unit/SqFt:   $' + fmtMoney(t.unit));
+  if (t.labor  > 0) lines.push('  Labor:       $' + fmtMoney(t.labor));
+  if (t.mat    > 0) lines.push('  Materials:   $' + fmtMoney(t.mat));
+  if (t.other  > 0) lines.push('  Other:       $' + fmtMoney(t.other));
+  if (t.tax    > 0) lines.push('  Tax:         $' + fmtMoney(t.tax));
+  lines.push('─────────────────────────');
+  lines.push('💰 TOTAL:     $' + fmtMoney(t.grand));
+  if (dep > 0) {
+    lines.push('✅ Deposit Paid: $' + fmtMoney(dep));
+    lines.push('📌 Balance Due:  $' + fmtMoney(Math.max(0, t.grand - dep)));
+  }
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  return lines.join('\n');
+}
+
+function shareEstimate() {
+  var text  = getEstimateShareText();
+  var title = 'Estimate ' + ($('estNum').value || '');
+  if (navigator.share) {
+    navigator.share({ title: title, text: text }).catch(function(){});
+    return;
+  }
+  // Fallback: show share options modal
+  var email = ($('clientEmail') && $('clientEmail').value) || '';
+  var phone = ($('clientPhone') && $('clientPhone').value) || '';
+  var enc   = encodeURIComponent(text);
+  var wa    = 'whatsapp://send?text=' + enc;
+  var ml    = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(title) + '&body=' + enc;
+  showShareModal(wa, ml, phone ? 'whatsapp://send?phone=' + phone.replace(/\D/g,'') + '&text=' + enc : null);
+}
+
+var _shareWa, _shareMl, _shareWaPhone;
+function showShareModal(wa, ml, waPhone) {
+  _shareWa = wa; _shareMl = ml; _shareWaPhone = waPhone;
+  $('shareModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'shareModal' }, '');
+}
+function closeShareModal() { $('shareModalOverlay').style.display = 'none'; }
+function doShareWa(usePhone) {
+  closeShareModal();
+  window.location.href = usePhone && _shareWaPhone ? _shareWaPhone : _shareWa;
+}
+function doShareEmail() {
+  closeShareModal();
+  window.location.href = _shareMl;
+}
+
 // ═══════════════════════════════════════════════════════
 // BACKUP / IMPORT
 // ═══════════════════════════════════════════════════════
@@ -3292,6 +3384,7 @@ function navTo(tab) {
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
+    if ($('shareModalOverlay') && $('shareModalOverlay').style.display !== 'none') { closeShareModal(); return; }
     if ($('confirmOverlay').style.display !== 'none')              { handleConfirm(false); return; }
     if ($('contractViewer').style.display !== 'none')              { closeContractViewer(); return; }
     if ($('signedPhotoViewer').style.display !== 'none')           { closeSignedPhotoViewer(); return; }
