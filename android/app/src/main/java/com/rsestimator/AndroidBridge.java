@@ -93,6 +93,10 @@ public class AndroidBridge {
 
                     Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                     intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
+                    // Request rear camera (non-standard extras, supported by most OEMs)
+                    intent.putExtra("android.intent.extras.CAMERA_FACING", 0);
+                    intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 0);
+                    intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", false);
                     activity.startActivityForResult(intent, REQUEST_CAMERA);
                 } catch (Exception e) {
                     mostrarMensaje("Error al abrir cámara");
