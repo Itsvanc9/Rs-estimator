@@ -2573,25 +2573,61 @@ function _openIntentUrl(url) {
   setTimeout(function(){ document.body.removeChild(a); }, 500);
 }
 
+function getContractShareText(c) {
+  var paid = (c.payments||[]).reduce(function(s,p){return s+(p.amount||0);},0);
+  var bal  = Math.max(0, (c.totalAmount||0) - paid);
+  var lines = [];
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📜 CONTRATO ' + (c.estNum||'-'));
+  lines.push('R&S Drywall Solutions LLC');
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📅 Fecha: ' + (c.acceptedDate||'-'));
+  lines.push('👤 Cliente: ' + (c.clientName||'-'));
+  if (c.projectName) lines.push('🏗️ Proyecto: ' + c.projectName);
+  if (c.projectAddress) lines.push('📍 Dirección: ' + c.projectAddress);
+  lines.push('');
+  if (c.scopeWork) { lines.push('📝 Alcance:'); lines.push(c.scopeWork); lines.push(''); }
+  lines.push('── Plan de Pagos ──');
+  (c.schedule||[]).forEach(function(s) {
+    var isPaid = (c.payments||[]).some(function(p){return p.scheduleId===s.sid;});
+    lines.push('  ' + (isPaid?'✅':'🔔') + ' ' + s.label + ': $' + fmtMoney(s.amount) + ' — ' + s.due);
+  });
+  lines.push('─────────────────────────');
+  lines.push('💰 TOTAL:    $' + fmtMoney(c.totalAmount||0));
+  lines.push('✅ Pagado:   $' + fmtMoney(paid));
+  lines.push('📌 Balance:  $' + fmtMoney(bal));
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  return lines.join('\n');
+}
+
 function doShareSend(method) {
   closeShareModal();
-  var doc = _getShareDoc();
-  if (!doc) { showToast('Sin datos para compartir'); return; }
-  if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
-    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name); return;
+  // Build share text from selected document
+  var text = '', title = '';
+  if (_shareDocType === 'contract') {
+    var c = getContracts().find(function(x){ return x.id === _shareDocId; });
+    if (!c) { showToast('Contrato no encontrado'); return; }
+    text  = getContractShareText(c);
+    title = 'Contrato ' + (c.estNum||'');
+  } else {
+    var ests = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+    var e = ests.find(function(x){ return x.id === _shareDocId; });
+    if (e) {
+      // temporarily use saved estimate data
+      var _savedSigs = estimateSignatures;
+      estimateSignatures = e.signatures || { authorized: null, client: null };
+      text  = getEstimateShareText();  // uses form fields fallback but that's OK for text
+      estimateSignatures = _savedSigs;
+    } else {
+      text = getEstimateShareText();
+    }
+    title = 'Estimado ' + ($('estNum').value||'');
   }
-  if (window.AndroidBridge && AndroidBridge.saveHtmlAsPdf) {
-    AndroidBridge.saveHtmlAsPdf(doc.html, doc.name);
-    showToast('📄 PDF guardado — abre Descargas y compártelo');
-    return;
-  }
-  // No AndroidBridge — intent:// fallback
-  var text = doc.name;
-  var enc  = encodeURIComponent(text);
+  var enc = encodeURIComponent(text);
   if (method === 'whatsapp') {
     _openIntentUrl('intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end');
   } else {
-    _openIntentUrl('intent://compose?subject=' + enc + '#Intent;scheme=mailto;end');
+    _openIntentUrl('intent://compose?subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end');
   }
 }
 
