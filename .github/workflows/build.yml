@@ -42,9 +42,9 @@ jobs:
           }
           EOF
           mkdir -p www
-          cp index.html www/
+          cp estimator.html www/index.html
           cp manifest.json www/
-          cp Sw.js www/ 2>/dev/null || true
+          cp sw.js www/ 2>/dev/null || true
 
       - name: Add Android and sync
         run: |
@@ -67,115 +67,233 @@ jobs:
           }
           EOF
 
-      - name: Patch MainActivity for PDF and file support
+      - name: Patch AndroidManifest for camera and file provider
         run: |
-          MAIN=$(find android -name "MainActivity.java" -o -name "MainActivity.kt" | head -1)
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+
+          # Add CAMERA permission before <application tag
+          if ! grep -q 'android.permission.CAMERA' "$MANIFEST"; then
+            sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA"/>\n    <application|' "$MANIFEST"
+          fi
+
+          # Add FileProvider inside <application> if not present
+          if ! grep -q 'FileProvider' "$MANIFEST"; then
+            sed -i 's|</application>|        <provider\n            android:name="androidx.core.content.FileProvider"\n            android:authorities="${applicationId}.fileprovider"\n            android:exported="false"\n            android:grantUriPermissions="true">\n            <meta-data\n                android:name="android.support.FILE_PROVIDER_PATHS"\n                android:resource="@xml/file_paths"/>\n        </provider>\n    </application>|' "$MANIFEST"
+          fi
+
+          echo "=== AndroidManifest.xml after patching ==="
+          cat "$MANIFEST"
+
+      - name: Create file_paths.xml for FileProvider
+        run: |
+          mkdir -p android/app/src/main/res/xml
+          # Find and update existing file_paths.xml, or create it
+          FILE_PATHS=$(find android/app/src/main/res/xml -name "file_paths.xml" 2>/dev/null | head -1)
+          if [ -z "$FILE_PATHS" ]; then
+            FILE_PATHS=android/app/src/main/res/xml/file_paths.xml
+          fi
+          cat > "$FILE_PATHS" << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths>
+              <external-path name="my_images" path="." />
+              <external-cache-path name="my_cache_images" path="." />
+              <cache-path name="camera_photos" path="photos/" />
+              <cache-path name="my_internal_cache" path="." />
+              <files-path name="my_files" path="." />
+              <external-files-path name="my_external_files" path="." />
+          </paths>
+          EOF
+          echo "=== file_paths.xml ==="
+          cat "$FILE_PATHS"
+
+      - name: Patch MainActivity with camera and file bridge
+        run: |
+          MAIN=$(find android -name "MainActivity.java" -o -name "MainActivity.kt" 2>/dev/null | head -1)
           echo "Found: $MAIN"
           cat > android/app/src/main/java/com/rsestimator/app/MainActivity.java << 'JAVAEOF'
-          package com.rsestimator.app;
+package com.rsestimator.app;
 
-          import android.Manifest;
-          import android.content.pm.PackageManager;
-          import android.os.Build;
-          import android.os.Bundle;
-          import android.os.Environment;
-          import android.webkit.JavascriptInterface;
-          import android.webkit.ValueCallback;
-          import android.webkit.WebChromeClient;
-          import android.webkit.WebSettings;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
-          import android.net.Uri;
-          import android.content.Intent;
-          import android.app.Activity;
-          import android.util.Base64;
-          import android.widget.Toast;
-          import androidx.core.app.ActivityCompat;
-          import androidx.core.content.ContextCompat;
-          import com.getcapacitor.BridgeActivity;
-          import java.io.File;
-          import java.io.FileOutputStream;
-          import java.io.IOException;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.net.Uri;
+import android.content.Intent;
+import android.app.Activity;
+import android.util.Base64;
+import android.widget.Toast;
+import android.provider.MediaStore;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
+import com.getcapacitor.BridgeActivity;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
-          public class MainActivity extends BridgeActivity {
-              private ValueCallback<Uri[]> filePathCallback;
-              private static final int FILE_CHOOSER_REQUEST = 1;
-              private static final int STORAGE_PERMISSION_REQUEST = 2;
+public class MainActivity extends BridgeActivity {
+    private ValueCallback<Uri[]> filePathCallback;
+    private static final int FILE_CHOOSER_REQUEST = 1;
+    private static final int STORAGE_PERMISSION_REQUEST = 2;
+    private static final int CAMERA_REQUEST = 3;
+    private File cameraOutputFile;
+    private WebView mainWebView;
 
-              @Override
-              public void onCreate(Bundle savedInstanceState) {
-                  super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-                  if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                              != PackageManager.PERMISSION_GRANTED) {
-                          ActivityCompat.requestPermissions(this,
-                              new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                              STORAGE_PERMISSION_REQUEST);
-                      }
-                  }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    STORAGE_PERMISSION_REQUEST);
+            }
+        }
 
-                  WebView webView = getBridge().getWebView();
-                  WebSettings settings = webView.getSettings();
-                  settings.setJavaScriptEnabled(true);
-                  settings.setAllowFileAccess(true);
-                  settings.setDomStorageEnabled(true);
+        mainWebView = getBridge().getWebView();
+        WebSettings settings = mainWebView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setAllowFileAccess(true);
+        settings.setDomStorageEnabled(true);
 
-                  webView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
+        mainWebView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");
 
-                  webView.setWebChromeClient(new WebChromeClient() {
-                      @Override
-                      public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
-                              FileChooserParams fileChooserParams) {
-                          MainActivity.this.filePathCallback = filePathCallback;
-                          Intent intent = fileChooserParams.createIntent();
-                          try {
-                              startActivityForResult(intent, FILE_CHOOSER_REQUEST);
-                          } catch (Exception e) {
-                              MainActivity.this.filePathCallback = null;
-                              return false;
-                          }
-                          return true;
-                      }
-                  });
-              }
+        mainWebView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback,
+                    FileChooserParams fileChooserParams) {
+                MainActivity.this.filePathCallback = filePathCallback;
+                Intent intent = fileChooserParams.createIntent();
+                try {
+                    startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+                } catch (Exception e) {
+                    MainActivity.this.filePathCallback = null;
+                    return false;
+                }
+                return true;
+            }
+        });
+    }
 
-              @Override
-              protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-                  if (requestCode == FILE_CHOOSER_REQUEST) {
-                      if (filePathCallback != null) {
-                          Uri[] results = null;
-                          if (resultCode == Activity.RESULT_OK && data != null) {
-                              results = new Uri[]{data.getData()};
-                          }
-                          filePathCallback.onReceiveValue(results);
-                          filePathCallback = null;
-                      }
-                  }
-                  super.onActivityResult(requestCode, resultCode, data);
-              }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == FILE_CHOOSER_REQUEST) {
+            if (filePathCallback != null) {
+                Uri[] results = null;
+                if (resultCode == Activity.RESULT_OK && data != null) {
+                    results = new Uri[]{data.getData()};
+                }
+                filePathCallback.onReceiveValue(results);
+                filePathCallback = null;
+            }
+        } else if (requestCode == CAMERA_REQUEST) {
+            if (resultCode == Activity.RESULT_OK
+                    && cameraOutputFile != null
+                    && cameraOutputFile.exists()
+                    && cameraOutputFile.length() > 0) {
+                try {
+                    byte[] bytes = readFile(cameraOutputFile);
+                    String b64 = Base64.encodeToString(bytes, Base64.NO_WRAP);
+                    final String dataUrl = "data:image/jpeg;base64," + b64;
+                    mainWebView.post(new Runnable() {
+                        public void run() {
+                            mainWebView.evaluateJavascript(
+                                "receiveNativePhoto('" + dataUrl + "')", null);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    cameraOutputFile.delete();
+                    cameraOutputFile = null;
+                }
+            } else if (cameraOutputFile != null) {
+                cameraOutputFile.delete();
+                cameraOutputFile = null;
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
-              class AndroidBridge {
-                  @JavascriptInterface
-                  public void saveBase64File(String base64Data, String fileName, String mimeType) {
-                      try {
-                          byte[] bytes = Base64.decode(base64Data.split(",")[1], Base64.DEFAULT);
-                          File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                          File file = new File(downloadsDir, fileName);
-                          FileOutputStream fos = new FileOutputStream(file);
-                          fos.write(bytes);
-                          fos.close();
-                          runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                              "Saved to Downloads: " + fileName, Toast.LENGTH_LONG).show());
-                      } catch (IOException e) {
-                          e.printStackTrace();
-                          runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                              "Error saving file", Toast.LENGTH_SHORT).show());
-                      }
-                  }
-              }
-          }
-          JAVAEOF
+    private byte[] readFile(File file) throws IOException {
+        FileInputStream fis = new FileInputStream(file);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int len;
+        while ((len = fis.read(buf)) != -1) bos.write(buf, 0, len);
+        fis.close();
+        return bos.toByteArray();
+    }
+
+    class AndroidBridge {
+
+        @JavascriptInterface
+        public void takePhoto() {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    try {
+                        File dir = new File(getCacheDir(), "photos");
+                        dir.mkdirs();
+                        cameraOutputFile = File.createTempFile("photo_", ".jpg", dir);
+                        Uri photoUri = FileProvider.getUriForFile(
+                            MainActivity.this,
+                            getPackageName() + ".fileprovider",
+                            cameraOutputFile
+                        );
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        startActivityForResult(intent, CAMERA_REQUEST);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void saveBase64File(String base64Data, String fileName, String mimeType) {
+            try {
+                String[] parts = base64Data.split(",");
+                byte[] bytes = Base64.decode(
+                    parts.length > 1 ? parts[1] : parts[0], Base64.DEFAULT);
+                File downloadsDir = Environment.getExternalStoragePublicDirectory(
+                    Environment.DIRECTORY_DOWNLOADS);
+                File file = new File(downloadsDir, fileName);
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(bytes);
+                fos.close();
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(MainActivity.this,
+                            "Guardado en Descargas: " + fileName,
+                            Toast.LENGTH_LONG).show();
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        Toast.makeText(MainActivity.this,
+                            "Error al guardar archivo",
+                            Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }
+    }
+}
+JAVAEOF
 
       - name: Build APK
         working-directory: android

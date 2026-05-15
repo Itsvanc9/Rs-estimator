@@ -2100,6 +2100,21 @@ function openCamera(context) {
 function openReceiptCamera() { openCamera('receipt'); }
 
 function receiveNativePhoto(base64) {
+  var img = new Image();
+  img.onload = function() {
+    var maxDim = 800;
+    var scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+    var canvas = document.createElement('canvas');
+    canvas.width  = Math.round(img.width  * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    _applyNativePhoto(canvas.toDataURL('image/jpeg', 0.70));
+  };
+  img.onerror = function() { _applyNativePhoto(base64); };
+  img.src = base64;
+}
+
+function _applyNativePhoto(base64) {
   var ctx = cameraContext;
   cameraContext = 'receipt';
   if (ctx === 'payReceipt') {
