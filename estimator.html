@@ -2154,7 +2154,8 @@ function openOwnerPage() {
   var el = $('ownerPage');
   el.classList.add('open');
   el.scrollTop = 0;
-  if (!localStorage.getItem('RS_PIN')) {
+  if (!localStorage.getItem('RS_PIN_HINT_SHOWN')) {
+    localStorage.setItem('RS_PIN_HINT_SHOWN', '1');
     setTimeout(function() {
       showToast('🔑 Contraseña temporal: 1234 — cámbiala en Configuraciones');
     }, 400);
