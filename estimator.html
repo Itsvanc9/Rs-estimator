@@ -830,62 +830,7 @@
 
     <div class="setting-section">
       <div class="setting-section-title">🏢 Company Profile</div>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Company Name</label>
-        <input id="cfgCompanyName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
-      </div>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Location</label>
-        <input id="cfgCompanyLocation" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
-      </div>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Phone</label>
-        <input id="cfgCompanyPhone" oninput="saveProfile()" type="tel" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
-      </div>
-      <div style="margin-bottom:8px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Email</label>
-        <input id="cfgCompanyEmail" oninput="saveProfile()" type="email" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
-      </div>
-      <div>
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Contact Name</label>
-        <input id="cfgContactName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
-      </div>
-
-      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;">🖼 Images</div>
-
-        <div style="margin-bottom:12px;">
-          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Logo (square)</label>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
-            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
-              <button onclick="$('cfgLogoPick').click()" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
-              <button onclick="removeProfileImage('logoBase64')" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
-            </div>
-          </div>
-          <input type="file" id="cfgLogoPick" accept="image/*" style="display:none" onchange="saveProfileImage('logoBase64',this.files[0],400,400);this.value=''">
-        </div>
-
-        <div style="margin-bottom:12px;">
-          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Banner (header)</label>
-          <img id="cfgBannerPreview" src="file:///android_asset/banner.jpg" style="width:100%;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
-          <div style="display:flex;gap:6px;">
-            <button onclick="$('cfgBannerPick').click()" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
-            <button onclick="removeProfileImage('bannerBase64')" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
-          </div>
-          <input type="file" id="cfgBannerPick" accept="image/*" style="display:none" onchange="saveProfileImage('bannerBase64',this.files[0],1200,600);this.value=''">
-        </div>
-
-        <div>
-          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Splash (pantalla inicial)</label>
-          <img id="cfgSplashPreview" src="file:///android_asset/banner_splash.png" style="width:100%;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
-          <div style="display:flex;gap:6px;">
-            <button onclick="$('cfgSplashPick').click()" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
-            <button onclick="removeProfileImage('splashBase64')" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
-          </div>
-          <input type="file" id="cfgSplashPick" accept="image/*" style="display:none" onchange="saveProfileImage('splashBase64',this.files[0],1200,800);this.value=''">
-        </div>
-      </div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="openCompanyProfile()">🏢 Edit Company Info &amp; Images</button>
     </div>
 
     <div class="setting-section">
@@ -897,6 +842,74 @@
     <div class="setting-section">
       <div class="setting-section-title">Legal</div>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="closeSettings();openTerms()">📄 Terms &amp; Conditions</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ COMPANY PROFILE PANEL ═══════════ -->
+<div id="companyProfilePanel" style="position:fixed;inset:0;z-index:26000;display:none;flex-direction:column;background:var(--bg);">
+  <div style="display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0;">
+    <button onclick="closeCompanyProfile()" style="background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:0;line-height:1;">←</button>
+    <span style="font-size:16px;font-weight:700;color:var(--text);">🏢 Company Profile</span>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px 18px;display:flex;flex-direction:column;gap:14px;">
+
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Company Name</label>
+      <input id="cfgCompanyName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Location</label>
+      <input id="cfgCompanyLocation" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Phone</label>
+      <input id="cfgCompanyPhone" oninput="saveProfile()" type="tel" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Email</label>
+      <input id="cfgCompanyEmail" oninput="saveProfile()" type="email" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Contact Name</label>
+      <input id="cfgContactName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+
+    <div style="border-top:1px solid var(--border);padding-top:16px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">🖼 Images</div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Logo (cuadrado)</label>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+          <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+            <button onclick="$('cfgLogoPick').click()" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
+            <button onclick="removeProfileImage('logoBase64')" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
+          </div>
+        </div>
+        <input type="file" id="cfgLogoPick" accept="image/*" style="display:none" onchange="saveProfileImage('logoBase64',this.files[0],400,400);this.value=''">
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Banner (header principal)</label>
+        <img id="cfgBannerPreview" src="file:///android_asset/banner.jpg" style="width:100%;height:90px;border-radius:12px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:8px;">
+        <div style="display:flex;gap:8px;">
+          <button onclick="$('cfgBannerPick').click()" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
+          <button onclick="removeProfileImage('bannerBase64')" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
+        </div>
+        <input type="file" id="cfgBannerPick" accept="image/*" style="display:none" onchange="saveProfileImage('bannerBase64',this.files[0],1200,600);this.value=''">
+      </div>
+
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Splash (pantalla inicial)</label>
+        <img id="cfgSplashPreview" src="file:///android_asset/banner_splash.png" style="width:100%;height:90px;border-radius:12px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:8px;">
+        <div style="display:flex;gap:8px;">
+          <button onclick="$('cfgSplashPick').click()" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
+          <button onclick="removeProfileImage('splashBase64')" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
+        </div>
+        <input type="file" id="cfgSplashPick" accept="image/*" style="display:none" onchange="saveProfileImage('splashBase64',this.files[0],1200,800);this.value=''">
+      </div>
     </div>
 
   </div>
@@ -1759,6 +1772,10 @@ function removeProfileImage(key) {
 }
 function openSettings() {
   history.pushState({ panel: 'settings' }, '');
+  $('settingsPanel').classList.add('open');
+  $('settingsOverlay').classList.add('open');
+}
+function openCompanyProfile() {
   var p = getProfile();
   $('cfgCompanyName').value     = p.companyName;
   $('cfgCompanyLocation').value = p.companyLocation;
@@ -1768,8 +1785,11 @@ function openSettings() {
   $('cfgLogoPreview').src   = p.logoBase64   || 'file:///android_asset/logo.png';
   $('cfgBannerPreview').src = p.bannerBase64 || 'file:///android_asset/banner.jpg';
   $('cfgSplashPreview').src = p.splashBase64 || 'file:///android_asset/banner_splash.png';
-  $('settingsPanel').classList.add('open');
-  $('settingsOverlay').classList.add('open');
+  history.pushState({ panel: 'companyProfile' }, '');
+  $('companyProfilePanel').style.display = 'flex';
+}
+function closeCompanyProfile() {
+  $('companyProfilePanel').style.display = 'none';
 }
 function closeSettings() {
   $('settingsPanel').classList.remove('open');
@@ -3902,6 +3922,7 @@ function navTo(tab) {
     if ($('contractViewer').style.display !== 'none')              { closeContractViewer(); return; }
     if ($('signedPhotoViewer').style.display !== 'none')           { closeSignedPhotoViewer(); return; }
     if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
+    if ($('companyProfilePanel').style.display !== 'none')         { closeCompanyProfile(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
     if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
     if ($('contractDetail').classList.contains('open'))             { closeContractDetail(); return; }
