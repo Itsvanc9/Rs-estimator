@@ -1610,7 +1610,7 @@ const T = {
 };
 
 let currentLang = localStorage.getItem('RS_LANG') || 'en';
-var TERMS_VERSION = '2026.05';
+var TERMS_VERSION = '2026.06';
 function t(key) { return T[currentLang][key] || T.en[key] || key; }
 
 function setLanguage(lang) {
@@ -2644,11 +2644,11 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
 
 function doPDF() {
   if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
-  AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'R&S_Estimate_' + ($('estNum').value||'estimate'));
+  AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 function doPrint() {
   if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
-  AndroidBridge.printHtml(getPrintHTML(), 'R&S_Estimate_' + ($('estNum').value||'estimate'));
+  AndroidBridge.printHtml(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 
 function getEstimateShareText() {
@@ -2664,7 +2664,7 @@ function getEstimateShareText() {
   var lines = [];
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
   lines.push('📋 ESTIMATE ' + folio);
-  lines.push('R&S Drywall Solutions LLC');
+  lines.push(getProfile().companyName);
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
   lines.push('📅 Date: ' + date);
   lines.push('👤 Client: ' + client);
@@ -2767,7 +2767,7 @@ function getContractShareText(c) {
   var lines = [];
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
   lines.push('📜 CONTRATO ' + (c.estNum||'-'));
-  lines.push('R&S Drywall Solutions LLC');
+  lines.push(getProfile().companyName);
   lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
   lines.push('📅 Fecha: ' + (c.acceptedDate||'-'));
   lines.push('👤 Cliente: ' + (c.clientName||'-'));
