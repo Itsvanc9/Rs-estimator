@@ -829,6 +829,30 @@
     </div>
 
     <div class="setting-section">
+      <div class="setting-section-title">🏢 Company Profile</div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Company Name</label>
+        <input id="cfgCompanyName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Location</label>
+        <input id="cfgCompanyLocation" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Phone</label>
+        <input id="cfgCompanyPhone" oninput="saveProfile()" type="tel" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
+      </div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Email</label>
+        <input id="cfgCompanyEmail" oninput="saveProfile()" type="email" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Contact Name</label>
+        <input id="cfgContactName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
+      </div>
+    </div>
+
+    <div class="setting-section">
       <div class="setting-section-title">Owner</div>
       <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')">👑 Owner Dashboard</button>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
@@ -1612,8 +1636,27 @@ function closeEstimatesPage() {
   var ne = $('navEstimate'); if (ne) ne.classList.add('active');
 }
 
+function getProfile() {
+  var d = {companyName:'R&S Drywall Solutions LLC',companyLocation:'Denver, Colorado',companyPhone:'(720) 761-8835',companyEmail:'roicegarcia14@gmail.com',contactName:''};
+  try { return Object.assign({}, d, JSON.parse(localStorage.getItem('RS_PROFILE')||'{}')); } catch(e) { return d; }
+}
+function saveProfile() {
+  localStorage.setItem('RS_PROFILE', JSON.stringify({
+    companyName:    ($('cfgCompanyName').value    ||'').trim(),
+    companyLocation:($('cfgCompanyLocation').value||'').trim(),
+    companyPhone:   ($('cfgCompanyPhone').value   ||'').trim(),
+    companyEmail:   ($('cfgCompanyEmail').value   ||'').trim(),
+    contactName:    ($('cfgContactName').value    ||'').trim()
+  }));
+}
 function openSettings() {
   history.pushState({ panel: 'settings' }, '');
+  var p = getProfile();
+  $('cfgCompanyName').value     = p.companyName;
+  $('cfgCompanyLocation').value = p.companyLocation;
+  $('cfgCompanyPhone').value    = p.companyPhone;
+  $('cfgCompanyEmail').value    = p.companyEmail;
+  $('cfgContactName').value     = p.contactName || '';
   $('settingsPanel').classList.add('open');
   $('settingsOverlay').classList.add('open');
 }
@@ -3388,10 +3431,25 @@ function setAppState(code) {
 // ── Contract document generation ──
 function getContractDoc(c) {
   var sl  = getStateLaw();
+  var p   = getProfile();
   var fmt = function(n){ return '$' + fmtMoney(n); };
   var payRows = c.schedule.map(function(s){
     return '<tr><td>' + escapeHtml(s.label) + '</td><td style="text-align:right;font-weight:800;color:#65a30d;">' + fmt(s.amount) + '</td><td>' + s.due + '</td></tr>';
   }).join('');
+  var payReceipts = (c.payments||[]).filter(function(pr){ return pr.receiptPhoto; });
+  var receiptSection = payReceipts.length > 0
+    ? '<div class="pay-card" style="margin-top:10px;">' +
+        '<div class="pay-title"><span>📷</span>PAYMENT RECEIPTS</div>' +
+        '<div style="padding:12px;display:flex;flex-wrap:wrap;gap:10px;">' +
+        payReceipts.map(function(pr){
+          var lbl = ((c.schedule||[]).find(function(s){ return s.sid===pr.scheduleId; })||{}).label || '';
+          return '<div style="text-align:center;">' +
+            '<img src="' + pr.receiptPhoto + '" style="height:120px;width:auto;max-width:180px;border-radius:8px;border:1px solid #c6e89a;object-fit:cover;display:block;">' +
+            '<div style="font-size:10px;color:#365314;margin-top:4px;">' + escapeHtml(lbl) + (pr.date ? ' · ' + pr.date : '') + '</div>' +
+            '</div>';
+        }).join('') +
+        '</div></div>'
+    : '';
 
   return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
   '<meta name="viewport" content="width=device-width,initial-scale=1">' +
@@ -3448,9 +3506,9 @@ function getContractDoc(c) {
     '<div class="brand">' +
       '<img src="file:///android_asset/logo.png" class="logo">' +
       '<div class="company">' +
-        '<h1>R&S DRYWALL <span class="green">SOLUTIONS LLC</span></h1>' +
-        '<p>Licensed &amp; Insured · Denver, Colorado</p>' +
-        '<div class="contact"><div>☎ (720) 761-8835</div><div>✉ roicegarcia14@gmail.com</div></div>' +
+        '<h1>' + escapeHtml(p.companyName) + '</h1>' +
+        '<p>Licensed &amp; Insured · ' + escapeHtml(p.companyLocation) + '</p>' +
+        '<div class="contact"><div>☎ ' + escapeHtml(p.companyPhone) + '</div><div>✉ ' + escapeHtml(p.companyEmail) + '</div></div>' +
       '</div>' +
     '</div>' +
     '<div class="contract-box">' +
@@ -3464,9 +3522,10 @@ function getContractDoc(c) {
   '<div class="cards">' +
     '<div class="info-card"><div class="card-title"><span>●</span>CONTRACTOR</div>' +
     '<div class="card-body">' +
-      '<div class="info-line"><strong>Company:</strong><div>R&amp;S Drywall Solutions LLC</div></div>' +
-      '<div class="info-line"><strong>Location:</strong><div>Denver, Colorado</div></div>' +
-      '<div class="info-line"><strong>Phone:</strong><div>(720) 761-8835</div></div>' +
+      '<div class="info-line"><strong>Company:</strong><div>' + escapeHtml(p.companyName) + '</div></div>' +
+      '<div class="info-line"><strong>Location:</strong><div>' + escapeHtml(p.companyLocation) + '</div></div>' +
+      '<div class="info-line"><strong>Phone:</strong><div>' + escapeHtml(p.companyPhone) + '</div></div>' +
+      (p.contactName ? '<div class="info-line"><strong>Contact:</strong><div>' + escapeHtml(p.contactName) + '</div></div>' : '') +
       '<div class="info-line"><strong>License:</strong><div>Licensed &amp; Insured</div></div>' +
     '</div></div>' +
     '<div class="info-card"><div class="card-title"><span>▣</span>CLIENT &amp; PROJECT</div>' +
@@ -3511,11 +3570,12 @@ function getContractDoc(c) {
     '</div>' +
   '</div>' +
 
+  receiptSection +
   '<div class="bottom-grid">' +
     '<div class="bottom-box"><h3><span>✎</span>CONTRACTOR SIGNATURE</h3>' +
       ((c.signatures&&c.signatures.authorized) ? '<img src="'+c.signatures.authorized+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
       '<div class="sig-line">Authorized Signature &amp; Date</div>' +
-      '<div class="sig-name">R&amp;S Drywall Solutions LLC</div>' +
+      '<div class="sig-name">' + escapeHtml(p.companyName) + '</div>' +
       '<div class="sig-line" style="margin-top:18px;">Printed Name &amp; Title</div>' +
     '</div>' +
     '<div class="bottom-box"><h3><span>✎</span>CLIENT SIGNATURE</h3>' +
@@ -3527,10 +3587,10 @@ function getContractDoc(c) {
   '</div>' +
 
   '<div class="footer">' +
-    '<div>📍 R&amp;S Drywall Solutions LLC · Denver, Colorado · Licensed &amp; Insured</div>' +
-    '<div>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</div>' +
+    '<div>📍 ' + escapeHtml(p.companyName) + ' · ' + escapeHtml(p.companyLocation) + ' · Licensed &amp; Insured</div>' +
+    '<div>☎ ' + escapeHtml(p.companyPhone) + ' · ✉ ' + escapeHtml(p.companyEmail) + '</div>' +
   '</div>' +
-  '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>' +
+  '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 ' + escapeHtml(p.companyName) + ' · All rights reserved</div>' +
   '</body></html>';
 }
 
@@ -3612,7 +3672,7 @@ function getEstimateDoc(est) {
   +'.photos img{height:110px;width:auto;max-width:160px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;margin-right:6px;}'
   +'@media print{body{padding:0}}'
   +'</style></head><body>'
-  +'<div class="top"><div class="brand"><img src="file:///android_asset/logo.png" class="logo"><div class="company"><h1>R&amp;S DRYWALL <span class="green">SOLUTIONS LLC</span></h1><p>Licensed &amp; Insured · Denver, Colorado</p><p>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</p></div></div>'
+  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="file:///android_asset/logo.png" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>Licensed &amp; Insured · '+escapeHtml(p.companyLocation)+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
   +'<div class="est-box"><h2>ESTIMATE</h2><div class="er"><strong>Estimate #:</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>Date:</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>Valid Until:</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
   +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>CLIENT INFORMATION</div><div class="cb"><div class="il"><strong>Client:</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>Project:</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>Address:</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
   +'<div class="info-card"><div class="ct"><span>▣</span>SCOPE OF WORK</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
@@ -3632,8 +3692,7 @@ function getEstimateDoc(est) {
   +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3>'
   +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
   +'<div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
-  +'<div class="footer"><div>📍 R&amp;S Drywall Solutions LLC · Denver, Colorado · Licensed &amp; Insured</div><div>☎ (720) 761-8835 · ✉ roicegarcia14@gmail.com</div></div>'
-  +'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 R&amp;S Drywall Solutions LLC · All rights reserved</div>'
+  +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+' · '+escapeHtml(p.companyLocation)+' · Licensed &amp; Insured</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · All rights reserved</div>'; })()
   +'</body></html>';
 }
 
