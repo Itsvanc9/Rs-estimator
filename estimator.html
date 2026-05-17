@@ -877,39 +877,15 @@
     </div>
 
     <div style="border-top:1px solid var(--border);padding-top:16px;">
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;">🖼 Images</div>
-
-      <div style="margin-bottom:16px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Logo (cuadrado)</label>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
-          <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
-            <button onclick="$('cfgLogoPick').click()" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
-            <button onclick="removeProfileImage('logoBase64')" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
-          </div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Logo (aparece en estimados y contratos)</label>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+          <button onclick="$('cfgLogoPick').click()" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
+          <button onclick="removeProfileImage('logoBase64')" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
         </div>
-        <input type="file" id="cfgLogoPick" accept="image/*" style="display:none" onchange="saveProfileImage('logoBase64',this.files[0],400,400);this.value=''">
       </div>
-
-      <div style="margin-bottom:16px;">
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Banner (header principal)</label>
-        <img id="cfgBannerPreview" src="file:///android_asset/banner.jpg" style="width:100%;height:90px;border-radius:12px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:8px;">
-        <div style="display:flex;gap:8px;">
-          <button onclick="$('cfgBannerPick').click()" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
-          <button onclick="removeProfileImage('bannerBase64')" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
-        </div>
-        <input type="file" id="cfgBannerPick" accept="image/*" style="display:none" onchange="saveProfileImage('bannerBase64',this.files[0],1200,600);this.value=''">
-      </div>
-
-      <div>
-        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Splash (pantalla inicial)</label>
-        <img id="cfgSplashPreview" src="file:///android_asset/banner_splash.png" style="width:100%;height:90px;border-radius:12px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:8px;">
-        <div style="display:flex;gap:8px;">
-          <button onclick="$('cfgSplashPick').click()" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
-          <button onclick="removeProfileImage('splashBase64')" style="flex:1;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
-        </div>
-        <input type="file" id="cfgSplashPick" accept="image/*" style="display:none" onchange="saveProfileImage('splashBase64',this.files[0],1200,800);this.value=''">
-      </div>
+      <input type="file" id="cfgLogoPick" accept="image/*" style="display:none" onchange="saveProfileImage('logoBase64',this.files[0],400,400);this.value=''">
     </div>
 
   </div>
