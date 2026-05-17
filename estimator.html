@@ -1610,6 +1610,7 @@ const T = {
 };
 
 let currentLang = localStorage.getItem('RS_LANG') || 'en';
+var TERMS_VERSION = '2026.05';
 function t(key) { return T[currentLang][key] || T.en[key] || key; }
 
 function setLanguage(lang) {
@@ -1758,9 +1759,7 @@ function openCompanyProfile() {
   $('cfgCompanyPhone').value    = p.companyPhone;
   $('cfgCompanyEmail').value    = p.companyEmail;
   $('cfgContactName').value     = p.contactName || '';
-  $('cfgLogoPreview').src   = p.logoBase64   || 'file:///android_asset/logo.png';
-  $('cfgBannerPreview').src = p.bannerBase64 || 'file:///android_asset/banner.jpg';
-  $('cfgSplashPreview').src = p.splashBase64 || 'file:///android_asset/banner_splash.png';
+  $('cfgLogoPreview').src       = p.logoBase64 || 'file:///android_asset/logo.png';
   history.pushState({ panel: 'companyProfile' }, '');
   $('companyProfilePanel').style.display = 'flex';
 }
@@ -3813,14 +3812,14 @@ function dismissSplash() {
   splash.style.opacity = '0';
   setTimeout(function() {
     splash.style.display = 'none';
-    if (!localStorage.getItem('RS_TERMS_ACCEPTED')) {
+    if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
       $('termsScreen').style.display = 'flex';
     }
   }, 400);
 }
 
 function acceptTerms() {
-  localStorage.setItem('RS_TERMS_ACCEPTED', '1');
+  localStorage.setItem('RS_TERMS_VERSION', TERMS_VERSION);
   var ts = $('termsScreen');
   ts.style.transition = 'opacity 0.3s ease';
   ts.style.opacity = '0';
@@ -3830,7 +3829,7 @@ function acceptTerms() {
 function openTerms() {
   var ts = $('termsScreen');
   // If already accepted, show close button instead of checkbox flow
-  if (localStorage.getItem('RS_TERMS_ACCEPTED')) {
+  if (localStorage.getItem('RS_TERMS_VERSION') === TERMS_VERSION) {
     $('termsCheck').checked = true;
     $('termsAcceptBtn').disabled = false;
     $('termsAcceptBtn').textContent = '✕ Close';
