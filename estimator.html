@@ -98,10 +98,10 @@
      HEADER
   ══════════════════════════════════════════ */
   header {
-    background: linear-gradient(180deg, rgba(5,10,20,0.08) 0%, rgba(5,10,20,0.72) 70%, rgba(5,10,20,0.88) 100%),
+    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.72) 100%),
                 url('file:///android_asset/banner.jpg');
-    background-size: cover; background-position: center 30%; background-repeat: no-repeat;
-    min-height: 280px; padding: 0 20px 24px;
+    background-size: 100% auto; background-position: top center; background-repeat: no-repeat;
+    min-height: 200px; padding: 0 20px 24px;
     display: flex; flex-direction: column; justify-content: flex-end;
     border-bottom-left-radius: 28px; border-bottom-right-radius: 28px;
     overflow: hidden;
@@ -1694,9 +1694,9 @@ function applyProfileImages() {
   var hdr = document.querySelector('header');
   if (hdr) {
     var bg = p.bannerBase64 || 'file:///android_asset/banner.jpg';
-    hdr.style.background = 'linear-gradient(180deg,rgba(5,10,20,0.08) 0%,rgba(5,10,20,0.72) 70%,rgba(5,10,20,0.88) 100%),url("' + bg + '")';
-    hdr.style.backgroundSize = 'cover';
-    hdr.style.backgroundPosition = 'center 30%';
+    hdr.style.background = 'linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,0.72) 100%),url("' + bg + '")';
+    hdr.style.backgroundSize = '100% auto';
+    hdr.style.backgroundPosition = 'top center';
     hdr.style.backgroundRepeat = 'no-repeat';
   }
   var spl = document.querySelector('.splash-screen');
