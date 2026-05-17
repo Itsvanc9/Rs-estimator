@@ -1,4 +1,4 @@
-package com.rsestimator;
+package com.blackracoon.estimator;
 
 import android.app.Activity;
 import android.content.ContentValues;

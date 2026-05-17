@@ -2563,7 +2563,7 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
       <img src="${logoSrc()}" class="logo">
       <div class="company">
         <h1>${escapeHtml(getProfile().companyName)}</h1>
-        <p>${escapeHtml(getProfile().companyLocation)}</p>
+        <p>${escapeHtml(getProfile().companyLocation)}${getProfile().companyLocation ? ' · ' : ''}Licensed &amp; Insured</p>
         <div class="contact"><div>☎ ${escapeHtml(getProfile().companyPhone)}</div><div>✉ ${escapeHtml(getProfile().companyEmail)}</div></div>
       </div>
     </div>
@@ -3617,7 +3617,7 @@ function getContractDoc(c) {
       '<img src="' + logoSrc() + '" class="logo">' +
       '<div class="company">' +
         '<h1>' + escapeHtml(p.companyName) + '</h1>' +
-        '<p>' + escapeHtml(p.companyLocation) + '</p>' +
+        '<p>' + escapeHtml(p.companyLocation) + (p.companyLocation ? ' · ' : '') + 'Licensed &amp; Insured</p>' +
         '<div class="contact"><div>☎ ' + escapeHtml(p.companyPhone) + '</div><div>✉ ' + escapeHtml(p.companyEmail) + '</div></div>' +
       '</div>' +
     '</div>' +
@@ -3636,6 +3636,7 @@ function getContractDoc(c) {
       '<div class="info-line"><strong>Location:</strong><div>' + escapeHtml(p.companyLocation) + '</div></div>' +
       '<div class="info-line"><strong>Phone:</strong><div>' + escapeHtml(p.companyPhone) + '</div></div>' +
       (p.contactName ? '<div class="info-line"><strong>Contact:</strong><div>' + escapeHtml(p.contactName) + '</div></div>' : '') +
+      '<div class="info-line"><strong>License:</strong><div>Licensed &amp; Insured</div></div>' +
     '</div></div>' +
     '<div class="info-card"><div class="card-title"><span>▣</span>CLIENT &amp; PROJECT</div>' +
     '<div class="card-body">' +
@@ -3696,7 +3697,7 @@ function getContractDoc(c) {
   '</div>' +
 
   '<div class="footer">' +
-    '<div>📍 ' + escapeHtml(p.companyName) + ' · ' + escapeHtml(p.companyLocation) + '</div>' +
+    '<div>📍 ' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · Licensed &amp; Insured</div>' +
     '<div>☎ ' + escapeHtml(p.companyPhone) + ' · ✉ ' + escapeHtml(p.companyEmail) + '</div>' +
   '</div>' +
   '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 ' + escapeHtml(p.companyName) + ' · All rights reserved</div>' +
@@ -3781,7 +3782,7 @@ function getEstimateDoc(est) {
   +'.photos img{height:110px;width:auto;max-width:160px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;margin-right:6px;}'
   +'@media print{body{padding:0}}'
   +'</style></head><body>'
-  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>'+escapeHtml(p.companyLocation)+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
+  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>'+(p.companyLocation?escapeHtml(p.companyLocation)+' · ':'')+'Licensed &amp; Insured</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
   +'<div class="est-box"><h2>ESTIMATE</h2><div class="er"><strong>Estimate #:</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>Date:</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>Valid Until:</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
   +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>CLIENT INFORMATION</div><div class="cb"><div class="il"><strong>Client:</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>Project:</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>Address:</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
   +'<div class="info-card"><div class="ct"><span>▣</span>SCOPE OF WORK</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
@@ -3801,7 +3802,7 @@ function getEstimateDoc(est) {
   +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3>'
   +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
   +'<div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
-  +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+' · '+escapeHtml(p.companyLocation)+'</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · All rights reserved</div>'; })()
+  +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · Licensed &amp; Insured</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · All rights reserved</div>'; })()
   +'</body></html>';
 }
 
