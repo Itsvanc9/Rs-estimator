@@ -2062,7 +2062,11 @@ function openPinModal(action) {
   let pin = localStorage.getItem('RS_PIN') || '1234';
   if (action === 'unlock' || action === 'owner') {
     $('pinTitle').textContent = '👑 Owner Access';
-    $('pinSub').textContent = 'Enter your PIN to continue';
+    if (!localStorage.getItem('RS_PIN')) {
+      $('pinSub').innerHTML = 'PIN temporal: <strong style="letter-spacing:4px;font-size:18px;">1234</strong>';
+    } else {
+      $('pinSub').textContent = 'Enter your PIN to continue';
+    }
     $('pinInput').placeholder = '••••';
   } else {
     if (pin === '1234') {
@@ -2154,12 +2158,6 @@ function openOwnerPage() {
   var el = $('ownerPage');
   el.classList.add('open');
   el.scrollTop = 0;
-  if (!localStorage.getItem('RS_PIN_HINT_SHOWN')) {
-    localStorage.setItem('RS_PIN_HINT_SHOWN', '1');
-    setTimeout(function() {
-      showToast('🔑 Contraseña temporal: 1234 — cámbiala en Configuraciones');
-    }, 400);
-  }
 }
 
 function closeOwnerPage() {
