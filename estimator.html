@@ -850,6 +850,42 @@
         <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Contact Name</label>
         <input id="cfgContactName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;">
       </div>
+
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600;">🖼 Images</div>
+
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Logo (square)</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:56px;height:56px;border-radius:10px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <button onclick="$('cfgLogoPick').click()" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
+              <button onclick="removeProfileImage('logoBase64')" style="padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
+            </div>
+          </div>
+          <input type="file" id="cfgLogoPick" accept="image/*" style="display:none" onchange="saveProfileImage('logoBase64',this.files[0],400,400);this.value=''">
+        </div>
+
+        <div style="margin-bottom:12px;">
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Banner (header)</label>
+          <img id="cfgBannerPreview" src="file:///android_asset/banner.jpg" style="width:100%;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
+          <div style="display:flex;gap:6px;">
+            <button onclick="$('cfgBannerPick').click()" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
+            <button onclick="removeProfileImage('bannerBase64')" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
+          </div>
+          <input type="file" id="cfgBannerPick" accept="image/*" style="display:none" onchange="saveProfileImage('bannerBase64',this.files[0],1200,600);this.value=''">
+        </div>
+
+        <div>
+          <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px;">Splash (pantalla inicial)</label>
+          <img id="cfgSplashPreview" src="file:///android_asset/banner_splash.png" style="width:100%;height:72px;border-radius:10px;object-fit:cover;border:1px solid var(--border);display:block;margin-bottom:6px;">
+          <div style="display:flex;gap:6px;">
+            <button onclick="$('cfgSplashPick').click()" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;cursor:pointer;">📁 Cambiar</button>
+            <button onclick="removeProfileImage('splashBase64')" style="flex:1;padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:12px;font-family:inherit;cursor:pointer;">↩ Restablecer</button>
+          </div>
+          <input type="file" id="cfgSplashPick" accept="image/*" style="display:none" onchange="saveProfileImage('splashBase64',this.files[0],1200,800);this.value=''">
+        </div>
+      </div>
     </div>
 
     <div class="setting-section">
@@ -1641,13 +1677,85 @@ function getProfile() {
   try { return Object.assign({}, d, JSON.parse(localStorage.getItem('RS_PROFILE')||'{}')); } catch(e) { return d; }
 }
 function saveProfile() {
+  var prev = getProfile();
   localStorage.setItem('RS_PROFILE', JSON.stringify({
     companyName:    ($('cfgCompanyName').value    ||'').trim(),
     companyLocation:($('cfgCompanyLocation').value||'').trim(),
     companyPhone:   ($('cfgCompanyPhone').value   ||'').trim(),
     companyEmail:   ($('cfgCompanyEmail').value   ||'').trim(),
-    contactName:    ($('cfgContactName').value    ||'').trim()
+    contactName:    ($('cfgContactName').value    ||'').trim(),
+    logoBase64:     prev.logoBase64   || null,
+    bannerBase64:   prev.bannerBase64 || null,
+    splashBase64:   prev.splashBase64 || null
   }));
+}
+
+function logoSrc() {
+  var p = getProfile();
+  return p.logoBase64 || 'file:///android_asset/logo.png';
+}
+
+function applyProfileImages() {
+  var p = getProfile();
+  var hdr = document.querySelector('header');
+  if (hdr) {
+    var bg = p.bannerBase64 || 'file:///android_asset/banner.jpg';
+    hdr.style.background = 'linear-gradient(180deg,rgba(5,10,20,0.08) 0%,rgba(5,10,20,0.72) 70%,rgba(5,10,20,0.88) 100%),url("' + bg + '")';
+    hdr.style.backgroundSize = 'cover';
+    hdr.style.backgroundPosition = 'center 30%';
+    hdr.style.backgroundRepeat = 'no-repeat';
+  }
+  var spl = document.querySelector('.splash-screen');
+  if (spl) {
+    var sbg = p.splashBase64 || 'file:///android_asset/banner_splash.png';
+    spl.style.backgroundImage = 'url("' + sbg + '")';
+    spl.style.backgroundSize = 'cover';
+    spl.style.backgroundPosition = 'center';
+  }
+}
+
+function _compressImage(file, maxW, maxH, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      var scale = Math.min(maxW / w, maxH / h, 1);
+      var canvas = document.createElement('canvas');
+      canvas.width  = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = function() { callback(null); };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProfileImage(key, file, maxW, maxH) {
+  if (!file) return;
+  _compressImage(file, maxW, maxH, 0.78, function(b64) {
+    if (!b64) { showToast('Error procesando imagen'); return; }
+    var p = getProfile();
+    p[key] = b64;
+    localStorage.setItem('RS_PROFILE', JSON.stringify(p));
+    applyProfileImages();
+    var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
+    if (previewId && $(previewId)) $(previewId).src = b64;
+    showToast('✅ Imagen guardada');
+  });
+}
+
+function removeProfileImage(key) {
+  var p = getProfile();
+  p[key] = null;
+  localStorage.setItem('RS_PROFILE', JSON.stringify(p));
+  applyProfileImages();
+  var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
+  var defaultSrc = { logoBase64:'file:///android_asset/logo.png', bannerBase64:'file:///android_asset/banner.jpg', splashBase64:'file:///android_asset/banner_splash.png' }[key];
+  if (previewId && $(previewId)) $(previewId).src = defaultSrc;
+  showToast('✅ Imagen restablecida');
 }
 function openSettings() {
   history.pushState({ panel: 'settings' }, '');
@@ -1657,6 +1765,9 @@ function openSettings() {
   $('cfgCompanyPhone').value    = p.companyPhone;
   $('cfgCompanyEmail').value    = p.companyEmail;
   $('cfgContactName').value     = p.contactName || '';
+  $('cfgLogoPreview').src   = p.logoBase64   || 'file:///android_asset/logo.png';
+  $('cfgBannerPreview').src = p.bannerBase64 || 'file:///android_asset/banner.jpg';
+  $('cfgSplashPreview').src = p.splashBase64 || 'file:///android_asset/banner_splash.png';
   $('settingsPanel').classList.add('open');
   $('settingsOverlay').classList.add('open');
 }
@@ -3774,6 +3885,7 @@ function navTo(tab) {
   if (ss) ss.value = localStorage.getItem('RS_STATE') || 'CO';
 
   renderClients();
+  applyProfileImages();
   renderSaved();
   renderTemplates();
   updateTotal();
