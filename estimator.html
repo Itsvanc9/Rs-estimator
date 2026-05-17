@@ -2561,11 +2561,11 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
 <body><div class="page">
   <div class="top">
     <div class="brand">
-      <img src="file:///android_asset/logo.png" class="logo">
+      <img src="${logoSrc()}" class="logo">
       <div class="company">
-        <h1>R&S DRYWALL <span class="green">SOLUTIONS LLC</span></h1>
-        <p>Licensed & Insured · Denver, Colorado</p>
-        <div class="contact"><div>☎ (720) 761-8835</div><div>✉ roicegarcia14@gmail.com</div></div>
+        <h1>${escapeHtml(getProfile().companyName)}</h1>
+        <p>Licensed & Insured · ${escapeHtml(getProfile().companyLocation)}</p>
+        <div class="contact"><div>☎ ${escapeHtml(getProfile().companyPhone)}</div><div>✉ ${escapeHtml(getProfile().companyEmail)}</div></div>
       </div>
     </div>
     <div class="estimate-box">
@@ -2636,10 +2636,10 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
     </div>
   </div>` : ''}
   <div class="footer">
-    <div>📍 R&S Drywall Solutions LLC<br>Denver, Colorado<br>Licensed & Insured</div>
-    <div>☎ (720) 761-8835<br>✉ roicegarcia14@gmail.com</div>
+    <div>📍 ${escapeHtml(getProfile().companyName)}<br>${escapeHtml(getProfile().companyLocation)}<br>Licensed & Insured</div>
+    <div>☎ ${escapeHtml(getProfile().companyPhone)}<br>✉ ${escapeHtml(getProfile().companyEmail)}</div>
   </div>
-  <div class="copyright">© 2026 R&S Drywall Solutions LLC. All rights reserved.</div>
+  <div class="copyright">© 2026 ${escapeHtml(getProfile().companyName)}. All rights reserved.</div>
 </div></body></html>`;
 }
 
@@ -3615,7 +3615,7 @@ function getContractDoc(c) {
 
   '<div class="top">' +
     '<div class="brand">' +
-      '<img src="file:///android_asset/logo.png" class="logo">' +
+      '<img src="' + logoSrc() + '" class="logo">' +
       '<div class="company">' +
         '<h1>' + escapeHtml(p.companyName) + '</h1>' +
         '<p>Licensed &amp; Insured · ' + escapeHtml(p.companyLocation) + '</p>' +
@@ -3783,7 +3783,7 @@ function getEstimateDoc(est) {
   +'.photos img{height:110px;width:auto;max-width:160px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;margin-right:6px;}'
   +'@media print{body{padding:0}}'
   +'</style></head><body>'
-  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="file:///android_asset/logo.png" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>Licensed &amp; Insured · '+escapeHtml(p.companyLocation)+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
+  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>Licensed &amp; Insured · '+escapeHtml(p.companyLocation)+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
   +'<div class="est-box"><h2>ESTIMATE</h2><div class="er"><strong>Estimate #:</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>Date:</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>Valid Until:</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
   +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>CLIENT INFORMATION</div><div class="cb"><div class="il"><strong>Client:</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>Project:</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>Address:</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
   +'<div class="info-card"><div class="ct"><span>▣</span>SCOPE OF WORK</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
