@@ -1703,13 +1703,13 @@ const T = {
   }
 };
 
-let currentLang = localStorage.getItem('RS_LANG') || 'en';
+let currentLang = (function(){ var l = localStorage.getItem('RS_LANG'); return (l==='en'||l==='es') ? l : 'en'; })();
 var TERMS_VERSION = '2026.06';
-function t(key) { return T[currentLang][key] || T.en[key] || key; }
+function t(key) { return (T[currentLang]&&T[currentLang][key]) || (T.en&&T.en[key]) || key; }
 
 function setLanguage(lang) {
-  currentLang = lang;
-  localStorage.setItem('RS_LANG', lang);
+  currentLang = (T[lang]) ? lang : 'en';
+  localStorage.setItem('RS_LANG', currentLang);
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const k = el.dataset.i18n;
     if (T[lang][k] !== undefined) el.textContent = T[lang][k];
@@ -1765,7 +1765,14 @@ function accentDark() {
   } catch(e) { return '#5a8c0a'; }
 }
 function injectAccentColors(html) {
-  return html.replace(/#84cc16/gi, accentHex()).replace(/#5a8c0a/gi, accentDark());
+  var h = accentHex(), d = accentDark();
+  var rgb = hexToRgb(h);
+  return html
+    .replace(/#84cc16/gi, h)
+    .replace(/#5a8c0a/gi, d)
+    .replace(/#65a30d/gi, d)
+    .replace(/#a3e635/gi, h)
+    .replace(/rgba\(132\s*,\s*204\s*,\s*22\s*,/gi, 'rgba('+rgb+',');
 }
 
 function hexToRgb(hex) {
@@ -3355,7 +3362,15 @@ var currentEstimateId  = null;
 var selectedPayMethod = 'cash';
 
 function getContracts() {
-  return JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
+  try {
+    var arr = JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
+    return arr.map(function(c) {
+      c.payments  = c.payments  || [];
+      c.schedule  = c.schedule  || [];
+      c.status    = c.status    || 'active';
+      return c;
+    });
+  } catch(e) { return []; }
 }
 function saveContracts(arr) {
   try {
