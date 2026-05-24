@@ -3229,7 +3229,30 @@ function discardEstimate() {
 // PRINT / PDF
 // ═══════════════════════════════════════════════════════
 function getPrintHTML() {
-  let t = computeTotals();
+  return getEstimateDoc({
+    estNum:     $('estNum').value,
+    date:       $('estDate').value,
+    validUntil: $('validUntil').value,
+    client:     $('clientName').value,
+    project:    $('projectName').value,
+    address:    $('projectAddress').value,
+    scope:      $('scopeWork').value,
+    notes:      $('notes').value,
+    unitType:   $('unitType').value,
+    unitQty:    $('unitQty').value,
+    unitPrice:  $('unitPrice').value,
+    hours:      $('laborHours').value,
+    workers:    $('workersCount').value,
+    rate:       $('hourlyRate').value,
+    materials:  materials,
+    others:     otherCosts,
+    tax:        $('taxRate').value,
+    deposit:    $('depositPaid').value,
+    receipts:   receiptPhotos,
+    signatures: estimateSignatures
+  });
+}
+function _deadCode_neverCalled() {
   let html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>
 @page{size:letter portrait;margin:8mm}
@@ -3510,7 +3533,15 @@ function getContractShareText(c) {
 
 function doShareSend(method) {
   closeShareModal();
-  // Build share text from selected document
+  // Try to share as PDF file if bridge supports it
+  if (window.AndroidBridge) {
+    var doc = _getShareDoc();
+    if (doc) {
+      AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
+      return;
+    }
+  }
+  // Fallback: plain-text share (browser / no bridge)
   var text = '', title = '';
   if (_shareDocType === 'contract') {
     var c = getContracts().find(function(x){ return x.id === _shareDocId; });
@@ -3518,17 +3549,7 @@ function doShareSend(method) {
     text  = getContractShareText(c);
     title = 'Contrato ' + (c.estNum||'');
   } else {
-    var ests = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-    var e = ests.find(function(x){ return x.id === _shareDocId; });
-    if (e) {
-      // temporarily use saved estimate data
-      var _savedSigs = estimateSignatures;
-      estimateSignatures = e.signatures || { authorized: null, client: null };
-      text  = getEstimateShareText();  // uses form fields fallback but that's OK for text
-      estimateSignatures = _savedSigs;
-    } else {
-      text = getEstimateShareText();
-    }
+    text  = getEstimateShareText();
     title = 'Estimado ' + ($('estNum').value||'');
   }
   var enc = encodeURIComponent(text);

@@ -136,6 +136,14 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import com.getcapacitor.BridgeActivity;
+import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+import android.print.PrintManager;
+import android.webkit.WebViewClient;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -293,6 +301,99 @@ public class MainActivity extends BridgeActivity {
                     }
                 });
             }
+        }
+
+        @JavascriptInterface
+        public void printHtml(final String html, final String name) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    final WebView pv = new WebView(MainActivity.this);
+                    pv.getSettings().setJavaScriptEnabled(true);
+                    pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
+                    pv.setWebViewClient(new WebViewClient() {
+                        public void onPageFinished(WebView view, String url) {
+                            PrintManager pm = (PrintManager) getSystemService(PRINT_SERVICE);
+                            PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(name);
+                            PrintAttributes attrs = new PrintAttributes.Builder()
+                                .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
+                                .build();
+                            pm.print(name, adapter, attrs);
+                        }
+                    });
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void saveHtmlAsPdf(final String html, final String name) {
+            printHtml(html, name);
+        }
+
+        @JavascriptInterface
+        public void shareHtmlAsPdf(final String html, final String name, final String channel) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    final WebView pv = new WebView(MainActivity.this);
+                    pv.getSettings().setJavaScriptEnabled(true);
+                    pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
+                    pv.setWebViewClient(new WebViewClient() {
+                        public void onPageFinished(final WebView view, String url) {
+                            try {
+                                final PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(name);
+                                final PrintAttributes attrs = new PrintAttributes.Builder()
+                                    .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
+                                    .setResolution(new PrintAttributes.Resolution("pdf", "PDF", 300, 300))
+                                    .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                                    .build();
+                                String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                final File pdfFile = new File(getCacheDir(), safeName + ".pdf");
+                                final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
+                                    ParcelFileDescriptor.MODE_READ_WRITE |
+                                    ParcelFileDescriptor.MODE_CREATE |
+                                    ParcelFileDescriptor.MODE_TRUNCATE);
+                                adapter.onStart();
+                                adapter.onLayout(null, attrs, new CancellationSignal(),
+                                    new PrintDocumentAdapter.LayoutResultCallback() {
+                                        public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
+                                            adapter.onWrite(
+                                                new PageRange[]{PageRange.ALL_PAGES},
+                                                pfd,
+                                                new CancellationSignal(),
+                                                new PrintDocumentAdapter.WriteResultCallback() {
+                                                    public void onWriteFinished(PageRange[] pages) {
+                                                        try { pfd.close(); } catch (IOException ignored) {}
+                                                        adapter.onFinish();
+                                                        Uri uri = FileProvider.getUriForFile(
+                                                            MainActivity.this,
+                                                            getPackageName() + ".fileprovider",
+                                                            pdfFile);
+                                                        Intent intent = new Intent(Intent.ACTION_SEND);
+                                                        intent.setType("application/pdf");
+                                                        intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                                        intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                                                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                        if ("whatsapp".equals(channel)) {
+                                                            intent.setPackage("com.whatsapp");
+                                                        }
+                                                        try {
+                                                            startActivity(intent);
+                                                        } catch (Exception ex) {
+                                                            startActivity(Intent.createChooser(intent, "Share PDF"));
+                                                        }
+                                                    }
+                                                }
+                                            );
+                                        }
+                                    }, null);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(MainActivity.this,
+                                    "Error al generar PDF", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            });
         }
     }
 }
