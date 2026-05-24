@@ -623,6 +623,7 @@
   .cal-day:hover { background:var(--lime-light); }
   .cal-day.today { background:var(--lime-mid);font-weight:800; }
   .cal-day.has-job { background:var(--lime-light); }
+  .cal-day.cal-conflict { background:#fef2f2;outline:1.5px solid #fca5a5; }
   .cal-day-num { font-size:12px;font-weight:600;color:var(--text2);line-height:1; }
   .cal-dots { display:flex;flex-wrap:wrap;gap:2px;margin-top:3px; }
   .cal-dot { width:7px;height:7px;border-radius:50%;background:var(--lime);flex-shrink:0; }
@@ -1334,17 +1335,27 @@
 
     <!-- Job Dates -->
     <div>
-      <div class="cd-section-title">📅 Job Dates</div>
+      <div class="cd-section-title">📅 Appointment</div>
+      <div style="margin-bottom:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Team</label>
+        <div style="position:relative;">
+          <input type="text" id="cdTeam" placeholder="e.g. Team Daniel, Crew B…" list="teamSuggestions"
+            style="width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;"
+            oninput="saveContractDates()" onchange="saveContractDates()">
+          <datalist id="teamSuggestions"></datalist>
+        </div>
+      </div>
       <div class="cd-dates-row">
         <div class="cd-date-field">
-          <label>Start Date</label>
+          <label>Start</label>
           <input type="date" id="cdJobStart" onchange="saveContractDates()">
         </div>
         <div class="cd-date-field">
-          <label>End Date</label>
+          <label>End</label>
           <input type="date" id="cdJobEnd" onchange="saveContractDates()">
         </div>
       </div>
+      <div id="cdConflictWarn" style="display:none;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 12px;font-size:12px;color:#b91c1c;margin-top:6px;"></div>
     </div>
 
     <!-- Payment schedule -->
@@ -1809,13 +1820,52 @@ function closeColorPicker() {
 var calYear  = new Date().getFullYear();
 var calMonth = new Date().getMonth();
 
+var TEAM_COLORS = ['#3b82f6','#f97316','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#ef4444','#10b981','#06b6d4','#a855f7'];
+function teamColor(name) {
+  if (!name) return 'var(--lime)';
+  var hash = 0;
+  for (var i=0;i<name.length;i++) hash = ((hash<<5)-hash+name.toLowerCase().charCodeAt(i))|0;
+  return TEAM_COLORS[Math.abs(hash) % TEAM_COLORS.length];
+}
+
 function saveContractDates() {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id === currentContractId; });
   if (!c) return;
   c.jobStart = $('cdJobStart').value;
   c.jobEnd   = $('cdJobEnd').value;
+  c.team     = ($('cdTeam').value||'').trim();
   saveContracts(contracts);
+  checkScheduleConflict(c, contracts);
+  // Refresh suggestions
+  populateTeamSuggestions(contracts);
+}
+
+function checkScheduleConflict(current, contracts) {
+  var warn = $('cdConflictWarn'); if (!warn) return;
+  if (!current.team || !current.jobStart) { warn.style.display='none'; return; }
+  var s1 = new Date(current.jobStart+'T00:00:00');
+  var e1 = current.jobEnd ? new Date(current.jobEnd+'T00:00:00') : s1;
+  var conflicts = contracts.filter(function(c) {
+    if (c.id===current.id || !c.team || !c.jobStart) return false;
+    if (c.team.toLowerCase() !== current.team.toLowerCase()) return false;
+    var s2 = new Date(c.jobStart+'T00:00:00');
+    var e2 = c.jobEnd ? new Date(c.jobEnd+'T00:00:00') : s2;
+    return s1 <= e2 && s2 <= e1;
+  });
+  if (conflicts.length === 0) { warn.style.display='none'; return; }
+  warn.style.display = '';
+  warn.innerHTML = '⚠️ <strong>'+escapeHtml(current.team)+'</strong> already has '+conflicts.length+' job(s) on those dates:<br>' +
+    conflicts.map(function(c){
+      return '• '+escapeHtml(c.clientName)+' ('+c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'')+')';
+    }).join('<br>');
+}
+
+function populateTeamSuggestions(contracts) {
+  var ds = $('teamSuggestions'); if (!ds) return;
+  var teams = {};
+  (contracts||getContracts()).forEach(function(c){ if(c.team) teams[c.team]=1; });
+  ds.innerHTML = Object.keys(teams).map(function(t){return '<option value="'+escapeHtml(t)+'">'+escapeHtml(t)+'</option>';}).join('');
 }
 
 function moveCalMonth(dir) {
@@ -1850,6 +1900,18 @@ function renderScheduleCalendar() {
     }
   });
 
+  // Detect team conflicts for the whole month
+  var conflictTeamDays = {};
+  Object.keys(dayMap).forEach(function(day) {
+    var teams = {};
+    dayMap[day].forEach(function(c) {
+      var t = (c.team||'').toLowerCase();
+      if (!t) return;
+      if (teams[t]) conflictTeamDays[day] = true;
+      teams[t] = true;
+    });
+  });
+
   var grid = $('calGrid'); if (!grid) return;
   var html = DAYS.map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
 
@@ -1860,11 +1922,13 @@ function renderScheduleCalendar() {
     var dateObj = new Date(calYear, calMonth, day);
     var isToday = dateObj.getTime()===today.getTime();
     var jobs = dayMap[day] || [];
-    var cls = 'cal-day' + (isToday?' today':'') + (jobs.length?' has-job':'');
-    html += '<div class="'+cls+'" onclick="calDayClick('+day+')">' +
-      '<div class="cal-day-num">'+day+'</div>' +
-      (jobs.length ? '<div class="cal-dots">'+jobs.slice(0,4).map(function(c){
-        return '<div class="cal-dot status-'+c.status+'"></div>';
+    var hasConflict = !!conflictTeamDays[day];
+    var cls = 'cal-day' + (isToday?' today':'') + (jobs.length?' has-job':'') + (hasConflict?' cal-conflict':'');
+    html += '<div class="'+cls+'" onclick="calDayClick('+day+')" title="'+day+'">' +
+      '<div class="cal-day-num" style="'+(hasConflict?'color:#b91c1c;font-weight:900;':'')+'">'+day+(hasConflict?'⚠':'')+'</div>' +
+      (jobs.length ? '<div class="cal-dots">'+jobs.slice(0,5).map(function(c){
+        var col = teamColor(c.team);
+        return '<div class="cal-dot" style="background:'+col+';" title="'+(c.team||c.clientName)+'"></div>';
       }).join('')+'</div>' : '') +
     '</div>';
   }
@@ -1878,18 +1942,21 @@ function renderScheduleCalendar() {
 
   var list = $('calJobList'); if (!list) return;
   if (monthJobs.length===0) {
-    list.innerHTML = '<div class="cal-empty">No jobs scheduled this month</div>';
+    list.innerHTML = '<div class="cal-empty">No jobs scheduled this month.<br><span style="font-size:11px;">Open a contract → set Team & dates.</span></div>';
   } else {
-    var statusColor = {active:'var(--lime)',completed:'#10b981',pending:'#f59e0b'};
     list.innerHTML = monthJobs.map(function(c){
-      var col = statusColor[c.status]||'var(--lime)';
-      return '<div class="cal-job-item" onclick="openContractDetail(\''+c.id+'\')">' +
+      var col = teamColor(c.team);
+      return '<div class="cal-job-item" style="border-left:4px solid '+col+';border-radius:0 12px 12px 0;" onclick="openContractDetail(\''+c.id+'\')">' +
         '<div class="cal-job-dot" style="background:'+col+'"></div>' +
         '<div class="cal-job-info">' +
           '<div class="cal-job-client">'+escapeHtml(c.clientName)+'</div>' +
-          '<div class="cal-job-meta">'+c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'')+(c.projectName?' · '+escapeHtml(c.projectName):'')+'</div>' +
+          '<div class="cal-job-meta">' +
+            (c.team?'<strong style="color:'+col+';">'+escapeHtml(c.team)+'</strong> · ':'') +
+            c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'') +
+            (c.projectName?' · '+escapeHtml(c.projectName):'') +
+          '</div>' +
         '</div>' +
-        '<span style="font-size:11px;color:'+col+';font-weight:700;text-transform:capitalize;">'+c.status+'</span>' +
+        '<span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:capitalize;">'+c.status+'</span>' +
       '</div>';
     }).join('');
   }
@@ -3396,6 +3463,10 @@ function openContractDetail(id) {
   $('cdTotal').textContent   = '$' + fmtMoney(c.totalAmount);
   $('cdJobStart').value = c.jobStart || '';
   $('cdJobEnd').value   = c.jobEnd   || '';
+  $('cdTeam').value     = c.team     || '';
+  var allContracts = getContracts();
+  populateTeamSuggestions(allContracts);
+  checkScheduleConflict(c, allContracts);
   $('cdPaid').textContent    = '$' + fmtMoney(paid);
   $('cdBalance').textContent = '$' + fmtMoney(Math.max(0, balance));
   $('cdProgressFill').style.width = pct + '%';
