@@ -1018,7 +1018,7 @@
         <div class="field col-span-2"><label data-i18n="projectAddress">Project Address</label><input id="projectAddress" placeholder="Job site address" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="validUntil">Valid Until</label><input id="validUntil" type="date" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="depositPaid">Deposit Paid ($)</label><input id="depositPaid" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
-        <div class="field col-span-2"><label data-i18n="scope">Scope</label><input id="scopeWork" placeholder="Scope of work" oninput="updateTotal()"></div>
+        <div class="field col-span-2"><label data-i18n="scope">Work Description</label><input id="scopeWork" placeholder="Describe the work to be done" oninput="updateTotal()"></div>
       </div>
     </div>
   </div>
@@ -1652,7 +1652,7 @@ const T = {
     projectDetails:'Project Details', estimateNum:'Estimate #',
     date:'Date', client:'Client', project:'Project',
     projectAddress:'Project Address', validUntil:'Valid Until',
-    depositPaid:'Deposit Paid ($)', scope:'Scope',
+    depositPaid:'Deposit Paid ($)', scope:'Work Description',
     savedClients:'Saved Clients', selectClient:'Select saved client',
     clientPhone:'Client Phone', clientEmail:'Client Email',
     saveClientBtn:'+ Save Client',
@@ -1802,7 +1802,7 @@ const T = {
     projectDetails:'Detalles del Proyecto', estimateNum:'Estimado #',
     date:'Fecha', client:'Cliente', project:'Proyecto',
     projectAddress:'Dirección del Proyecto', validUntil:'Válido Hasta',
-    depositPaid:'Depósito Pagado ($)', scope:'Alcance del Trabajo',
+    depositPaid:'Depósito Pagado ($)', scope:'Descripción del Trabajo',
     savedClients:'Clientes Guardados', selectClient:'Seleccionar cliente',
     clientPhone:'Teléfono', clientEmail:'Correo Electrónico',
     saveClientBtn:'+ Guardar Cliente',
@@ -3197,7 +3197,7 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
       </div>
     </div>
     <div class="info-card">
-      <div class="card-title"><span>▣</span>${pdfStr('SCOPE OF WORK','ALCANCE DEL TRABAJO')}</div>
+      <div class="card-title"><span>▣</span>${pdfStr('WORK DESCRIPTION','DESCRIPCIÓN DEL TRABAJO')}</div>
       <div class="card-body">
         <ul class="scope-list">
           ${String($('scopeWork').value||'-').split('\n').map(x=>`<li>${escapeHtml(x.trim()||'-')}</li>`).join('')}
@@ -3229,7 +3229,7 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
     <div class="bottom-box">
       <h3><span>🛡</span>${pdfStr('TERMS & CONDITIONS','TÉRMINOS Y CONDICIONES')}</h3>
       <p>${pdfStr('This estimate is valid until the date listed above.','Este estimado es válido hasta la fecha indicada arriba.')}</p>
-      <p>${pdfStr('Final pricing may change if scope, materials, or site conditions change.','El precio final puede cambiar si el alcance, materiales o condiciones del sitio cambian.')}</p>
+      <p>${pdfStr('Final pricing may change if work description, materials, or site conditions change.','El precio final puede cambiar si la descripción del trabajo, materiales o condiciones del sitio cambian.')}</p>
       <p>${pdfStr('A deposit may be required before scheduling work.','Puede requerirse un depósito antes de programar el trabajo.')}</p>
     </div>
     <div class="bottom-box">
@@ -3286,7 +3286,7 @@ function getEstimateShareText() {
   if (address) lines.push('📍 Address: ' + address);
   if (valid)   lines.push('⏳ Valid Until: ' + valid);
   lines.push('');
-  if (scope) { lines.push('📝 Scope of Work:'); lines.push(scope); lines.push(''); }
+  if (scope) { lines.push('📝 Work Description:'); lines.push(scope); lines.push(''); }
   lines.push('── Breakdown ──');
   if (t.unit   > 0) lines.push('  Unit/SqFt:   $' + fmtMoney(t.unit));
   if (t.labor  > 0) lines.push('  Labor:       $' + fmtMoney(t.labor));
@@ -3388,7 +3388,7 @@ function getContractShareText(c) {
   if (c.projectName) lines.push('🏗️ Proyecto: ' + c.projectName);
   if (c.projectAddress) lines.push('📍 Dirección: ' + c.projectAddress);
   lines.push('');
-  if (c.scopeWork) { lines.push('📝 Alcance:'); lines.push(c.scopeWork); lines.push(''); }
+  if (c.scopeWork) { lines.push('📝 Descripción del Trabajo:'); lines.push(c.scopeWork); lines.push(''); }
   lines.push('── Plan de Pagos ──');
   (c.schedule||[]).forEach(function(s) {
     var isPaid = (c.payments||[]).some(function(p){return p.scheduleId===s.sid;});
@@ -4290,7 +4290,7 @@ function getContractDoc(c) {
       '<div class="info-line"><strong>'+pdfStr('Client:','Cliente:')+'</strong><div>' + escapeHtml(c.clientName) + '</div></div>' +
       '<div class="info-line"><strong>'+pdfStr('Project:','Proyecto:')+'</strong><div>' + escapeHtml(c.projectName||'—') + '</div></div>' +
       '<div class="info-line"><strong>'+pdfStr('Address:','Dirección:')+'</strong><div>' + escapeHtml(c.projectAddress||'—') + '</div></div>' +
-      '<div class="info-line"><strong>'+pdfStr('Scope:','Alcance:')+'</strong><div>' + escapeHtml(c.scopeWork||pdfStr('As per estimate ','Según estimado ') + (c.estNum||'')) + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Work Description:','Descripción del Trabajo:')+'</strong><div>' + escapeHtml(c.scopeWork||pdfStr('As per estimate ','Según estimado ') + (c.estNum||'')) + '</div></div>' +
     '</div></div>' +
   '</div>' +
 
@@ -4433,7 +4433,7 @@ function getEstimateDoc(est) {
   +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>'+(p.companyLocation?escapeHtml(p.companyLocation)+' · ':'')+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
   +'<div class="est-box"><h2>'+pdfStr('ESTIMATE','ESTIMADO')+'</h2><div class="er"><strong>'+pdfStr('Estimate #:','Estimado #:')+'</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>'+pdfStr('Date:','Fecha:')+'</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>'+pdfStr('Valid Until:','Válido Hasta:')+'</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
   +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>'+pdfStr('CLIENT INFORMATION','INFORMACIÓN DEL CLIENTE')+'</div><div class="cb"><div class="il"><strong>'+pdfStr('Client:','Cliente:')+'</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>'+pdfStr('Project:','Proyecto:')+'</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>'+pdfStr('Address:','Dirección:')+'</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
-  +'<div class="info-card"><div class="ct"><span>▣</span>'+pdfStr('SCOPE OF WORK','ALCANCE DEL TRABAJO')+'</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
+  +'<div class="info-card"><div class="ct"><span>▣</span>'+pdfStr('WORK DESCRIPTION','DESCRIPCIÓN DEL TRABAJO')+'</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
   +'<div class="cost-card"><div class="ct"><span>$</span>'+pdfStr('PROJECT COSTS','COSTOS DEL PROYECTO')+'</div><table><tr><th>'+pdfStr('Description','Descripción')+'</th><th>'+pdfStr('Total','Total')+'</th></tr>'
   +(unit>0?'<tr><td>'+pdfStr('Unit Pricing (','Precio Unitario (')+esc(est.unitType||'')+')</td><td>'+fm(unit)+'</td></tr>':'')
   +(labor>0?'<tr><td>'+pdfStr('Labor','Mano de Obra')+'</td><td>'+fm(labor)+'</td></tr>':'')
