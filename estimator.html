@@ -783,9 +783,10 @@
   .nav-tab.active::before { transform: scaleX(1); }
   .nav-icon { font-size: 18px; line-height: 1; }
   .nav-label {
-    font-size: 9px; font-weight: 600; letter-spacing: 0.1px;
+    font-size: 8px; font-weight: 600; letter-spacing: 0.1px;
     display: flex; align-items: center; gap: 3px; white-space: nowrap;
   }
+  .nav-icon { font-size: 16px !important; }
   [data-theme="dark"] .bottom-nav { background: var(--card-bg); border-color: var(--border); }
   [data-theme="dark"] .nav-tab { color: var(--muted); }
 
@@ -1631,7 +1632,7 @@
   </button>
   <button class="nav-tab" id="navCalendar" onclick="openCalendarPage()">
     <div class="nav-icon">📅</div>
-    <div class="nav-label">Schedule</div>
+    <div class="nav-label">Cal</div>
   </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
