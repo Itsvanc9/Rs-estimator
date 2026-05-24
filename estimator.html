@@ -1268,18 +1268,6 @@
       </div>
     </div>
 
-    <!-- Job Calendar -->
-    <div class="op-card">
-      <div class="op-card-title">📅 Job Schedule</div>
-      <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="moveCalMonth(-1)">‹</button>
-        <span class="cal-month-label" id="calMonthLabel"></span>
-        <button class="cal-nav-btn" onclick="moveCalMonth(1)">›</button>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
-      <div class="cal-job-list" id="calJobList"></div>
-    </div>
-
   </div>
 </div>
 
@@ -1293,6 +1281,7 @@
     <div class="ep-tabs">
       <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount2">0</span></button>
       <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 Contracts <span class="saved-badge" id="contractCount">0</span></button>
+      <button class="ep-tab" id="epTabSchedule" onclick="switchEpTab('schedule')">📅 Schedule</button>
     </div>
   </div>
   <div class="estimates-page-body">
@@ -1306,6 +1295,15 @@
     </div>
     <div id="epContractsPanel" style="display:none;">
       <div id="contractsList"></div>
+    </div>
+    <div id="epSchedulePanel" style="display:none;padding:4px 0;">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="moveCalMonth(-1)">‹</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav-btn" onclick="moveCalMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-job-list" id="calJobList"></div>
     </div>
   </div>
 </div>
@@ -1744,6 +1742,21 @@ var ACCENT_PRESETS = [
   { key:'gold',   hex:'#eab308', dark:'#a16207', label:'⭐' },
 ];
 
+function accentHex() {
+  try { var a = JSON.parse(localStorage.getItem('RS_ACCENT')||'{}'); return a.hex || '#84cc16'; } catch(e) { return '#84cc16'; }
+}
+function accentDark() {
+  try {
+    var a = JSON.parse(localStorage.getItem('RS_ACCENT')||'{}');
+    if (!a.hex) return '#5a8c0a';
+    var p = ACCENT_PRESETS.find(function(x){return x.key===a.key;});
+    return p ? p.dark : darkenHex(a.hex);
+  } catch(e) { return '#5a8c0a'; }
+}
+function injectAccentColors(html) {
+  return html.replace(/#84cc16/gi, accentHex()).replace(/#5a8c0a/gi, accentDark());
+}
+
 function hexToRgb(hex) {
   var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   return r+','+g+','+b;
@@ -1870,7 +1883,7 @@ function renderScheduleCalendar() {
     var statusColor = {active:'var(--lime)',completed:'#10b981',pending:'#f59e0b'};
     list.innerHTML = monthJobs.map(function(c){
       var col = statusColor[c.status]||'var(--lime)';
-      return '<div class="cal-job-item" onclick="closeOwnerPage();setTimeout(function(){openContractDetail(\''+c.id+'\')},200)">' +
+      return '<div class="cal-job-item" onclick="openContractDetail(\''+c.id+'\')">' +
         '<div class="cal-job-dot" style="background:'+col+'"></div>' +
         '<div class="cal-job-info">' +
           '<div class="cal-job-client">'+escapeHtml(c.clientName)+'</div>' +
@@ -1890,7 +1903,7 @@ function calDayClick(day) {
     var d = new Date(calYear, calMonth, day);
     return d>=s && d<=e;
   });
-  if (contracts.length===1) { closeOwnerPage(); setTimeout(function(){openContractDetail(contracts[0].id);},200); }
+  if (contracts.length===1) { openContractDetail(contracts[0].id); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2404,9 +2417,6 @@ function openOwnerPage() {
     updateTotal();
     refreshOwnerStats();
     renderSalesChart();
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    renderScheduleCalendar();
   } catch(e) {}
   var el = $('ownerPage');
   el.classList.add('open');
@@ -2773,7 +2783,7 @@ function discardEstimate() {
 // ═══════════════════════════════════════════════════════
 function getPrintHTML() {
   let t = computeTotals();
-  return `<!DOCTYPE html>
+  let html = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><style>
 @page{size:letter portrait;margin:8mm}
 *{box-sizing:border-box}
@@ -2902,6 +2912,7 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
   </div>
   <div class="copyright">© 2026 ${escapeHtml(getProfile().companyName)}. All rights reserved.</div>
 </div></body></html>`;
+  return injectAccentColors(html);
 }
 
 function doPDF() {
@@ -3257,9 +3268,16 @@ function importBackup(e) {
 function switchEpTab(tab) {
   $('epTabEstimates').classList.toggle('active', tab==='estimates');
   $('epTabContracts').classList.toggle('active', tab==='contracts');
+  $('epTabSchedule').classList.toggle('active', tab==='schedule');
   $('epEstimatesPanel').style.display = tab==='estimates' ? '' : 'none';
-  $('epContractsPanel').style.display = tab==='contracts' ? '' : 'none';
+  $('epContractsPanel').style.display = tab==='contracts'  ? '' : 'none';
+  $('epSchedulePanel').style.display  = tab==='schedule'   ? '' : 'none';
   if (tab==='contracts') renderContracts();
+  if (tab==='schedule') {
+    calYear = new Date().getFullYear();
+    calMonth = new Date().getMonth();
+    renderScheduleCalendar();
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -3843,7 +3861,7 @@ function getContractDoc(c) {
         '</div></div>'
     : '';
 
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
+  var contractHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8">' +
   '<meta name="viewport" content="width=device-width,initial-scale=1">' +
   '<style>' +
   '@page{size:letter portrait;margin:8mm}' +
@@ -3984,6 +4002,7 @@ function getContractDoc(c) {
   '</div>' +
   '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 ' + escapeHtml(p.companyName) + ' · All rights reserved</div>' +
   '</body></html>';
+  return injectAccentColors(contractHtml);
 }
 
 
@@ -4037,7 +4056,7 @@ function getEstimateDoc(est) {
   var otherRows = (est.others||[]).filter(function(o){return parseFloat(o.amount)||0;})
     .map(function(o){return '<tr><td>'+esc(o.desc||'Other')+'</td><td>'+fm(parseFloat(o.amount)||0)+'</td></tr>';}).join('');
 
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+  var estDocHtml = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
   +'@page{size:letter portrait;margin:8mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background:white;font-size:13px;}'
   +'.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}'
   +'.brand{display:flex;gap:12px;align-items:flex-start;}.logo{width:72px;height:72px;object-fit:cover;border-radius:10px;}'
@@ -4086,6 +4105,7 @@ function getEstimateDoc(est) {
   +'<div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
   +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · Licensed &amp; Insured</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · All rights reserved</div>'; })()
   +'</body></html>';
+  return injectAccentColors(estDocHtml);
 }
 
 // ═══════════════════════════════════════════════════════
