@@ -1337,7 +1337,10 @@
   <div class="estimates-page-header">
     <div class="ep-header-row">
       <span class="estimates-page-title">👥 <span data-i18n="clientsTitle">Clients</span></span>
-      <button class="estimates-page-back" onclick="closeClientsPage()">✕ Close</button>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button onclick="openClientForm(null)" style="background:var(--lime);color:#0f172a;border:none;border-radius:10px;padding:7px 14px;font-weight:800;font-size:13px;cursor:pointer;" data-i18n="addClientBtn">+ Add</button>
+        <button class="estimates-page-back" onclick="closeClientsPage()">✕ Close</button>
+      </div>
     </div>
     <div style="display:flex;border-top:1px solid var(--border-solid);margin-top:8px;">
       <button id="clientTabClientBtn" onclick="switchClientTab('clients')" style="flex:1;padding:10px;border:none;background:none;font-weight:700;font-size:13px;border-bottom:3px solid var(--lime);color:var(--lime-dark);cursor:pointer;" data-i18n="clientsTabClients">Clients</button>
@@ -1354,6 +1357,44 @@
   <div style="position:absolute;bottom:0;left:0;right:0;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:0 0 40px;">
     <div style="padding:12px 16px 0;text-align:center;"><div style="width:40px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 12px;"></div></div>
     <div id="clientDetailContent" style="padding:0 16px 16px;"></div>
+  </div>
+</div>
+
+<!-- CLIENT FORM OVERLAY -->
+<div id="clientFormOverlay" style="display:none;position:fixed;inset:0;z-index:450;background:rgba(0,0,0,.5);" onclick="if(event.target===this)closeClientForm()">
+  <div style="position:absolute;bottom:0;left:0;right:0;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:16px 16px 50px;">
+    <div style="text-align:center;margin-bottom:4px;"><div style="width:40px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 14px;"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div id="clientFormTitle" style="font-size:18px;font-weight:900;"></div>
+      <button onclick="closeClientForm()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);">✕</button>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px;">Name *</label>
+      <input id="cfName" placeholder="Full name" style="width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div class="field">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="clientPhone">Phone</label>
+        <input id="cfPhone" placeholder="Phone" type="tel" style="width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+      </div>
+      <div class="field">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="clientEmail">Email</label>
+        <input id="cfEmail" placeholder="Email" type="email" style="width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:14px;">
+      <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px;" data-i18n="projectAddress">Address</label>
+      <input id="cfAddress" placeholder="Address" style="width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+    </div>
+    <div class="field" style="margin-bottom:18px;">
+      <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:8px;" data-i18n="clientTypeLbl">Type</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button id="cfTypeClient" onclick="setCfType('client')" style="padding:11px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid var(--lime);background:var(--lime);color:#0f172a;" data-i18n="clientTypeClient">Recurring Client</button>
+        <button id="cfTypeLead" onclick="setCfType('lead')" style="padding:11px;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;border:2px solid var(--border-solid);background:var(--bg);color:var(--muted);" data-i18n="clientTypeLead">Lead / Prospect</button>
+      </div>
+    </div>
+    <input type="hidden" id="cfId">
+    <button onclick="saveClientForm()" style="width:100%;padding:14px;background:var(--lime);color:#0f172a;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;" data-i18n="saveClientForm">Save Client</button>
   </div>
 </div>
 
@@ -1832,6 +1873,10 @@ const T = {
     toastContractNotFound:'Contract not found',
     // Nav merged button
     navPrintPDF:'Print/PDF', printOptPrint:'🖨️ Print', printOptPDF:'📄 Save PDF',
+    addClientBtn:'+ Add', editClientBtn:'✏️ Edit',
+    clientFormNew:'New Client', clientFormEdit:'Edit Client',
+    clientTypeLbl:'Type', clientTypeClient:'Recurring Client', clientTypeLead:'Lead / Prospect',
+    saveClientForm:'Save Client',
     // Clients page
     navClients:'Clients', clientsTitle:'Clients',
     clientsTabClients:'Clients', clientsTabLeads:'Leads',
@@ -1992,6 +2037,10 @@ const T = {
     toastContractNotFound:'Contrato no encontrado',
     // Nav merged button
     navPrintPDF:'Imprimir', printOptPrint:'🖨️ Imprimir', printOptPDF:'📄 Guardar PDF',
+    addClientBtn:'+ Agregar', editClientBtn:'✏️ Editar',
+    clientFormNew:'Nuevo Cliente', clientFormEdit:'Editar Cliente',
+    clientTypeLbl:'Tipo', clientTypeClient:'Cliente Recurrente', clientTypeLead:'Prospecto',
+    saveClientForm:'Guardar Cliente',
     // Clients page
     navClients:'Clientes', clientsTitle:'Clientes',
     clientsTabClients:'Clientes', clientsTabLeads:'Prospectos',
@@ -4575,6 +4624,52 @@ function navTo(tab) {
 function openPrintSheet() { $('printPdfSheet').style.display = 'block'; }
 function closePrintSheet() { $('printPdfSheet').style.display = 'none'; }
 
+// Client form (add / edit)
+var _cfType = 'client';
+function setCfType(type) {
+  _cfType = type;
+  var lime = 'var(--lime)', bg = 'var(--bg)', dark = '#0f172a', muted = 'var(--muted)', border = 'var(--border-solid)';
+  $('cfTypeClient').style.background  = type==='client'?lime:bg;
+  $('cfTypeClient').style.border      = '2px solid '+(type==='client'?lime:border);
+  $('cfTypeClient').style.color       = type==='client'?dark:muted;
+  $('cfTypeLead').style.background    = type==='lead'?lime:bg;
+  $('cfTypeLead').style.border        = '2px solid '+(type==='lead'?lime:border);
+  $('cfTypeLead').style.color         = type==='lead'?dark:muted;
+}
+function openClientForm(id) {
+  var c = id ? getClients().find(function(x){ return x.id===id; }) : null;
+  $('clientFormTitle').textContent = c ? t('clientFormEdit') : t('clientFormNew');
+  $('cfId').value    = c ? c.id    : '';
+  $('cfName').value  = c ? c.name  : '';
+  $('cfPhone').value = c ? c.phone : '';
+  $('cfEmail').value = c ? c.email : '';
+  $('cfAddress').value = c ? c.address : '';
+  setCfType(c ? c.type : 'client');
+  $('clientFormOverlay').style.display = 'block';
+  setTimeout(function(){ $('cfName').focus(); }, 150);
+}
+function closeClientForm() { $('clientFormOverlay').style.display = 'none'; }
+function saveClientForm() {
+  var name = $('cfName').value.trim();
+  if (!name) { showToast(t('toastAddClientName')); return; }
+  var id = $('cfId').value;
+  var clients = getClients();
+  if (id) {
+    var ex = clients.find(function(c){ return c.id===id; });
+    if (ex) { ex.name=$('cfName').value.trim(); ex.phone=$('cfPhone').value; ex.email=$('cfEmail').value; ex.address=$('cfAddress').value; ex.type=_cfType; }
+  } else {
+    var dup = clients.find(function(c){ return c.name.toLowerCase()===name.toLowerCase(); });
+    if (dup) { dup.phone=$('cfPhone').value||dup.phone; dup.email=$('cfEmail').value||dup.email; dup.address=$('cfAddress').value||dup.address; dup.type=_cfType; }
+    else { clients.push({ id:'cl_'+Date.now(), name:name, phone:$('cfPhone').value, email:$('cfEmail').value, address:$('cfAddress').value, type:_cfType, createdAt:new Date().toISOString().slice(0,10) }); }
+  }
+  saveClients(clients);
+  renderClients();
+  renderClientsList();
+  closeClientForm();
+  if (id) closeClientDetail();
+  showToast(t('toastClientSaved'));
+}
+
 // ═══════════════════════════════════════════════════════
 // CLIENTS
 // ═══════════════════════════════════════════════════════
@@ -4705,9 +4800,10 @@ function openClientDetail(id) {
         }).join('') +
       '</div>'
     :'') +
-    '<div style="display:flex;gap:10px;">' +
-      '<button onclick="loadClientToForm(\''+id+'\')" style="flex:1;padding:13px;background:var(--lime);color:#0f172a;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;" data-i18n="clientNewEst">📝 New Estimate</button>' +
-      '<button onclick="deleteClientById(\''+id+'\')" style="padding:13px 16px;background:#fee2e2;color:#ef4444;border:none;border-radius:12px;font-size:18px;cursor:pointer;">🗑️</button>' +
+    '<div style="display:flex;gap:8px;">' +
+      '<button onclick="loadClientToForm(\''+id+'\')" style="flex:1;padding:13px;background:var(--lime);color:#0f172a;border:none;border-radius:12px;font-weight:800;font-size:13px;cursor:pointer;">📝 '+t('clientNewEst').replace('📝 ','')+'</button>' +
+      '<button onclick="closeClientDetail();openClientForm(\''+id+'\')" style="padding:13px 14px;background:var(--bg);border:1.5px solid var(--border-solid);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;color:var(--text);">✏️</button>' +
+      '<button onclick="deleteClientById(\''+id+'\')" style="padding:13px 14px;background:#fee2e2;color:#ef4444;border:none;border-radius:12px;font-size:16px;cursor:pointer;">🗑️</button>' +
     '</div>';
   $('clientDetailContent').innerHTML = html;
   history.pushState({ panel: 'clientDetail' }, '');
@@ -4804,6 +4900,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('ownerPage') && $('ownerPage').classList.contains('open')) { closeOwnerPage(); return; }
     if ($('settingsPanel') && $('settingsPanel').classList.contains('open')) { closeSettings(); return; }
     if ($('estimatesPage') && $('estimatesPage').classList.contains('open')) { closeEstimatesPage(); return; }
+    if ($('clientFormOverlay') && $('clientFormOverlay').style.display !== 'none') { closeClientForm(); return; }
     if ($('clientDetailOverlay') && $('clientDetailOverlay').style.display !== 'none') { closeClientDetail(); return; }
     if ($('clientsPage') && $('clientsPage').style.display !== 'none') { closeClientsPage(); return; }
     if ($('calendarPage') && $('calendarPage').style.display !== 'none') { closeCalendarPage(); return; }
