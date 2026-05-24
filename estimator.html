@@ -2855,8 +2855,8 @@ function lockProfit() { closeOwnerPage(); }
 function openOwnerPage() {
   history.pushState({ panel: 'ownerPage' }, '');
   try {
-    let t = computeTotals();
-    let autoCost = t.mat + t.labor + t.other;
+    let totals = computeTotals();
+    let autoCost = totals.mat + totals.labor + totals.other;
     $('realJobCost').value = autoCost;
     if ($('ownerRealCost')) $('ownerRealCost').value = autoCost;
     if ($('ownerOverhead')) $('ownerOverhead').value = localStorage.getItem('RS_OVERHEAD') || '12';
@@ -2876,15 +2876,15 @@ function closeOwnerPage() {
 }
 
 function refreshOwnerStats() {
-  let t = computeTotals();
+  let totals = computeTotals();
   let overheadPct = parseFloat($('ownerOverhead')?.value) || 0;
-  let overheadAmt = t.grand * (overheadPct / 100);
-  let grossProfit = t.grand - t.realCost;
-  let grossMargin = t.grand > 0 ? (grossProfit / t.grand) * 100 : 0;
+  let overheadAmt = totals.grand * (overheadPct / 100);
+  let grossProfit = totals.grand - totals.realCost;
+  let grossMargin = totals.grand > 0 ? (grossProfit / totals.grand) * 100 : 0;
   let netProfit   = grossProfit - overheadAmt;
-  let netMargin   = t.grand > 0 ? (netProfit / t.grand) * 100 : 0;
+  let netMargin   = totals.grand > 0 ? (netProfit / totals.grand) * 100 : 0;
 
-  $('ownerGrand').textContent      = formatMoney(t.grand);
+  $('ownerGrand').textContent      = formatMoney(totals.grand);
   $('ownerGrossMargin').textContent = grossMargin.toFixed(1) + '%';
   $('ownerProfit').textContent      = formatMoney(netProfit);
   $('ownerMargin').textContent      = netMargin.toFixed(1) + '%';
@@ -2897,7 +2897,7 @@ function refreshOwnerStats() {
   // Benchmark based on NET margin (CFMA 2024 Colorado data)
   let bm = $('marginBenchmark');
   if (!bm) return;
-  if (t.grand <= 0) { bm.style.display = 'none'; return; }
+  if (totals.grand <= 0) { bm.style.display = 'none'; return; }
   bm.style.display = '';
   if (netMargin < 0)       { bm.style.background='#fef2f2'; bm.style.color='#dc2626'; bm.textContent=t('bmLosing'); }
   else if (netMargin < 5)  { bm.style.background='#fff7ed'; bm.style.color='#ea580c'; bm.textContent=t('bmBelowAvg'); }
