@@ -37,7 +37,7 @@ jobs:
           cat > capacitor.config.json << 'EOF'
           {
             "appId": "com.rsestimator.app",
-            "appName": "RS Estimator",
+            "appName": "BuildRacoon",
             "webDir": "www"
           }
           EOF
