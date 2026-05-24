@@ -796,6 +796,17 @@
     .header-toolbar { width: 100%; }
     #appToast { white-space: normal; text-align: center; max-width: 90%; }
   }
+/* ── Client cards ── */
+.client-card{background:var(--surface);border:1px solid var(--border-solid);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .1s,box-shadow .1s;}
+.client-card:active{transform:scale(0.98);}
+.client-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.client-badge.recurring{background:#dcfce7;color:#15803d;}
+.client-badge.lead{background:#fef9c3;color:#a16207;}
+/* ── Print/PDF sheet ── */
+.action-sheet{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);display:none;}
+.action-sheet-body{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:12px 16px 40px;}
+.action-sheet-handle{width:36px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 14px;}
+.action-sheet-btn{width:100%;padding:15px 16px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border-solid);border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:left;color:var(--text);}
 </style>
 </head>
 <body>
@@ -1013,8 +1024,14 @@
       <div class="grid-2">
         <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal();validateFolio()" autocomplete="off"><div id="folioWarn" style="display:none;font-size:11px;margin-top:5px;padding:6px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;"></div></div>
         <div class="field"><label data-i18n="date">Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
-        <div class="field"><label data-i18n="client">Client</label><input id="clientName" placeholder="Client Name" oninput="updateTotal()"></div>
+        <div class="field" style="position:relative;">
+          <label data-i18n="client">Client</label>
+          <input id="clientName" placeholder="Client Name" oninput="updateTotal()" autocomplete="off">
+          <button onclick="openClientsPage()" style="position:absolute;right:6px;bottom:6px;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;" data-i18n="loadClientBtn">👥 Load</button>
+        </div>
         <div class="field"><label data-i18n="project">Project</label><input id="projectName" placeholder="Project Name" oninput="updateTotal()"></div>
+        <div class="field"><label data-i18n="clientPhone">Phone</label><input id="clientPhone" placeholder="Client phone"></div>
+        <div class="field"><label data-i18n="clientEmail">Email</label><input id="clientEmail" placeholder="Client email"></div>
         <div class="field col-span-2"><label data-i18n="projectAddress">Project Address</label><input id="projectAddress" placeholder="Job site address" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="validUntil">Valid Until</label><input id="validUntil" type="date" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="depositPaid">Deposit Paid ($)</label><input id="depositPaid" type="number" value="0" onfocus="if(this.value=='0')this.value=''" onblur="if(this.value=='')this.value='0'" oninput="updateTotal()"></div>
@@ -1023,23 +1040,8 @@
     </div>
   </div>
 
-  <!-- SAVED CLIENTS -->
-  <div class="card ca-purple">
-    <div class="card-header"><div class="si si-purple">👥</div><h2 data-i18n="savedClients">Saved Clients</h2></div>
-    <div class="card-body">
-      <div class="grid-3">
-        <div class="field">
-          <label data-i18n="selectClient">Select Client</label>
-          <select id="clientSelect" onchange="loadClientFromSelect()">
-            <option value="" data-i18n="selectClient">Select saved client</option>
-          </select>
-        </div>
-        <div class="field"><label data-i18n="clientPhone">Client Phone</label><input id="clientPhone" placeholder="Client phone"></div>
-        <div class="field"><label data-i18n="clientEmail">Client Email</label><input id="clientEmail" placeholder="Client email"></div>
-      </div>
-      <button class="add-row-btn" onclick="saveClient()" data-i18n="saveClientBtn">+ Save Client</button>
-    </div>
-  </div>
+  <!-- hidden select kept for renderClients() compatibility -->
+  <select id="clientSelect" style="display:none" onchange="loadClientFromSelect()"><option value=""></option></select>
 
   <!-- UNIT PRICING -->
   <div class="card ca-sky">
@@ -1318,6 +1320,40 @@
       <div class="cal-grid" id="calGrid"></div>
       <div class="cal-job-list" id="calJobList"></div>
     </div>
+  </div>
+</div>
+
+<!-- PRINT / PDF ACTION SHEET -->
+<div class="action-sheet" id="printPdfSheet" onclick="if(event.target===this)closePrintSheet()">
+  <div class="action-sheet-body">
+    <div class="action-sheet-handle"></div>
+    <button class="action-sheet-btn" onclick="doPrint();closePrintSheet()" data-i18n="printOptPrint">🖨️ Print</button>
+    <button class="action-sheet-btn" onclick="doPDF();closePrintSheet()" data-i18n="printOptPDF">📄 Save PDF</button>
+  </div>
+</div>
+
+<!-- CLIENTS PAGE -->
+<div id="clientsPage" class="estimates-page" style="display:none;">
+  <div class="estimates-page-header">
+    <div class="ep-header-row">
+      <span class="estimates-page-title">👥 <span data-i18n="clientsTitle">Clients</span></span>
+      <button class="estimates-page-back" onclick="closeClientsPage()">✕ Close</button>
+    </div>
+    <div style="display:flex;border-top:1px solid var(--border-solid);margin-top:8px;">
+      <button id="clientTabClientBtn" onclick="switchClientTab('clients')" style="flex:1;padding:10px;border:none;background:none;font-weight:700;font-size:13px;border-bottom:3px solid var(--lime);color:var(--lime-dark);cursor:pointer;" data-i18n="clientsTabClients">Clients</button>
+      <button id="clientTabLeadBtn" onclick="switchClientTab('leads')" style="flex:1;padding:10px;border:none;background:none;font-weight:700;font-size:13px;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;" data-i18n="clientsTabLeads">Leads</button>
+    </div>
+  </div>
+  <div class="estimates-page-body">
+    <div id="clientsList" style="padding:12px 4px;"></div>
+  </div>
+</div>
+
+<!-- CLIENT DETAIL OVERLAY -->
+<div id="clientDetailOverlay" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.5);" onclick="if(event.target===this)closeClientDetail()">
+  <div style="position:absolute;bottom:0;left:0;right:0;max-height:85vh;overflow-y:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:0 0 40px;">
+    <div style="padding:12px 16px 0;text-align:center;"><div style="width:40px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 12px;"></div></div>
+    <div id="clientDetailContent" style="padding:0 16px 16px;"></div>
   </div>
 </div>
 
@@ -1618,13 +1654,9 @@
     <div class="nav-icon">✏️</div>
     <div class="nav-label" data-i18n="navNew">New</div>
   </button>
-  <button class="nav-tab" onclick="doPrint()">
+  <button class="nav-tab" onclick="openPrintSheet()">
     <div class="nav-icon">🖨️</div>
-    <div class="nav-label" data-i18n="navPrint">Print</div>
-  </button>
-  <button class="nav-tab" onclick="doPDF()">
-    <div class="nav-icon">📤</div>
-    <div class="nav-label" data-i18n="navExport">Export</div>
+    <div class="nav-label" data-i18n="navPrintPDF">Print/PDF</div>
   </button>
   <button class="nav-tab" onclick="shareEstimate()">
     <div class="nav-icon">📨</div>
@@ -1633,6 +1665,10 @@
   <button class="nav-tab" id="navCalendar" onclick="openCalendarPage()">
     <div class="nav-icon">📅</div>
     <div class="nav-label" data-i18n="navCal">Cal</div>
+  </button>
+  <button class="nav-tab" id="navClients" onclick="openClientsPage()">
+    <div class="nav-icon">👥</div>
+    <div class="nav-label" data-i18n="navClients">Clients</div>
   </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
@@ -1794,6 +1830,16 @@ const T = {
     toastSigSaved:'✅ Signature saved',
     toastFolioRepeat:'⚠️ Duplicate folio — use the suggested one',
     toastContractNotFound:'Contract not found',
+    // Nav merged button
+    navPrintPDF:'Print/PDF', printOptPrint:'🖨️ Print', printOptPDF:'📄 Save PDF',
+    // Clients page
+    navClients:'Clients', clientsTitle:'Clients',
+    clientsTabClients:'Clients', clientsTabLeads:'Leads',
+    noClients:'No recurring clients yet.', noLeads:'No leads yet.',
+    clientRecurring:'Recurring Client', clientLead:'Lead',
+    clientTotalValue:'Total Value', clientNewEst:'📝 New Estimate',
+    deleteClientConfirm:'Delete this client?',
+    loadClientBtn:'👥 Load Client',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -1944,6 +1990,16 @@ const T = {
     toastSigSaved:'✅ Firma guardada',
     toastFolioRepeat:'⚠️ Folio repetido — usa el sugerido',
     toastContractNotFound:'Contrato no encontrado',
+    // Nav merged button
+    navPrintPDF:'Imprimir', printOptPrint:'🖨️ Imprimir', printOptPDF:'📄 Guardar PDF',
+    // Clients page
+    navClients:'Clientes', clientsTitle:'Clientes',
+    clientsTabClients:'Clientes', clientsTabLeads:'Prospectos',
+    noClients:'Aún no hay clientes recurrentes.', noLeads:'Aún no hay prospectos.',
+    clientRecurring:'Cliente Recurrente', clientLead:'Prospecto',
+    clientTotalValue:'Valor Total', clientNewEst:'📝 Nuevo Estimado',
+    deleteClientConfirm:'¿Eliminar este cliente?',
+    loadClientBtn:'👥 Cargar Cliente',
   }
 };
 
@@ -2592,11 +2648,11 @@ function saveClient() {
 }
 
 function renderClients() {
-  let sel = $('clientSelect');
+  var sel = $('clientSelect');
   if (!sel) return;
-  let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
-  sel.innerHTML = `<option value="">${t('selectClient')}</option>`;
-  clients.forEach((c,i) => sel.innerHTML += `<option value="${i}">${escapeHtml(c.name)}</option>`);
+  var clients = getClients();
+  sel.innerHTML = '<option value="">—</option>';
+  clients.forEach(function(c,i){ sel.innerHTML += '<option value="'+i+'">'+escapeHtml(c.name)+'</option>'; });
 }
 
 function loadClientFromSelect() {
@@ -3014,6 +3070,7 @@ function saveEstimate() {
   }
   currentEstimateId = current.id;
   renderSaved(); updateDashboard();
+  _upsertClient($('clientName').value.trim(), $('clientPhone').value, $('clientEmail').value, $('projectAddress').value, 'lead');
   showToast(t('toastSaved'));
   if (existingIdx < 0) {
     $('estNum').value = getNextEstimateNumber();
@@ -3685,6 +3742,7 @@ function acceptEstimate(id) {
   renderSaved();
   updateContractCount();
   resetFields(getNextEstimateNumber(true));
+  _upsertClient(est.client, est.clientPhone, est.clientEmail, est.address, 'client');
   showToast(t('contractAccepted'));
   switchEpTab('contracts');
   openContractDetail(contract.id);
@@ -4512,6 +4570,188 @@ function navTo(tab) {
 }
 
 // ═══════════════════════════════════════════════════════
+// PRINT / PDF SHEET
+// ═══════════════════════════════════════════════════════
+function openPrintSheet() { $('printPdfSheet').style.display = 'block'; }
+function closePrintSheet() { $('printPdfSheet').style.display = 'none'; }
+
+// ═══════════════════════════════════════════════════════
+// CLIENTS
+// ═══════════════════════════════════════════════════════
+function getClients() {
+  try {
+    var arr = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
+    return arr.map(function(c) {
+      if (!c.id) c.id = 'cl_' + Math.random().toString(36).slice(2,9);
+      if (!c.type) c.type = 'client';
+      if (!c.createdAt) c.createdAt = '';
+      return c;
+    });
+  } catch(e) { return []; }
+}
+function saveClients(arr) { localStorage.setItem('RS_CLIENTS', JSON.stringify(arr)); }
+
+var _clientTab = 'clients';
+
+function openClientsPage() {
+  history.pushState({ panel: 'clientsPage' }, '');
+  var el = $('clientsPage');
+  el.style.display = 'block';
+  el.scrollTop = 0;
+  switchClientTab('clients');
+  document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
+  var nc = $('navClients'); if (nc) nc.classList.add('active');
+}
+function closeClientsPage() {
+  $('clientsPage').style.display = 'none';
+  document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
+}
+function switchClientTab(tab) {
+  _clientTab = tab;
+  var cb = $('clientTabClientBtn'), lb = $('clientTabLeadBtn');
+  if (cb) { cb.style.borderBottomColor = tab==='clients'?'var(--lime)':'transparent'; cb.style.color = tab==='clients'?'var(--lime-dark)':'var(--muted)'; }
+  if (lb) { lb.style.borderBottomColor = tab==='leads'?'var(--lime)':'transparent'; lb.style.color = tab==='leads'?'var(--lime-dark)':'var(--muted)'; }
+  renderClientsList();
+}
+function renderClientsList() {
+  var el = $('clientsList'); if (!el) return;
+  var all = getClients();
+  var list = all.filter(function(c){ return c.type === (_clientTab==='clients'?'client':'lead'); });
+  if (list.length === 0) {
+    el.innerHTML = '<div style="padding:40px 16px;text-align:center;color:var(--muted);font-size:14px;">' + (_clientTab==='clients'?t('noClients'):t('noLeads')) + '</div>';
+    return;
+  }
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES')||'[]');
+  var contracts = getContracts();
+  el.innerHTML = list.map(function(c) {
+    var cc = contracts.filter(function(ct){ return (ct.clientName||'').toLowerCase()===c.name.toLowerCase(); });
+    var tv = cc.reduce(function(s,ct){ return s+ct.totalAmount; }, 0);
+    return '<div class="client-card" onclick="openClientDetail(\'' + c.id + '\')">' +
+      '<div style="display:flex;align-items:center;gap:12px;">' +
+        '<div style="width:42px;height:42px;border-radius:50%;background:var(--lime-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">👤</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="font-weight:800;font-size:15px;">' + escapeHtml(c.name) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' +
+            (c.phone?'📞 '+escapeHtml(c.phone):'') + (c.phone&&c.email?' · ':'') + (c.email?'✉ '+escapeHtml(c.email):'') +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right;flex-shrink:0;">' +
+          (tv>0?'<div style="font-weight:800;color:var(--lime-dark);font-size:13px;">$'+fmtMoney(tv)+'</div>':'') +
+          '<div style="font-size:11px;color:var(--muted);">'+cc.length+' '+(cc.length===1?'contract':'contracts')+'</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+function openClientDetail(id) {
+  var clients = getClients();
+  var c = clients.find(function(x){ return x.id===id; });
+  if (!c) return;
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES')||'[]');
+  var contracts = getContracts();
+  var cc = contracts.filter(function(ct){ return (ct.clientName||'').toLowerCase()===c.name.toLowerCase(); });
+  var ce = estimates.filter(function(e){ return (e.client||'').toLowerCase()===c.name.toLowerCase(); });
+  var tv = cc.reduce(function(s,ct){ return s+ct.totalAmount; }, 0);
+  var isClient = c.type==='client';
+  var html =
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">' +
+      '<div>' +
+        '<div style="font-size:20px;font-weight:900;">' + escapeHtml(c.name) + '</div>' +
+        '<span class="client-badge ' + (isClient?'recurring':'lead') + '" style="margin-top:4px;display:inline-block;">' +
+          (isClient?t('clientRecurring'):t('clientLead')) +
+        '</span>' +
+      '</div>' +
+      '<button onclick="closeClientDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);padding:0;">✕</button>' +
+    '</div>' +
+    '<div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:12px;">' +
+      (c.phone?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:14px;"><span>📞</span><a href="tel:'+escapeHtml(c.phone)+'" style="color:var(--text);text-decoration:none;">'+escapeHtml(c.phone)+'</a></div>':'') +
+      (c.email?'<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:14px;"><span>✉</span><a href="mailto:'+escapeHtml(c.email)+'" style="color:var(--text);text-decoration:none;">'+escapeHtml(c.email)+'</a></div>':'') +
+      (c.address?'<div style="display:flex;align-items:center;gap:10px;font-size:14px;"><span>📍</span><span>'+escapeHtml(c.address)+'</span></div>':'') +
+    '</div>' +
+    (tv>0||cc.length>0?
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">' +
+        '<div style="background:var(--lime-light);border-radius:10px;padding:12px;text-align:center;">' +
+          '<div style="font-size:17px;font-weight:900;color:var(--lime-dark);">$'+fmtMoney(tv)+'</div>' +
+          '<div style="font-size:11px;color:var(--muted);">'+t('clientTotalValue')+'</div>' +
+        '</div>' +
+        '<div style="background:var(--bg);border-radius:10px;padding:12px;text-align:center;">' +
+          '<div style="font-size:17px;font-weight:900;">'+cc.length+'</div>' +
+          '<div style="font-size:11px;color:var(--muted);">'+t('clientsTabClients')+'</div>' +
+        '</div>' +
+      '</div>'
+    :'') +
+    (cc.length>0?
+      '<div style="margin-bottom:12px;">' +
+        '<div style="font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px;">'+t('clientsTabClients')+'</div>' +
+        cc.map(function(ct){
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;cursor:pointer;" onclick="closeClientDetail();closeClientsPage();openContractDetail(\''+ct.id+'\')">' +
+            '<div><div style="font-weight:700;font-size:13px;">'+escapeHtml(ct.estNum)+(ct.projectName?' · '+escapeHtml(ct.projectName):'')+'</div>' +
+            '<div style="font-size:11px;color:var(--muted);">'+escapeHtml(ct.acceptedDate||'')+(ct.status==='active'?' · Active':' · Done')+'</div></div>' +
+            '<div style="font-weight:800;color:var(--lime-dark);">$'+fmtMoney(ct.totalAmount)+'</div>' +
+          '</div>';
+        }).join('') +
+      '</div>'
+    :'') +
+    (ce.length>0?
+      '<div style="margin-bottom:12px;">' +
+        '<div style="font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:6px;">'+t('savedEstimatesSection')+'</div>' +
+        ce.slice(0,5).map(function(e){
+          return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--bg);border-radius:10px;margin-bottom:6px;">' +
+            '<div><div style="font-weight:700;font-size:13px;">'+escapeHtml(e.estNum||'')+(e.project?' · '+escapeHtml(e.project):'')+'</div>' +
+            '<div style="font-size:11px;color:var(--muted);">'+escapeHtml(e.date||'')+'</div></div>' +
+            '<div style="font-weight:800;">$'+fmtMoney(e.grand||0)+'</div>' +
+          '</div>';
+        }).join('') +
+      '</div>'
+    :'') +
+    '<div style="display:flex;gap:10px;">' +
+      '<button onclick="loadClientToForm(\''+id+'\')" style="flex:1;padding:13px;background:var(--lime);color:#0f172a;border:none;border-radius:12px;font-weight:800;font-size:14px;cursor:pointer;" data-i18n="clientNewEst">📝 New Estimate</button>' +
+      '<button onclick="deleteClientById(\''+id+'\')" style="padding:13px 16px;background:#fee2e2;color:#ef4444;border:none;border-radius:12px;font-size:18px;cursor:pointer;">🗑️</button>' +
+    '</div>';
+  $('clientDetailContent').innerHTML = html;
+  history.pushState({ panel: 'clientDetail' }, '');
+  $('clientDetailOverlay').style.display = 'block';
+}
+function closeClientDetail() { $('clientDetailOverlay').style.display = 'none'; }
+function loadClientToForm(id) {
+  var c = getClients().find(function(x){ return x.id===id; });
+  if (!c) return;
+  $('clientName').value   = c.name    || '';
+  $('clientPhone').value  = c.phone   || '';
+  $('clientEmail').value  = c.email   || '';
+  $('projectAddress').value = c.address || '';
+  updateTotal();
+  closeClientDetail();
+  closeClientsPage();
+  showToast(t('toastClientLoaded'));
+}
+function deleteClientById(id) {
+  showConfirm(t('deleteClientConfirm'), t('cannotUndo'), '👤', t('deleteBtn'), '#ef4444', function() {
+    saveClients(getClients().filter(function(c){ return c.id!==id; }));
+    renderClients();
+    closeClientDetail();
+    renderClientsList();
+    showToast(t('toastDeleted'));
+  });
+}
+function _upsertClient(name, phone, email, address, type) {
+  if (!name) return;
+  var clients = getClients();
+  var ex = clients.find(function(c){ return c.name.toLowerCase()===name.toLowerCase(); });
+  if (!ex) {
+    clients.push({ id:'cl_'+Date.now(), name:name, phone:phone||'', email:email||'', address:address||'', type:type||'lead', createdAt:new Date().toISOString().slice(0,10) });
+  } else {
+    if (phone) ex.phone = phone;
+    if (email) ex.email = email;
+    if (address) ex.address = address;
+    if (type==='client') ex.type = 'client';
+  }
+  saveClients(clients);
+  renderClients();
+}
+
+// ═══════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init() {
@@ -4564,6 +4804,8 @@ function navTo(tab) {
     if ($('ownerPage') && $('ownerPage').classList.contains('open')) { closeOwnerPage(); return; }
     if ($('settingsPanel') && $('settingsPanel').classList.contains('open')) { closeSettings(); return; }
     if ($('estimatesPage') && $('estimatesPage').classList.contains('open')) { closeEstimatesPage(); return; }
+    if ($('clientDetailOverlay') && $('clientDetailOverlay').style.display !== 'none') { closeClientDetail(); return; }
+    if ($('clientsPage') && $('clientsPage').style.display !== 'none') { closeClientsPage(); return; }
     if ($('calendarPage') && $('calendarPage').style.display !== 'none') { closeCalendarPage(); return; }
   });
 })();
