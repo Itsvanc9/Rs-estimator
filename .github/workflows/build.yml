@@ -76,6 +76,9 @@ jobs:
             sed -i 's|<application|<uses-permission android:name="android.permission.CAMERA"/>\n    <application|' "$MANIFEST"
           fi
 
+          # Disable Android auto-backup so localStorage is cleared on uninstall/reinstall
+          sed -i 's|android:allowBackup="true"|android:allowBackup="false"|g' "$MANIFEST"
+
           # Add FileProvider inside <application> if not present
           if ! grep -q 'FileProvider' "$MANIFEST"; then
             sed -i 's|</application>|        <provider\n            android:name="androidx.core.content.FileProvider"\n            android:authorities="${applicationId}.fileprovider"\n            android:exported="false"\n            android:grantUriPermissions="true">\n            <meta-data\n                android:name="android.support.FILE_PROVIDER_PATHS"\n                android:resource="@xml/file_paths"/>\n        </provider>\n    </application>|' "$MANIFEST"

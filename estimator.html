@@ -1948,7 +1948,7 @@ const T = {
 };
 
 let currentLang = (function(){ var l = localStorage.getItem('RS_LANG'); return (l==='en'||l==='es') ? l : 'en'; })();
-var TERMS_VERSION = '2026.06';
+var TERMS_VERSION = '2026.07';
 function t(key) { return (T[currentLang]&&T[currentLang][key]) || (T.en&&T.en[key]) || key; }
 
 function setLanguage(lang) {
