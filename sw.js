@@ -1,4 +1,4 @@
-const CACHE = 'rs-estimator-v1';
+const CACHE = 'rs-estimator-v2';
 const FILES = [
   '/Rs-estimator/',
   '/Rs-estimator/index.html',
