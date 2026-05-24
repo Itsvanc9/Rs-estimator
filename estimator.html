@@ -808,8 +808,8 @@
     <div class="pin-sub" id="pinSub">Enter your PIN to view profit data</div>
     <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••" onkeydown="if(event.key==='Enter')submitPin()">
     <div class="pin-actions">
-      <button class="btn btn-light btn-sm" style="flex:1" onclick="closePinModal()">Cancel</button>
-      <button class="btn btn-primary btn-sm" style="flex:1" onclick="submitPin()">Unlock</button>
+      <button class="btn btn-light btn-sm" style="flex:1" onclick="closePinModal()" data-i18n="cancelBtn">Cancel</button>
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="submitPin()" data-i18n="unlockBtn">Unlock</button>
     </div>
   </div>
 </div>
@@ -837,18 +837,18 @@
   <div class="settings-body">
 
     <div class="setting-section">
-      <div class="setting-section-title" id="lblAppearance">Appearance</div>
+      <div class="setting-section-title" data-i18n="lblAppearance">Appearance</div>
       <div class="setting-row">
-        <span class="setting-label" id="lblDarkMode">Dark Mode</span>
+        <span class="setting-label" data-i18n="lblDarkMode">Dark Mode</span>
         <div class="toggle-wrap" id="darkToggle" onclick="toggleDarkMode()">
           <div class="toggle-knob"></div>
         </div>
       </div>
-      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="openColorPicker()">🎨 App Colors</button>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="openColorPicker()">🎨 <span data-i18n="appColors">App Colors</span></button>
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title" id="lblLanguageSection">Language / Idioma</div>
+      <div class="setting-section-title" data-i18n="lblLanguageSection">Language / Idioma</div>
       <div class="lang-btns">
         <button class="lang-btn active" id="langEN" onclick="setLanguage('en')">🇺🇸 English</button>
         <button class="lang-btn" id="langES" onclick="setLanguage('es')">🇲🇽 Español</button>
@@ -856,7 +856,7 @@
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title">📍 State / Jurisdiction</div>
+      <div class="setting-section-title">📍 <span data-i18n="stateJurisdiction">State / Jurisdiction</span></div>
       <select id="stateSelect" onchange="setAppState(this.value)" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:6px;">
         <option value="AL">Alabama</option><option value="AK">Alaska</option>
         <option value="AZ">Arizona</option><option value="AR">Arkansas</option>
@@ -885,23 +885,23 @@
         <option value="WI">Wisconsin</option><option value="WY">Wyoming</option>
         <option value="DC">Washington D.C.</option>
       </select>
-      <div style="font-size:11px;color:var(--muted);">⚖️ Contracts adapt to the selected state's jurisdiction</div>
+      <div style="font-size:11px;color:var(--muted);">⚖️ <span data-i18n="stateNote">Contracts adapt to the selected state's jurisdiction</span></div>
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title">🏢 Company Profile</div>
-      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="openCompanyProfile()">🏢 Edit Company Info &amp; Images</button>
+      <div class="setting-section-title">🏢 <span data-i18n="companyProfileSection">Company Profile</span></div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="openCompanyProfile()">🏢 <span data-i18n="editCompanyInfo">Edit Company Info &amp; Images</span></button>
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title">Owner</div>
-      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')">👑 Owner Dashboard</button>
-      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')">🔒 Change PIN</button>
+      <div class="setting-section-title" data-i18n="ownerSection">Owner</div>
+      <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="closeSettings();openPinModal('owner')" data-i18n="ownerDashboard">👑 Owner Dashboard</button>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;font-size:11px;" onclick="openPinModal('change')" data-i18n="changePIN">🔒 Change PIN</button>
     </div>
 
     <div class="setting-section">
-      <div class="setting-section-title">Legal</div>
-      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="closeSettings();openTerms()">📄 Terms &amp; Conditions</button>
+      <div class="setting-section-title" data-i18n="legalSection">Legal</div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="closeSettings();openTerms()">📄 <span data-i18n="termsConditions">Terms &amp; Conditions</span></button>
     </div>
 
   </div>
@@ -967,28 +967,28 @@
   <div class="terms-header-bar">
     <div class="terms-header-icon">📄</div>
     <div>
-      <div class="terms-header-title">Terms &amp; Conditions</div>
+      <div class="terms-header-title" data-i18n="termsTitle">Terms &amp; Conditions</div>
       <div class="terms-header-sub" id="termsCompanyName"></div>
     </div>
   </div>
-  <div class="terms-scroll">
-    <div class="terms-section-title">License &amp; Use</div>
-    <p class="terms-p">This application is proprietary software developed exclusively for use by <span id="termsCompanyName2"></span>. Unauthorized copying, redistribution, or reverse engineering is strictly prohibited.</p>
-    <div class="terms-section-title">Data &amp; Privacy</div>
-    <p class="terms-p">All estimate data, client information, and photos are stored locally on this device. No information is transmitted to third-party servers without your explicit consent.</p>
-    <div class="terms-section-title">Accuracy of Estimates</div>
-    <p class="terms-p">Estimates generated by this app are for internal planning purposes only. Final pricing must be reviewed and approved by an authorized company representative before being presented to clients.</p>
-    <div class="terms-section-title">Limitation of Liability</div>
-    <p class="terms-p">The company is not liable for any financial decisions made solely based on estimates generated by this application. Always verify material costs and labor rates before submitting quotes.</p>
-    <div class="terms-section-title">Confidentiality</div>
-    <p class="terms-p">Profit margins, overhead data, and Owner Dashboard information are confidential and must not be disclosed to clients or third parties.</p>
+  <div class="terms-scroll" id="termsScrollBody">
+    <div class="terms-section-title" data-i18n="termsLicenseTitle">License &amp; Use</div>
+    <p class="terms-p" id="termsLicenseText">This application is proprietary software developed exclusively for use by <span id="termsCompanyName2"></span>. Unauthorized copying, redistribution, or reverse engineering is strictly prohibited.</p>
+    <div class="terms-section-title" data-i18n="termsPrivacyTitle">Data &amp; Privacy</div>
+    <p class="terms-p" data-i18n="termsPrivacyText">All estimate data, client information, and photos are stored locally on this device. No information is transmitted to third-party servers without your explicit consent.</p>
+    <div class="terms-section-title" data-i18n="termsAccuracyTitle">Accuracy of Estimates</div>
+    <p class="terms-p" data-i18n="termsAccuracyText">Estimates generated by this app are for internal planning purposes only. Final pricing must be reviewed and approved by an authorized company representative before being presented to clients.</p>
+    <div class="terms-section-title" data-i18n="termsLiabilityTitle">Limitation of Liability</div>
+    <p class="terms-p" data-i18n="termsLiabilityText">The company is not liable for any financial decisions made solely based on estimates generated by this application. Always verify material costs and labor rates before submitting quotes.</p>
+    <div class="terms-section-title" data-i18n="termsConfTitle">Confidentiality</div>
+    <p class="terms-p" data-i18n="termsConfText">Profit margins, overhead data, and Owner Dashboard information are confidential and must not be disclosed to clients or third parties.</p>
   </div>
   <div class="terms-footer">
     <label class="terms-check-row">
       <input type="checkbox" id="termsCheck" onchange="document.getElementById('termsAcceptBtn').disabled=!this.checked">
-      <span>I have read and agree to the Terms &amp; Conditions</span>
+      <span data-i18n="termsAgree">I have read and agree to the Terms &amp; Conditions</span>
     </label>
-    <button id="termsAcceptBtn" class="terms-accept-btn" disabled onclick="acceptTerms()">
+    <button id="termsAcceptBtn" class="terms-accept-btn" disabled onclick="acceptTerms()" data-i18n="termsContinue">
       Continue to App →
     </button>
   </div>
@@ -1219,42 +1219,42 @@
 
     <!-- KPI metrics -->
     <div class="op-card">
-      <div class="op-card-title">💰 Current Estimate</div>
+      <div class="op-card-title">💰 <span data-i18n="currentEstimateSection">Current Estimate</span></div>
       <div class="op-kpi-grid">
-        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrand">$0</div><div class="op-kpi-lbl">Total</div></div>
-        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrossMargin">0%</div><div class="op-kpi-lbl">Gross Margin</div></div>
-        <div class="op-kpi"><div class="op-kpi-val" id="ownerProfit">$0</div><div class="op-kpi-lbl">Net Profit</div></div>
-        <div class="op-kpi"><div class="op-kpi-val" id="ownerMargin">0%</div><div class="op-kpi-lbl">Net Margin</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrand">$0</div><div class="op-kpi-lbl" data-i18n="total">Total</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerGrossMargin">0%</div><div class="op-kpi-lbl" data-i18n="grossMarginLabel">Gross Margin</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerProfit">$0</div><div class="op-kpi-lbl" data-i18n="netProfitLabel">Net Profit</div></div>
+        <div class="op-kpi"><div class="op-kpi-val" id="ownerMargin">0%</div><div class="op-kpi-lbl" data-i18n="netMarginLabel">Net Margin</div></div>
       </div>
       <div id="marginBenchmark" class="op-benchmark" style="display:none;"></div>
     </div>
 
     <!-- Cost inputs -->
     <div class="op-card">
-      <div class="op-card-title">🔧 Cost Breakdown</div>
+      <div class="op-card-title">🔧 <span data-i18n="costBreakdownSection">Cost Breakdown</span></div>
       <div class="op-row">
-        <div class="op-row-lbl"><b>Real Job Cost</b><small>Mat + Labor + Other (auto)</small></div>
+        <div class="op-row-lbl"><b data-i18n="realJobCostLabel">Real Job Cost</b><small data-i18n="realJobCostDesc">Mat + Labor + Other (auto)</small></div>
         <input type="number" id="ownerRealCost" value="0"
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
           oninput="$('realJobCost').value=this.value;updateTotal();refreshOwnerStats()">
       </div>
       <div class="op-row">
-        <div class="op-row-lbl"><b>Overhead %</b><small>Insurance, fuel, tools, office…</small></div>
+        <div class="op-row-lbl"><b data-i18n="overheadPctLabel">Overhead %</b><small data-i18n="overheadDesc">Insurance, fuel, tools, office…</small></div>
         <input type="number" id="ownerOverhead" value="12" min="0" max="100"
           onfocus="if(this.value=='0')this.value=''"
           onblur="if(this.value=='')this.value='0'"
           oninput="localStorage.setItem('RS_OVERHEAD',this.value);refreshOwnerStats()">
       </div>
       <div class="op-row">
-        <div class="op-row-lbl"><b>Overhead Amount</b></div>
+        <div class="op-row-lbl"><b data-i18n="overheadAmountLabel">Overhead Amount</b></div>
         <span id="ownerOverheadAmt" class="op-row-val">$0</span>
       </div>
     </div>
 
     <!-- Monthly sales chart -->
     <div class="op-card">
-      <div class="op-card-title">📊 Monthly Sales — last 6 months</div>
+      <div class="op-card-title">📊 <span data-i18n="monthlySalesSection">Monthly Sales — last 6 months</span></div>
       <div class="op-chart-wrap">
         <div class="op-bars" id="salesChart"></div>
       </div>
@@ -1262,11 +1262,11 @@
 
     <!-- All-time stats -->
     <div class="op-card">
-      <div class="op-card-title">📈 All Time</div>
+      <div class="op-card-title">📈 <span data-i18n="allTimeSection">All Time</span></div>
       <div class="op-alltime">
-        <div class="op-stat"><div class="op-stat-val" id="ownerTotalEst">0</div><div class="op-stat-lbl">Estimates</div></div>
-        <div class="op-stat"><div class="op-stat-val" id="ownerTotalRev">$0</div><div class="op-stat-lbl">Quoted</div></div>
-        <div class="op-stat"><div class="op-stat-val" id="ownerAvgJob">$0</div><div class="op-stat-lbl">Avg Job</div></div>
+        <div class="op-stat"><div class="op-stat-val" id="ownerTotalEst">0</div><div class="op-stat-lbl" data-i18n="estimatesLabel">Estimates</div></div>
+        <div class="op-stat"><div class="op-stat-val" id="ownerTotalRev">$0</div><div class="op-stat-lbl" data-i18n="quotedLabel">Quoted</div></div>
+        <div class="op-stat"><div class="op-stat-val" id="ownerAvgJob">$0</div><div class="op-stat-lbl" data-i18n="avgJobLabel">Avg Job</div></div>
       </div>
     </div>
 
@@ -1281,8 +1281,8 @@
       <button class="estimates-page-back" onclick="closeEstimatesPage()">✕ Close</button>
     </div>
     <div class="ep-tabs">
-      <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount2">0</span></button>
-      <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 Contracts <span class="saved-badge" id="contractCount">0</span></button>
+      <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 <span data-i18n="tabEstimates">Estimates</span> <span class="saved-badge" id="savedCount2">0</span></button>
+      <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 <span data-i18n="tabContracts">Contracts</span> <span class="saved-badge" id="contractCount">0</span></button>
     </div>
   </div>
   <div class="estimates-page-body">
@@ -1347,11 +1347,11 @@
 
     <!-- Job Dates -->
     <div>
-      <div class="cd-section-title">📅 Appointment</div>
+      <div class="cd-section-title">📅 <span data-i18n="appointmentSection">Appointment</span></div>
       <div style="margin-bottom:8px;">
-        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;">Team</label>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;" data-i18n="teamLabel">Team</label>
         <div style="position:relative;">
-          <input type="text" id="cdTeam" placeholder="e.g. Team A, Team B…" list="teamSuggestions"
+          <input type="text" id="cdTeam" data-i18n-ph="teamPlaceholder" placeholder="e.g. Team A, Team B…" list="teamSuggestions"
             style="width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;"
             oninput="saveContractDates()" onchange="saveContractDates()">
           <datalist id="teamSuggestions"></datalist>
@@ -1359,11 +1359,11 @@
       </div>
       <div class="cd-dates-row">
         <div class="cd-date-field">
-          <label>Start</label>
+          <label data-i18n="startLabel">Start</label>
           <input type="date" id="cdJobStart" onchange="saveContractDates()">
         </div>
         <div class="cd-date-field">
-          <label>End</label>
+          <label data-i18n="endLabel">End</label>
           <input type="date" id="cdJobEnd" onchange="saveContractDates()">
         </div>
       </div>
@@ -1372,26 +1372,26 @@
 
     <!-- Payment schedule -->
     <div>
-      <div class="cd-section-title">Payment Schedule</div>
+      <div class="cd-section-title" data-i18n="paymentScheduleSection">Payment Schedule</div>
       <div class="pay-schedule" id="cdSchedule"></div>
     </div>
 
     <!-- Contract document buttons -->
     <div>
-      <div class="cd-section-title">Contract Document</div>
+      <div class="cd-section-title" data-i18n="contractDocSection">Contract Document</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="viewContractDoc()">📄 View Contract</button>
-        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="printContractDoc()">🖨️ Print / PDF</button>
-        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="shareEstimate()">📨 Share</button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="viewContractDoc()">📄 <span data-i18n="viewContractBtn">View Contract</span></button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="printContractDoc()">🖨️ <span data-i18n="printPDFBtn">Print / PDF</span></button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="shareEstimate()">📨 <span data-i18n="navShare">Share</span></button>
       </div>
     </div>
 
     <!-- Original estimate -->
     <div>
-      <div class="cd-section-title">Original Estimate</div>
-      <button class="btn btn-light" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="viewEstimateDoc()">📋 View Estimate</button>
+      <div class="cd-section-title" data-i18n="originalEstimateSection">Original Estimate</div>
+      <button class="btn btn-light" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="viewEstimateDoc()">📋 <span data-i18n="viewEstimateBtn">View Estimate</span></button>
       <div id="cdEstimateReceipts" style="display:none;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">📷 Deposit Receipts</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">📷 <span data-i18n="depositReceipts">Deposit Receipts</span></div>
         <div id="cdEstimateReceiptsGrid" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
       </div>
     </div>
@@ -1402,13 +1402,13 @@
         <div style="display:flex;align-items:center;gap:10px;width:100%;">
           <div class="psi-indicator pending" id="signedIndicator">✍️</div>
           <div class="psi-info">
-            <div class="psi-label">Signed Contract</div>
-            <div class="psi-meta" id="signedMeta">Not yet uploaded</div>
+            <div class="psi-label" data-i18n="signedContractLabel">Signed Contract</div>
+            <div class="psi-meta" id="signedMeta" data-i18n="notYetUploaded">Not yet uploaded</div>
           </div>
         </div>
         <div style="display:flex;gap:8px;width:100%;">
-          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedUploadInput').click()">📁 Upload File</button>
-          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('signed')">📷 Take Photo</button>
+          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('signedUploadInput').click()">📁 <span data-i18n="uploadFileBtn">Upload File</span></button>
+          <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('signed')">📷 <span data-i18n="takePhotoBtn">Take Photo</span></button>
         </div>
         <input type="file" id="signedUploadInput" style="display:none" accept="image/*,application/pdf" onchange="uploadSignedContract(event)">
         <input type="file" id="signedCameraInput" style="display:none" accept="image/*" capture="environment" onchange="uploadSignedContract(event)">
@@ -1418,18 +1418,18 @@
 
     <!-- Record payment button -->
     <button class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;" onclick="openPaymentModal()">
-      💵 Record Payment Received
+      💵 <span data-i18n="recordPaymentBtn">Record Payment Received</span>
     </button>
 
     <!-- Payment history -->
     <div id="cdHistoryWrap">
-      <div class="cd-section-title">Payment History</div>
+      <div class="cd-section-title" data-i18n="paymentHistorySection">Payment History</div>
       <div class="pay-schedule" id="cdHistory"></div>
     </div>
 
     <!-- Photo gallery -->
     <div id="cdPhotoGalleryWrap" style="display:none;">
-      <div class="cd-section-title">📷 Photos</div>
+      <div class="cd-section-title">📷 <span data-i18n="photosLabel">Photos</span></div>
       <div id="cdPhotoGallery" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0;"></div>
     </div>
 
@@ -1481,45 +1481,45 @@
 <!-- PAYMENT MODAL -->
 <div class="pay-modal-overlay" id="payModalOverlay">
   <div class="pay-modal">
-    <div class="pay-modal-title">💵 Record Payment</div>
-    <div class="pay-modal-sub" id="payModalSub">Enter payment details</div>
+    <div class="pay-modal-title">💵 <span data-i18n="recordPaymentTitle">Record Payment</span></div>
+    <div class="pay-modal-sub" id="payModalSub" data-i18n="enterPaymentDetails">Enter payment details</div>
     <div class="pay-modal-field">
-      <label>Amount Received ($)</label>
+      <label data-i18n="amountReceived">Amount Received ($)</label>
       <input type="number" id="payAmount" placeholder="0.00" inputmode="decimal" style="font-size:22px;font-weight:700;text-align:center;">
     </div>
     <div class="pay-modal-field">
-      <label>Date</label>
+      <label data-i18n="paymentDate">Date</label>
       <input type="date" id="payDate">
     </div>
     <div class="pay-modal-field">
-      <label>Payment Method</label>
+      <label data-i18n="paymentMethod">Payment Method</label>
       <div class="pay-method-btns">
-        <button class="pay-method-btn active" onclick="selectPayMethod(this,'cash')">💵 Cash</button>
-        <button class="pay-method-btn" onclick="selectPayMethod(this,'check')">🏦 Check</button>
+        <button class="pay-method-btn active" onclick="selectPayMethod(this,'cash')">💵 <span data-i18n="methodCash">Cash</span></button>
+        <button class="pay-method-btn" onclick="selectPayMethod(this,'check')">🏦 <span data-i18n="methodCheck">Check</span></button>
         <button class="pay-method-btn" onclick="selectPayMethod(this,'zelle')">📱 Zelle</button>
-        <button class="pay-method-btn" onclick="selectPayMethod(this,'card')">💳 Card</button>
+        <button class="pay-method-btn" onclick="selectPayMethod(this,'card')">💳 <span data-i18n="methodCard">Card</span></button>
       </div>
     </div>
     <div class="pay-modal-field">
-      <label>Note (optional)</label>
+      <label data-i18n="paymentNote">Note (optional)</label>
       <input type="text" id="payNote" placeholder="e.g. Check #1234">
     </div>
     <div class="pay-modal-field">
-      <label>Receipt / Proof of Payment</label>
+      <label data-i18n="receiptProof">Receipt / Proof of Payment</label>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptUpload').click()">📁 Upload</button>
-        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('payReceipt')">📷 Camera</button>
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('payReceiptUpload').click()">📁 <span data-i18n="uploadBtn">Upload</span></button>
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('payReceipt')">📷 <span data-i18n="cameraBtn">Camera</span></button>
       </div>
       <input type="file" id="payReceiptUpload" style="display:none" accept="image/*" onchange="previewPayReceipt(event)">
       <input type="file" id="payReceiptCamera" style="display:none" accept="image/*" capture="environment" onchange="previewPayReceipt(event)">
       <div id="payReceiptPreview" style="margin-top:8px;display:none;">
         <img id="payReceiptImg" style="width:100%;max-height:140px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
-        <button onclick="clearPayReceipt()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ Remove photo</button>
+        <button onclick="clearPayReceipt()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;" data-i18n="removePhotoBtn">✕ Remove photo</button>
       </div>
     </div>
     <div style="display:flex;gap:10px;margin-top:6px;">
-      <button class="btn btn-light" style="flex:1;" onclick="closePaymentModal()">Cancel</button>
-      <button class="btn btn-primary" style="flex:2;" onclick="savePayment()">✓ Save Payment</button>
+      <button class="btn btn-light" style="flex:1;" onclick="closePaymentModal()" data-i18n="cancelBtn">Cancel</button>
+      <button class="btn btn-primary" style="flex:2;" onclick="savePayment()">✓ <span data-i18n="savePaymentBtn">Save Payment</span></button>
     </div>
   </div>
 </div>
@@ -1612,31 +1612,31 @@
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-tab active" id="navEstimate" onclick="openEstimatesPage()">
     <div class="nav-icon">📁</div>
-    <div class="nav-label">Files <span class="saved-badge" id="savedCount">0</span></div>
+    <div class="nav-label"><span data-i18n="navFiles">Files</span> <span class="saved-badge" id="savedCount">0</span></div>
   </button>
   <button class="nav-tab" onclick="clearEstimate()">
     <div class="nav-icon">✏️</div>
-    <div class="nav-label">New</div>
+    <div class="nav-label" data-i18n="navNew">New</div>
   </button>
   <button class="nav-tab" onclick="doPrint()">
     <div class="nav-icon">🖨️</div>
-    <div class="nav-label">Print</div>
+    <div class="nav-label" data-i18n="navPrint">Print</div>
   </button>
   <button class="nav-tab" onclick="doPDF()">
     <div class="nav-icon">📤</div>
-    <div class="nav-label">Export</div>
+    <div class="nav-label" data-i18n="navExport">Export</div>
   </button>
   <button class="nav-tab" onclick="shareEstimate()">
     <div class="nav-icon">📨</div>
-    <div class="nav-label">Share</div>
+    <div class="nav-label" data-i18n="navShare">Share</div>
   </button>
   <button class="nav-tab" id="navCalendar" onclick="openCalendarPage()">
     <div class="nav-icon">📅</div>
-    <div class="nav-label">Cal</div>
+    <div class="nav-label" data-i18n="navCal">Cal</div>
   </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
-    <div class="nav-label">Settings</div>
+    <div class="nav-label" data-i18n="navSettings">Settings</div>
   </button>
 </nav>
 
@@ -1680,6 +1680,120 @@ const T = {
     tapToUnlock:'Tap to unlock', lockProfit:'Lock',
     confirmNew:'Start a new estimate? Unsaved data will be lost.',
     noMaterials:'No materials to save', enterTemplateName:'Enter a template name',
+    // Settings
+    stateJurisdiction:'State / Jurisdiction', stateNote:'Contracts adapt to the selected jurisdiction',
+    companyProfileSection:'Company Profile', editCompanyInfo:'Edit Company Info & Images',
+    ownerSection:'Owner', ownerDashboard:'👑 Owner Dashboard', changePIN:'🔒 Change PIN',
+    legalSection:'Legal', termsConditions:'Terms & Conditions', appColors:'App Colors',
+    // PIN modal
+    ownerAccess:'Owner Access', enterPIN:'Enter your PIN to continue',
+    setPINTitle:'Set New PIN', defaultPINMsg:'Default PIN is 1234. Enter a new PIN:',
+    changePINTitle:'Change PIN', enterCurrentPIN:'Enter your current PIN first:',
+    wrongPIN:'❌ Wrong PIN. Try again:', wrongCurrentPIN:'❌ Wrong current PIN. Try again:',
+    newPINTitle:'New PIN', enterNewPIN:'Enter your new PIN:',
+    confirmNewPIN:'Confirm new PIN:', pinsMismatch:"❌ PINs don't match. Enter new PIN again:",
+    pinUpdated:'✅ PIN updated',
+    // Nav
+    navFiles:'Files', navNew:'New', navPrint:'Print', navExport:'Export',
+    navShare:'Share', navCal:'Cal', navSettings:'Settings',
+    // Files tabs
+    tabEstimates:'Estimates', tabContracts:'Contracts',
+    noSavedEstimates:'No saved estimates',
+    noContracts:'No contracts yet. Accept an estimate to create one.',
+    // Contract detail
+    paymentProgress:'Payment Progress', collected:'% collected',
+    appointmentSection:'Appointment', teamLabel:'Team', teamPlaceholder:'e.g. Team A, Team B…',
+    startLabel:'Start', endLabel:'End',
+    paymentScheduleSection:'Payment Schedule',
+    contractDocSection:'Contract Document', viewContractBtn:'View Contract', printPDFBtn:'Print / PDF',
+    originalEstimateSection:'Original Estimate', viewEstimateBtn:'View Estimate',
+    depositReceipts:'Deposit Receipts',
+    signedContractLabel:'Signed Contract', notYetUploaded:'Not yet uploaded',
+    uploadFileBtn:'Upload File', takePhotoBtn:'Take Photo',
+    recordPaymentBtn:'Record Payment Received',
+    paymentHistorySection:'Payment History', photosLabel:'Photos',
+    viewDetailsBtn:'View Details', markCompleteBtn:'Mark Complete', completedLabel:'Completed',
+    // Payment modal
+    recordPaymentTitle:'Record Payment', enterPaymentDetails:'Enter payment details',
+    amountReceived:'Amount Received ($)', paymentDate:'Date', paymentMethod:'Payment Method',
+    paymentNote:'Note (optional)', receiptProof:'Receipt / Proof of Payment',
+    uploadBtn:'Upload', cameraBtn:'Camera', removePhotoBtn:'✕ Remove photo',
+    cancelBtn:'Cancel', savePaymentBtn:'Save Payment',
+    methodCash:'Cash', methodCheck:'Check', methodZelle:'Zelle', methodCard:'Card',
+    // Owner dashboard
+    currentEstimateSection:'Current Estimate', grossMarginLabel:'Gross Margin',
+    netProfitLabel:'Net Profit', netMarginLabel:'Net Margin',
+    costBreakdownSection:'Cost Breakdown', realJobCostLabel:'Real Job Cost',
+    realJobCostDesc:'Mat + Labor + Other (auto)',
+    overheadPctLabel:'Overhead %', overheadDesc:'Insurance, fuel, tools, office…',
+    overheadAmountLabel:'Overhead Amount',
+    monthlySalesSection:'Monthly Sales — last 6 months',
+    allTimeSection:'All Time', estimatesLabel:'Estimates', quotedLabel:'Quoted', avgJobLabel:'Avg Job',
+    // Calendar
+    noJobsMonth:'No jobs scheduled this month.',
+    setTeamDates:'Open a contract → set Team & dates.',
+    // Toasts
+    toastLoaded:'Loaded: ', toastDeleted:'✓ Deleted',
+    toastStorageFull:'⚠️ Storage full — delete old estimates or photos',
+    toastPaymentRecorded:'Payment recorded: $', toastPaymentDeleted:'Payment deleted',
+    toastContractComplete:'Contract marked complete', toastContractDeleted:'Contract deleted',
+    toastEnterAmount:'Enter a valid amount', toastDrywallLoaded:'✓ Drywall preset loaded',
+    toastAddClientName:'Add client name first', toastBridgeError:'AndroidBridge not connected',
+    toastInvalidBackup:'Invalid backup file',
+    toastImported:'Imported: ', toastImportedSuffix:' estimates, ', toastImportedContracts:' contracts',
+    // Conflict warning
+    conflictHas:' already has ', conflictJobsSuffix:' job(s) on those dates:',
+    // Terms screen
+    termsTitle:'Terms & Conditions', termsLicenseTitle:'License & Use',
+    termsLicenseText:'This application is proprietary software developed exclusively for use by {company}. Unauthorized copying, redistribution, or reverse engineering is strictly prohibited.',
+    termsPrivacyTitle:'Data & Privacy',
+    termsPrivacyText:'All estimate data, client information, and photos are stored locally on this device. No information is transmitted to third-party servers without your explicit consent.',
+    termsAccuracyTitle:'Accuracy of Estimates',
+    termsAccuracyText:'Estimates generated by this app are for internal planning purposes only. Final pricing must be reviewed and approved by an authorized company representative before being presented to clients.',
+    termsLiabilityTitle:'Limitation of Liability',
+    termsLiabilityText:'The company is not liable for any financial decisions made solely based on estimates generated by this application. Always verify material costs and labor rates before submitting quotes.',
+    termsConfTitle:'Confidentiality',
+    termsConfText:'Profit margins, overhead data, and Owner Dashboard information are confidential and must not be disclosed to clients or third parties.',
+    termsAgree:'I have read and agree to the Terms & Conditions',
+    termsContinue:'Continue to App →',
+    // Benchmark messages
+    bmLosing:'🔴 Losing money — review your costs',
+    bmBelowAvg:'🟠 Below average — target higher margins',
+    bmAvg:'🟡 Average range — target 8%+ to be healthy',
+    bmGood:'🟢 Good — above industry average',
+    bmExcellent:'✅ Excellent — top contractor margins',
+    // Profit view
+    profitLocked:'🔒 Locked — tap to unlock',
+    // Splash
+    tapToContinue:'Tap anywhere to continue',
+    // Signed upload
+    signedUploaded:'Signed contract on file',
+    signedChange:'Change',
+    contractAccepted:'Contract created ✓',
+    // Extra labels
+    paidLabel:'Paid', dueLabel:'Due:', depositLabel:'Deposit',
+    serviceContractTitle:'Service Contract',
+    originalEstimateTitle:'Original Estimate',
+    noEstimateData:'No estimate data',
+    estimateUnavailable:'Estimate not available for older contracts',
+    unlockBtn:'Unlock',
+    deleteContractConfirm:'Delete this contract?',
+    cannotUndo:'This action cannot be undone.',
+    toastEstDiscarded:'🗑️ Estimate discarded',
+    toastSignedSaved:'✅ Signed contract saved',
+    toastAlreadyContract:'Already converted to contract',
+    toastStorageFullContracts:'⚠️ Storage full — delete old contracts or photos',
+    toastBackupImported:'✓ Backup imported: ',
+    toastEstimateSuffix:' estimates',
+    toastImportErr:'Import error: ',
+    toastErr:'Error: ',
+    toastImgError:'Error processing image',
+    toastImgSaved:'✅ Image saved',
+    toastImgReset:'✅ Image reset',
+    toastDrawFirst:'Draw your signature first',
+    toastSigSaved:'✅ Signature saved',
+    toastFolioRepeat:'⚠️ Duplicate folio — use the suggested one',
+    toastContractNotFound:'Contract not found',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -1716,6 +1830,120 @@ const T = {
     tapToUnlock:'Toca para desbloquear', lockProfit:'Bloquear',
     confirmNew:'¿Nuevo estimado? Los datos sin guardar se perderán.',
     noMaterials:'No hay materiales para guardar', enterTemplateName:'Escribe un nombre de plantilla',
+    // Settings
+    stateJurisdiction:'Estado / Jurisdicción', stateNote:'Los contratos se adaptan a la jurisdicción seleccionada',
+    companyProfileSection:'Perfil de Empresa', editCompanyInfo:'Editar Empresa e Imágenes',
+    ownerSection:'Propietario', ownerDashboard:'👑 Panel del Dueño', changePIN:'🔒 Cambiar PIN',
+    legalSection:'Legal', termsConditions:'Términos y Condiciones', appColors:'Colores de la App',
+    // PIN modal
+    ownerAccess:'Acceso de Propietario', enterPIN:'Ingresa tu PIN para continuar',
+    setPINTitle:'Establecer Nuevo PIN', defaultPINMsg:'PIN predeterminado es 1234. Ingresa un nuevo PIN:',
+    changePINTitle:'Cambiar PIN', enterCurrentPIN:'Ingresa tu PIN actual primero:',
+    wrongPIN:'❌ PIN incorrecto. Intenta de nuevo:', wrongCurrentPIN:'❌ PIN actual incorrecto. Intenta de nuevo:',
+    newPINTitle:'Nuevo PIN', enterNewPIN:'Ingresa tu nuevo PIN:',
+    confirmNewPIN:'Confirma tu nuevo PIN:', pinsMismatch:'❌ Los PINs no coinciden. Ingresa el nuevo PIN de nuevo:',
+    pinUpdated:'✅ PIN actualizado',
+    // Nav
+    navFiles:'Archivos', navNew:'Nuevo', navPrint:'Imprimir', navExport:'Exportar',
+    navShare:'Compartir', navCal:'Cal', navSettings:'Ajustes',
+    // Files tabs
+    tabEstimates:'Estimados', tabContracts:'Contratos',
+    noSavedEstimates:'Sin estimados guardados',
+    noContracts:'Sin contratos aún. Acepta un estimado para crear uno.',
+    // Contract detail
+    paymentProgress:'Progreso de Pago', collected:'% cobrado',
+    appointmentSection:'Cita', teamLabel:'Equipo', teamPlaceholder:'ej. Equipo A, Equipo B…',
+    startLabel:'Inicio', endLabel:'Fin',
+    paymentScheduleSection:'Plan de Pagos',
+    contractDocSection:'Documento del Contrato', viewContractBtn:'Ver Contrato', printPDFBtn:'Imprimir / PDF',
+    originalEstimateSection:'Estimado Original', viewEstimateBtn:'Ver Estimado',
+    depositReceipts:'Comprobantes de Depósito',
+    signedContractLabel:'Contrato Firmado', notYetUploaded:'Aún no subido',
+    uploadFileBtn:'Subir Archivo', takePhotoBtn:'Tomar Foto',
+    recordPaymentBtn:'Registrar Pago Recibido',
+    paymentHistorySection:'Historial de Pagos', photosLabel:'Fotos',
+    viewDetailsBtn:'Ver Detalles', markCompleteBtn:'Marcar Completo', completedLabel:'Completado',
+    // Payment modal
+    recordPaymentTitle:'Registrar Pago', enterPaymentDetails:'Ingresa los detalles del pago',
+    amountReceived:'Monto Recibido ($)', paymentDate:'Fecha', paymentMethod:'Método de Pago',
+    paymentNote:'Nota (opcional)', receiptProof:'Comprobante / Recibo de Pago',
+    uploadBtn:'Subir', cameraBtn:'Cámara', removePhotoBtn:'✕ Quitar foto',
+    cancelBtn:'Cancelar', savePaymentBtn:'Guardar Pago',
+    methodCash:'Efectivo', methodCheck:'Cheque', methodZelle:'Zelle', methodCard:'Tarjeta',
+    // Owner dashboard
+    currentEstimateSection:'Estimado Actual', grossMarginLabel:'Margen Bruto',
+    netProfitLabel:'Ganancia Neta', netMarginLabel:'Margen Neto',
+    costBreakdownSection:'Desglose de Costos', realJobCostLabel:'Costo Real del Trabajo',
+    realJobCostDesc:'Mat + Mano de Obra + Otros (auto)',
+    overheadPctLabel:'Gastos Generales %', overheadDesc:'Seguro, gasolina, herramientas, oficina…',
+    overheadAmountLabel:'Monto de G. Generales',
+    monthlySalesSection:'Ventas Mensuales — últimos 6 meses',
+    allTimeSection:'Todo el Tiempo', estimatesLabel:'Estimados', quotedLabel:'Cotizado', avgJobLabel:'Prom. Trabajo',
+    // Calendar
+    noJobsMonth:'No hay trabajos programados este mes.',
+    setTeamDates:'Abre un contrato → asigna Equipo y fechas.',
+    // Toasts
+    toastLoaded:'Cargado: ', toastDeleted:'✓ Eliminado',
+    toastStorageFull:'⚠️ Almacenamiento lleno — elimina estimados o fotos antiguas',
+    toastPaymentRecorded:'Pago registrado: $', toastPaymentDeleted:'Pago eliminado',
+    toastContractComplete:'Contrato marcado como completo', toastContractDeleted:'Contrato eliminado',
+    toastEnterAmount:'Ingresa un monto válido', toastDrywallLoaded:'✓ Plantilla Drywall cargada',
+    toastAddClientName:'Agrega el nombre del cliente primero', toastBridgeError:'AndroidBridge no conectado',
+    toastInvalidBackup:'Archivo de respaldo inválido',
+    toastImported:'Importado: ', toastImportedSuffix:' estimados, ', toastImportedContracts:' contratos',
+    // Conflict warning
+    conflictHas:' ya tiene ', conflictJobsSuffix:' trabajo(s) en esas fechas:',
+    // Terms screen
+    termsTitle:'Términos y Condiciones', termsLicenseTitle:'Licencia y Uso',
+    termsLicenseText:'Esta aplicación es software propietario desarrollado exclusivamente para uso de {company}. Se prohíbe estrictamente la copia, redistribución o ingeniería inversa no autorizada.',
+    termsPrivacyTitle:'Datos y Privacidad',
+    termsPrivacyText:'Todos los datos de estimados, información de clientes y fotos se almacenan localmente en este dispositivo. No se transmite ninguna información a servidores de terceros sin su consentimiento explícito.',
+    termsAccuracyTitle:'Exactitud de los Estimados',
+    termsAccuracyText:'Los estimados generados por esta aplicación son únicamente para planificación interna. Los precios finales deben ser revisados y aprobados por un representante autorizado de la empresa antes de presentarlos a los clientes.',
+    termsLiabilityTitle:'Limitación de Responsabilidad',
+    termsLiabilityText:'La empresa no es responsable de ninguna decisión financiera tomada únicamente con base en los estimados generados por esta aplicación. Siempre verifique los costos de materiales y las tarifas de mano de obra antes de enviar cotizaciones.',
+    termsConfTitle:'Confidencialidad',
+    termsConfText:'Los márgenes de ganancia, los datos de gastos generales y la información del Panel del Dueño son confidenciales y no deben divulgarse a clientes ni a terceros.',
+    termsAgree:'He leído y acepto los Términos y Condiciones',
+    termsContinue:'Continuar →',
+    // Benchmark messages
+    bmLosing:'🔴 Perdiendo dinero — revisa tus costos',
+    bmBelowAvg:'🟠 Por debajo del promedio — apunta a márgenes más altos',
+    bmAvg:'🟡 Rango promedio — apunta a 8%+ para estar sano',
+    bmGood:'🟢 Bien — por encima del promedio de la industria',
+    bmExcellent:'✅ Excelente — márgenes en el top de contratistas',
+    // Profit view
+    profitLocked:'🔒 Bloqueado — toca para desbloquear',
+    // Splash
+    tapToContinue:'Toca en cualquier lugar para continuar',
+    // Signed upload
+    signedUploaded:'Contrato firmado en archivo',
+    signedChange:'Cambiar',
+    contractAccepted:'Contrato creado ✓',
+    // Extra labels
+    paidLabel:'Pagado', dueLabel:'Vence:', depositLabel:'Depósito',
+    serviceContractTitle:'Contrato de Servicio',
+    originalEstimateTitle:'Estimado Original',
+    noEstimateData:'Sin datos de estimado',
+    estimateUnavailable:'Estimado no disponible para contratos anteriores',
+    unlockBtn:'Desbloquear',
+    deleteContractConfirm:'¿Eliminar este contrato?',
+    cannotUndo:'Esta acción no se puede deshacer.',
+    toastEstDiscarded:'🗑️ Estimado descartado',
+    toastSignedSaved:'✅ Contrato firmado guardado',
+    toastAlreadyContract:'Ya convertido a contrato',
+    toastStorageFullContracts:'⚠️ Almacenamiento lleno — elimina contratos o fotos antiguas',
+    toastBackupImported:'✓ Respaldo importado: ',
+    toastEstimateSuffix:' estimados',
+    toastImportErr:'Error de importación: ',
+    toastErr:'Error: ',
+    toastImgError:'Error al procesar imagen',
+    toastImgSaved:'✅ Imagen guardada',
+    toastImgReset:'✅ Imagen restablecida',
+    toastDrawFirst:'Dibuja tu firma primero',
+    toastSigSaved:'✅ Firma guardada',
+    toastFolioRepeat:'⚠️ Folio repetido — usa el sugerido',
+    toastContractNotFound:'Contrato no encontrado',
   }
 };
 
@@ -1726,18 +1954,20 @@ function t(key) { return (T[currentLang]&&T[currentLang][key]) || (T.en&&T.en[ke
 function setLanguage(lang) {
   currentLang = (T[lang]) ? lang : 'en';
   localStorage.setItem('RS_LANG', currentLang);
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const k = el.dataset.i18n;
-    if (T[lang][k] !== undefined) el.textContent = T[lang][k];
+  document.querySelectorAll('[data-i18n]').forEach(function(el) {
+    var k = el.dataset.i18n;
+    if (T[currentLang][k] !== undefined) el.textContent = T[currentLang][k];
   });
-  $('langEN') && ($('langEN').className = 'lang-btn' + (lang === 'en' ? ' active' : ''));
-  $('langES') && ($('langES').className = 'lang-btn' + (lang === 'es' ? ' active' : ''));
-  $('settingsTitle') && ($('settingsTitle').textContent = t('settingsTitle'));
-  $('lblAppearance') && ($('lblAppearance').textContent = t('lblAppearance'));
-  $('lblDarkMode') && ($('lblDarkMode').textContent = t('lblDarkMode'));
-  $('lblLanguageSection') && ($('lblLanguageSection').textContent = t('lblLanguageSection'));
+  document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+    var k = el.dataset.i18nPh;
+    if (T[currentLang][k] !== undefined) el.placeholder = T[currentLang][k];
+  });
+  $('langEN') && ($('langEN').className = 'lang-btn' + (currentLang==='en'?' active':''));
+  $('langES') && ($('langES').className = 'lang-btn' + (currentLang==='es'?' active':''));
   renderTemplates();
 }
+
+function pdfStr(en, es) { return currentLang === 'es' ? es : en; }
 
 // ═══════════════════════════════════════════════════════
 // DARK MODE
@@ -1916,8 +2146,12 @@ function moveCalMonth(dir) {
 }
 
 function renderScheduleCalendar() {
-  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  var MONTHS = currentLang==='es'
+    ? ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+    : ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS = currentLang==='es'
+    ? ['Do','Lu','Ma','Mi','Ju','Vi','Sa']
+    : ['Su','Mo','Tu','We','Th','Fr','Sa'];
   var lbl = $('calMonthLabel'); if (!lbl) return;
   lbl.textContent = MONTHS[calMonth] + ' ' + calYear;
 
@@ -2100,14 +2334,14 @@ function _compressImage(file, maxW, maxH, quality, callback) {
 function saveProfileImage(key, file, maxW, maxH) {
   if (!file) return;
   _compressImage(file, maxW, maxH, 0.78, function(b64) {
-    if (!b64) { showToast('Error procesando imagen'); return; }
+    if (!b64) { showToast(t('toastImgError')); return; }
     var p = getProfile();
     p[key] = b64;
     localStorage.setItem('RS_PROFILE', JSON.stringify(p));
     applyProfileImages();
     var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
     if (previewId && $(previewId)) $(previewId).src = b64;
-    showToast('✅ Imagen guardada');
+    showToast(t('toastImgSaved'));
   });
 }
 
@@ -2119,7 +2353,7 @@ function removeProfileImage(key) {
   var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
   var defaultSrc = { logoBase64:'file:///android_asset/logo.png', bannerBase64:'file:///android_asset/banner.jpg', splashBase64:'file:///android_asset/banner_splash.png' }[key];
   if (previewId && $(previewId)) $(previewId).src = defaultSrc;
-  showToast('✅ Imagen restablecida');
+  showToast(t('toastImgReset'));
 }
 function openSettings() {
   history.pushState({ panel: 'settings' }, '');
@@ -2328,7 +2562,7 @@ function loadDrywallTemplate() {
     { desc:'Corner Bead', qty:'0', unit:'Pieces', cost:'0' }
   ];
   updateTotal();
-  showToast('✓ Drywall preset loaded');
+  showToast(t('toastDrywallLoaded'));
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2337,7 +2571,7 @@ function loadDrywallTemplate() {
 function saveClient() {
   let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
   let client = { name:$('clientName').value, phone:$('clientPhone').value, email:$('clientEmail').value, address:$('projectAddress').value };
-  if (!client.name) { showToast('Add client name first'); return; }
+  if (!client.name) { showToast(t('toastAddClientName')); return; }
   let existing = clients.find(c => c.name === client.name);
   function _doSaveClient() {
     clients = clients.filter(c => c.name !== client.name);
@@ -2431,21 +2665,21 @@ function openPinModal(action) {
   pinTemp = '';
   let pin = localStorage.getItem('RS_PIN') || '1234';
   if (action === 'unlock' || action === 'owner') {
-    $('pinTitle').textContent = '👑 Owner Access';
+    $('pinTitle').textContent = '👑 ' + t('ownerAccess');
     if (!localStorage.getItem('RS_PIN')) {
       $('pinSub').innerHTML = 'PIN temporal: <strong style="letter-spacing:4px;font-size:18px;">1234</strong>';
     } else {
-      $('pinSub').textContent = 'Enter your PIN to continue';
+      $('pinSub').textContent = t('enterPIN');
     }
     $('pinInput').placeholder = '••••';
   } else {
     if (pin === '1234') {
-      $('pinTitle').textContent = '🔒 Set New PIN';
-      $('pinSub').textContent = 'Default PIN is 1234. Enter a new PIN:';
+      $('pinTitle').textContent = '🔒 ' + t('setPINTitle');
+      $('pinSub').textContent = t('defaultPINMsg');
       pinStep = 2;
     } else {
-      $('pinTitle').textContent = '🔒 Change PIN';
-      $('pinSub').textContent = 'Enter your current PIN first:';
+      $('pinTitle').textContent = '🔒 ' + t('changePINTitle');
+      $('pinSub').textContent = t('enterCurrentPIN');
     }
     $('pinInput').placeholder = '••••';
   }
@@ -2471,7 +2705,7 @@ function submitPin() {
       else unlockProfit();
     } else {
       $('pinInput').value = '';
-      $('pinSub').textContent = '❌ Wrong PIN. Try again:';
+      $('pinSub').textContent = t('wrongPIN');
     }
     return;
   }
@@ -2480,19 +2714,19 @@ function submitPin() {
     if (pinStep === 1) {
       if (val !== stored) {
         $('pinInput').value = '';
-        $('pinSub').textContent = '❌ Wrong current PIN. Try again:';
+        $('pinSub').textContent = t('wrongCurrentPIN');
         return;
       }
       pinStep = 2;
-      $('pinTitle').textContent = '🔒 New PIN';
-      $('pinSub').textContent = 'Enter your new PIN:';
+      $('pinTitle').textContent = '🔒 ' + t('newPINTitle');
+      $('pinSub').textContent = t('enterNewPIN');
       $('pinInput').value = '';
       return;
     }
     if (pinStep === 2) {
       pinTemp = val;
       pinStep = 3;
-      $('pinSub').textContent = 'Confirm new PIN:';
+      $('pinSub').textContent = t('confirmNewPIN');
       $('pinInput').value = '';
       return;
     }
@@ -2500,12 +2734,12 @@ function submitPin() {
       if (val !== pinTemp) {
         pinStep = 2;
         $('pinInput').value = '';
-        $('pinSub').textContent = '❌ PINs don\'t match. Enter new PIN again:';
+        $('pinSub').textContent = t('pinsMismatch');
         return;
       }
       localStorage.setItem('RS_PIN', val);
       closePinModal();
-      showToast('✅ PIN updated');
+      showToast(t('pinUpdated'));
     }
   }
 }
@@ -2560,11 +2794,11 @@ function refreshOwnerStats() {
   if (!bm) return;
   if (t.grand <= 0) { bm.style.display = 'none'; return; }
   bm.style.display = '';
-  if (netMargin < 0)       { bm.style.background='#fef2f2'; bm.style.color='#dc2626'; bm.textContent='🔴 Losing money — review your costs'; }
-  else if (netMargin < 5)  { bm.style.background='#fff7ed'; bm.style.color='#ea580c'; bm.textContent='🟠 Below average — CO specialty avg: 6.9% net'; }
-  else if (netMargin < 8)  { bm.style.background='#fefce8'; bm.style.color='#ca8a04'; bm.textContent='🟡 Average range — target 8%+ to be healthy'; }
-  else if (netMargin < 12) { bm.style.background='#f0fdf4'; bm.style.color='#16a34a'; bm.textContent='🟢 Good — above CO industry average'; }
-  else                     { bm.style.background='#f0fdf4'; bm.style.color='#15803d'; bm.textContent='✅ Excellent — top 25% of CO contractors (11.9%+)'; }
+  if (netMargin < 0)       { bm.style.background='#fef2f2'; bm.style.color='#dc2626'; bm.textContent=t('bmLosing'); }
+  else if (netMargin < 5)  { bm.style.background='#fff7ed'; bm.style.color='#ea580c'; bm.textContent=t('bmBelowAvg'); }
+  else if (netMargin < 8)  { bm.style.background='#fefce8'; bm.style.color='#ca8a04'; bm.textContent=t('bmAvg'); }
+  else if (netMargin < 12) { bm.style.background='#f0fdf4'; bm.style.color='#16a34a'; bm.textContent=t('bmGood'); }
+  else                     { bm.style.background='#f0fdf4'; bm.style.color='#15803d'; bm.textContent=t('bmExcellent'); }
 }
 
 function renderSalesChart() {
@@ -2667,7 +2901,7 @@ function _applyNativePhoto(base64) {
     c.signedDate  = new Date().toISOString().slice(0,10);
     saveContracts(contracts);
     renderSignedSection(c);
-    showToast('✅ Signed contract saved');
+    showToast(t('toastSignedSaved'));
   } else {
     receiptPhotos.push(base64);
     renderReceipts();
@@ -2747,7 +2981,7 @@ function validateFolio() {
 }
 
 function saveEstimate() {
-  if (validateFolio()) { showToast('⚠️ Folio repetido — usa el sugerido'); return; }
+  if (validateFolio()) { showToast(t('toastFolioRepeat')); return; }
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   let current = {
     id: Date.now().toString(), grand: computeTotals().grand,
@@ -2775,7 +3009,7 @@ function saveEstimate() {
   try {
     localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
   } catch(e) {
-    showToast('⚠️ Storage full — delete old estimates or photos');
+    showToast(t('toastStorageFull'));
     return;
   }
   currentEstimateId = current.id;
@@ -2822,14 +3056,14 @@ function loadEstimate(id) {
   lockProfit();
   closeEstimatesPage();
   window.scrollTo(0, 0);
-  showToast('✓ Loaded: ' + item.estNum);
+  showToast(t('toastLoaded') + item.estNum);
 }
 
 function deleteEstimate(id) {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray.filter(s => s.id != id)));
   renderSaved(); updateDashboard();
-  showToast('✓ Deleted');
+  showToast(t('toastDeleted'));
 }
 
 function renderSaved() {
@@ -2881,7 +3115,7 @@ function clearEstimate() {
 function discardEstimate() {
   showConfirm('Discard this estimate?', 'All data will be cleared.', '🗑️', 'Discard', '#ef4444', function() {
     resetFields(getNextEstimateNumber(true));
-    showToast('🗑️ Estimate discarded');
+    showToast(t('toastEstDiscarded'));
   });
 }
 
@@ -2942,28 +3176,28 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
       <img src="${logoSrc()}" class="logo">
       <div class="company">
         <h1>${escapeHtml(getProfile().companyName)}</h1>
-        <p>${escapeHtml(getProfile().companyLocation)}${getProfile().companyLocation ? ' · ' : ''}Licensed &amp; Insured</p>
+        <p>${escapeHtml(getProfile().companyLocation)}${getProfile().companyLocation ? ' · ' : ''}${pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')}</p>
         <div class="contact"><div>☎ ${escapeHtml(getProfile().companyPhone)}</div><div>✉ ${escapeHtml(getProfile().companyEmail)}</div></div>
       </div>
     </div>
     <div class="estimate-box">
-      <h2>ESTIMATE</h2>
-      <div class="est-row"><strong>Estimate #:</strong><span>${escapeHtml($('estNum').value||'-')}</span></div>
-      <div class="est-row"><strong>Date:</strong><span>${escapeHtml(formatDate()||'-')}</span></div>
-      <div class="est-row"><strong>Valid Until:</strong><span>${escapeHtml($('validUntil').value||'-')}</span></div>
+      <h2>${pdfStr('ESTIMATE','ESTIMADO')}</h2>
+      <div class="est-row"><strong>${pdfStr('Estimate #:','Estimado #:')}</strong><span>${escapeHtml($('estNum').value||'-')}</span></div>
+      <div class="est-row"><strong>${pdfStr('Date:','Fecha:')}</strong><span>${escapeHtml(formatDate()||'-')}</span></div>
+      <div class="est-row"><strong>${pdfStr('Valid Until:','Válido Hasta:')}</strong><span>${escapeHtml($('validUntil').value||'-')}</span></div>
     </div>
   </div>
   <div class="cards">
     <div class="info-card">
-      <div class="card-title"><span>●</span>CLIENT INFORMATION</div>
+      <div class="card-title"><span>●</span>${pdfStr('CLIENT INFORMATION','INFORMACIÓN DEL CLIENTE')}</div>
       <div class="card-body">
-        <div class="info-line"><strong>Client:</strong><div>${escapeHtml($('clientName').value||'-')}</div></div>
-        <div class="info-line"><strong>Project:</strong><div>${escapeHtml($('projectName').value||'-')}</div></div>
-        <div class="info-line"><strong>Address:</strong><div>${escapeHtml($('projectAddress').value||'-')}</div></div>
+        <div class="info-line"><strong>${pdfStr('Client:','Cliente:')}</strong><div>${escapeHtml($('clientName').value||'-')}</div></div>
+        <div class="info-line"><strong>${pdfStr('Project:','Proyecto:')}</strong><div>${escapeHtml($('projectName').value||'-')}</div></div>
+        <div class="info-line"><strong>${pdfStr('Address:','Dirección:')}</strong><div>${escapeHtml($('projectAddress').value||'-')}</div></div>
       </div>
     </div>
     <div class="info-card">
-      <div class="card-title"><span>▣</span>SCOPE OF WORK</div>
+      <div class="card-title"><span>▣</span>${pdfStr('SCOPE OF WORK','ALCANCE DEL TRABAJO')}</div>
       <div class="card-body">
         <ul class="scope-list">
           ${String($('scopeWork').value||'-').split('\n').map(x=>`<li>${escapeHtml(x.trim()||'-')}</li>`).join('')}
@@ -2972,62 +3206,62 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
     </div>
   </div>
   <div class="cost-card">
-    <div class="cost-title"><span>$</span>PROJECT COSTS</div>
+    <div class="cost-title"><span>$</span>${pdfStr('PROJECT COSTS','COSTOS DEL PROYECTO')}</div>
     <table class="cost-table">
-      <tr><th>Description</th><th>Total</th></tr>
-      ${t.unit>0?`<tr><td><span class="cost-icon">▧</span>Unit Pricing</td><td>${formatMoney(t.unit)}</td></tr>`:''}
-      ${t.labor>0?`<tr><td><span class="cost-icon">👷</span>Labor</td><td>${formatMoney(t.labor)}</td></tr>`:''}
-      ${t.mat>0?`<tr><td><span class="cost-icon">▤</span>Materials</td><td>${formatMoney(t.mat)}</td></tr>`:''}
-      ${otherCosts.filter(o=>(parseFloat(o.amount)||0)>0).map(o=>`<tr><td><span class="cost-icon">⚙</span>${escapeHtml(o.desc||'Other Cost')}</td><td>${formatMoney(parseFloat(o.amount)||0)}</td></tr>`).join('')}
-      <tr class="bold-row"><td>Subtotal</td><td>${formatMoney(t.sub)}</td></tr>
-      <tr class="bold-row"><td>Tax (${t.taxP}%)</td><td>${formatMoney(t.tax)}</td></tr>
-      ${t.deposit>0?`<tr class="deposit"><td>Deposit Paid</td><td>-${formatMoney(t.deposit)}</td></tr>`:''}
-      <tr class="balance"><td>BALANCE DUE</td><td>${formatMoney(t.balance)}</td></tr>
+      <tr><th>${pdfStr('Description','Descripción')}</th><th>${pdfStr('Total','Total')}</th></tr>
+      ${t.unit>0?`<tr><td><span class="cost-icon">▧</span>${pdfStr('Unit Pricing','Precio Unitario')}</td><td>${formatMoney(t.unit)}</td></tr>`:''}
+      ${t.labor>0?`<tr><td><span class="cost-icon">👷</span>${pdfStr('Labor','Mano de Obra')}</td><td>${formatMoney(t.labor)}</td></tr>`:''}
+      ${t.mat>0?`<tr><td><span class="cost-icon">▤</span>${pdfStr('Materials','Materiales')}</td><td>${formatMoney(t.mat)}</td></tr>`:''}
+      ${otherCosts.filter(o=>(parseFloat(o.amount)||0)>0).map(o=>`<tr><td><span class="cost-icon">⚙</span>${escapeHtml(o.desc||pdfStr('Other Cost','Otro Costo'))}</td><td>${formatMoney(parseFloat(o.amount)||0)}</td></tr>`).join('')}
+      <tr class="bold-row"><td>${pdfStr('Subtotal','Subtotal')}</td><td>${formatMoney(t.sub)}</td></tr>
+      <tr class="bold-row"><td>${pdfStr('Tax','Impuesto')} (${t.taxP}%)</td><td>${formatMoney(t.tax)}</td></tr>
+      ${t.deposit>0?`<tr class="deposit"><td>${pdfStr('Deposit Paid','Depósito Pagado')}</td><td>-${formatMoney(t.deposit)}</td></tr>`:''}
+      <tr class="balance"><td>${pdfStr('BALANCE DUE','SALDO A PAGAR')}</td><td>${formatMoney(t.balance)}</td></tr>
     </table>
   </div>
   <div class="bottom-grid">
     <div class="bottom-box">
-      <h3><span>▣</span>NOTES</h3>
-      <p>${escapeHtml($('notes').value||'Standard installation and cleanup included.')}</p>
-      <p>Additional repairs or change orders may affect pricing.</p>
-      <p>Thank you for the opportunity!</p>
+      <h3><span>▣</span>${pdfStr('NOTES','NOTAS')}</h3>
+      <p>${escapeHtml($('notes').value||pdfStr('Standard installation and cleanup included.','Instalación estándar y limpieza incluida.'))}</p>
+      <p>${pdfStr('Additional repairs or change orders may affect pricing.','Reparaciones adicionales u órdenes de cambio pueden afectar el precio.')}</p>
+      <p>${pdfStr('Thank you for the opportunity!','¡Gracias por la oportunidad!')}</p>
     </div>
     <div class="bottom-box">
-      <h3><span>🛡</span>TERMS & CONDITIONS</h3>
-      <p>This estimate is valid until the date listed above.</p>
-      <p>Final pricing may change if scope, materials, or site conditions change.</p>
-      <p>A deposit may be required before scheduling work.</p>
+      <h3><span>🛡</span>${pdfStr('TERMS & CONDITIONS','TÉRMINOS Y CONDICIONES')}</h3>
+      <p>${pdfStr('This estimate is valid until the date listed above.','Este estimado es válido hasta la fecha indicada arriba.')}</p>
+      <p>${pdfStr('Final pricing may change if scope, materials, or site conditions change.','El precio final puede cambiar si el alcance, materiales o condiciones del sitio cambian.')}</p>
+      <p>${pdfStr('A deposit may be required before scheduling work.','Puede requerirse un depósito antes de programar el trabajo.')}</p>
     </div>
     <div class="bottom-box">
-      <h3><span>✎</span>SIGNATURES</h3>
+      <h3><span>✎</span>${pdfStr('SIGNATURES','FIRMAS')}</h3>
       ${estimateSignatures.authorized ? '<img src="'+estimateSignatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : ''}
-      <div class="sig-line">Authorized Signature</div>
+      <div class="sig-line">${pdfStr('Authorized Signature','Firma del Contratista')}</div>
       ${estimateSignatures.client ? '<img src="'+estimateSignatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-top:14px;margin-bottom:2px;">' : ''}
-      <div class="sig-line">Client Signature</div>
+      <div class="sig-line">${pdfStr('Client Signature','Firma del Cliente')}</div>
     </div>
   </div>
   ${receiptPhotos.length > 0 ? `
   <div style="margin-top:12px;padding:10px 14px;background:#f8fdf0;border:1px solid #c6e89a;border-radius:10px;page-break-inside:avoid;">
-    <div style="font-weight:800;font-size:12px;color:#365314;margin-bottom:8px;">📷 DEPOSIT PAYMENT RECEIPT${receiptPhotos.length > 1 ? 'S' : ''}</div>
+    <div style="font-weight:800;font-size:12px;color:#365314;margin-bottom:8px;">📷 ${pdfStr('DEPOSIT PAYMENT RECEIPT','COMPROBANTE DE DEPÓSITO')}${receiptPhotos.length > 1 ? pdfStr('S','S') : ''}</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;">
-      ${receiptPhotos.map((src,i) => `<img src="${src}" style="height:120px;width:auto;max-width:180px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;" alt="Receipt ${i+1}">`).join('')}
+      ${receiptPhotos.map((src,i) => `<img src="${src}" style="height:120px;width:auto;max-width:180px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;" alt="${pdfStr('Receipt','Comprobante')} ${i+1}">`).join('')}
     </div>
   </div>` : ''}
   <div class="footer">
     <div>📍 ${escapeHtml(getProfile().companyName)}<br>${escapeHtml(getProfile().companyLocation)}</div>
     <div>☎ ${escapeHtml(getProfile().companyPhone)}<br>✉ ${escapeHtml(getProfile().companyEmail)}</div>
   </div>
-  <div class="copyright">© 2026 ${escapeHtml(getProfile().companyName)}. All rights reserved.</div>
+  <div class="copyright">© 2026 ${escapeHtml(getProfile().companyName)}. ${pdfStr('All rights reserved.','Todos los derechos reservados.')}</div>
 </div></body></html>`;
   return injectAccentColors(html);
 }
 
 function doPDF() {
-  if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
+  if (!window.AndroidBridge) { showToast(t('toastBridgeError')); return; }
   AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 function doPrint() {
-  if (!window.AndroidBridge) { showToast('AndroidBridge not connected'); return; }
+  if (!window.AndroidBridge) { showToast(t('toastBridgeError')); return; }
   AndroidBridge.printHtml(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 
@@ -3174,7 +3408,7 @@ function doShareSend(method) {
   var text = '', title = '';
   if (_shareDocType === 'contract') {
     var c = getContracts().find(function(x){ return x.id === _shareDocId; });
-    if (!c) { showToast('Contrato no encontrado'); return; }
+    if (!c) { showToast(t('toastContractNotFound')); return; }
     text  = getContractShareText(c);
     title = 'Contrato ' + (c.estNum||'');
   } else {
@@ -3240,7 +3474,7 @@ function saveSigPad() {
   var d = _sigCtx.getImageData(0,0,c.width,c.height).data;
   var blank = true;
   for (var i=0;i<d.length;i+=4){ if(d[i]<240||d[i+1]<240||d[i+2]<240){blank=false;break;} }
-  if (blank) { showToast('Dibuja tu firma primero'); return; }
+  if (blank) { showToast(t('toastDrawFirst')); return; }
   var img = c.toDataURL('image/png');
   var ctx = _sigContext;
   closeSigPad();
@@ -3257,7 +3491,7 @@ function saveSigPad() {
       renderConSigs(con);
     }
   }
-  showToast('✅ Firma guardada');
+  showToast(t('toastSigSaved'));
 }
 
 function _sigPos(e, canvas) {
@@ -3326,7 +3560,7 @@ function exportBackup() {
   if (window.AndroidBridge && AndroidBridge.saveTextFile) {
     AndroidBridge.saveTextFile(JSON.stringify(data), filename, 'application/json');
   } else {
-    showToast('AndroidBridge not connected');
+    showToast(t('toastBridgeError'));
   }
 }
 
@@ -3342,8 +3576,8 @@ function importBackupBase64(base64Text) {
     if (contracts.length > 0)
       localStorage.setItem('RS_CONTRACTS', JSON.stringify(currentCon.concat(contracts)));
     renderSaved(); updateDashboard(); updateContractCount();
-    showToast('✅ Imported: ' + estimates.length + ' estimates, ' + contracts.length + ' contracts');
-  } catch(err) { showToast('Import error: ' + err.message); }
+    showToast(t('toastImported') + estimates.length + t('toastImportedSuffix') + contracts.length + t('toastImportedContracts'));
+  } catch(err) { showToast(t('toastImportErr') + err.message); }
 }
 
 function importBackup(e) {
@@ -3356,14 +3590,14 @@ function importBackup(e) {
       if (Array.isArray(data)) {
         localStorage.setItem('RS_ESTIMATES', JSON.stringify(data));
         renderSaved(); updateDashboard();
-        showToast('✓ Backup imported: ' + data.length + ' estimates');
+        showToast(t('toastBackupImported') + data.length + t('toastEstimateSuffix'));
       } else if (data.RS_ESTIMATES || data.RS_CONTRACTS) {
         if (data.RS_ESTIMATES) localStorage.setItem('RS_ESTIMATES', JSON.stringify(data.RS_ESTIMATES));
         if (data.RS_CONTRACTS) localStorage.setItem('RS_CONTRACTS', JSON.stringify(data.RS_CONTRACTS));
         renderSaved(); updateDashboard(); updateContractCount();
-        showToast('✓ Backup imported: ' + (data.RS_ESTIMATES||[]).length + ' estimates, ' + (data.RS_CONTRACTS||[]).length + ' contracts');
-      } else { showToast('Invalid backup file'); }
-    } catch(err) { showToast('Error: ' + err.message); }
+        showToast(t('toastBackupImported') + (data.RS_ESTIMATES||[]).length + t('toastImportedSuffix') + (data.RS_CONTRACTS||[]).length + t('toastImportedContracts'));
+      } else { showToast(t('toastInvalidBackup')); }
+    } catch(err) { showToast(t('toastErr') + err.message); }
   };
   reader.readAsText(file);
   e.target.value = '';
@@ -3403,7 +3637,7 @@ function saveContracts(arr) {
   try {
     localStorage.setItem('RS_CONTRACTS', JSON.stringify(arr));
   } catch(e) {
-    showToast('⚠️ Storage full — delete old contracts or photos');
+    showToast(t('toastStorageFullContracts'));
   }
 }
 
@@ -3413,7 +3647,7 @@ function acceptEstimate(id) {
   if (!est) return;
   var contracts = getContracts();
   var already = contracts.find(function(c){ return c.estimateId === id; });
-  if (already) { showToast('Already converted to contract'); openContractDetail(already.id); return; }
+  if (already) { showToast(t('toastAlreadyContract')); openContractDetail(already.id); return; }
   var total = est.grand || 0;
   var dep   = Math.round(total * 0.30 * 100) / 100;
   var prog  = Math.round(total * 0.40 * 100) / 100;
@@ -3451,7 +3685,7 @@ function acceptEstimate(id) {
   renderSaved();
   updateContractCount();
   resetFields(getNextEstimateNumber(true));
-  showToast('✅ Contract created');
+  showToast(t('contractAccepted'));
   switchEpTab('contracts');
   openContractDetail(contract.id);
 }
@@ -3467,7 +3701,7 @@ function renderContracts() {
   var el = $('contractsList');
   if (!el) return;
   if (contracts.length === 0) {
-    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">No contracts yet.<br>Accept an estimate to create one.</div>';
+    el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);">' + t('noContracts') + '</div>';
     return;
   }
   el.innerHTML = contracts.slice().reverse().map(function(c) {
@@ -3484,8 +3718,8 @@ function renderContracts() {
         '<div class="contract-progress-bar"><div class="contract-progress-fill" style="width:' + pct + '%"></div></div>' +
       '</div>' +
       '<div class="contract-card-footer">' +
-        '<button class="btn btn-primary btn-sm" onclick="openContractDetail(\'' + c.id + '\')">📋 View Details</button>' +
-        (c.status==='active' ? '<button class="btn btn-light btn-sm" onclick="markContractComplete(\'' + c.id + '\')">✓ Mark Complete</button>' : '<span style="font-size:11px;color:var(--muted);padding:4px 8px;">Completed</span>') +
+        '<button class="btn btn-primary btn-sm" onclick="openContractDetail(\'' + c.id + '\')">📋 ' + t('viewDetailsBtn') + '</button>' +
+        (c.status==='active' ? '<button class="btn btn-light btn-sm" onclick="markContractComplete(\'' + c.id + '\')">✓ ' + t('markCompleteBtn') + '</button>' : '<span style="font-size:11px;color:var(--muted);padding:4px 8px;">' + t('completedLabel') + '</span>') +
         '<button class="btn btn-danger btn-sm" onclick="deleteContract(\'' + c.id + '\')">🗑️</button>' +
       '</div>' +
     '</div>';
@@ -3512,14 +3746,14 @@ function openContractDetail(id) {
   $('cdPaid').textContent    = '$' + fmtMoney(paid);
   $('cdBalance').textContent = '$' + fmtMoney(Math.max(0, balance));
   $('cdProgressFill').style.width = pct + '%';
-  $('cdProgressPct').textContent  = pct + '% collected';
+  $('cdProgressPct').textContent  = pct + t('collected');
   // Schedule
   $('cdSchedule').innerHTML = c.schedule.map(function(s) {
     var isPaid = c.payments.some(function(p){ return p.scheduleId===s.sid; });
     return '<div class="pay-schedule-item">' +
       '<div class="psi-indicator ' + (isPaid?'paid':'pending') + '">' + (isPaid?'✅':'🔔') + '</div>' +
       '<div class="psi-info"><div class="psi-label">' + escapeHtml(s.label) + '</div>' +
-        '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">Paid</span>':'Due: ' + s.due) + ' · ' + escapeHtml(s.note) + '</div></div>' +
+        '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">'+t('paidLabel')+'</span>':t('dueLabel')+' '+s.due) + ' · ' + escapeHtml(s.note) + '</div></div>' +
       '<div class="psi-amount" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
         '<strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong>' +
         '<span>' + s.pct + '%</span>' +
@@ -3567,7 +3801,7 @@ function openContractDetail(id) {
     estReceipts.forEach(function(src, i) {
       galleryHtml += '<div style="position:relative;cursor:pointer;" onclick="viewEstimateReceipt(' + i + ')">' +
         '<img src="' + src + '" style="height:90px;width:90px;object-fit:cover;border-radius:12px;border:2px solid var(--border);display:block;">' +
-        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:2px 0;border-radius:0 0 10px 10px;">Deposit</div>' +
+        '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.55);color:#fff;font-size:9px;font-weight:700;text-align:center;padding:2px 0;border-radius:0 0 10px 10px;">'+t('depositLabel')+'</div>' +
       '</div>';
     });
     c.payments.forEach(function(p) {
@@ -3598,14 +3832,14 @@ function closeContractDetail() {
 function markContractComplete(id) {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===id; });
-  if (c) { c.status = 'completed'; saveContracts(contracts); renderContracts(); showToast('Contract marked complete'); }
+  if (c) { c.status = 'completed'; saveContracts(contracts); renderContracts(); showToast(t('toastContractComplete')); }
 }
 
 function deleteContract(id) {
-  showConfirm('Delete this contract?', 'This action cannot be undone.', '📜', 'Delete', '#ef4444', function() {
+  showConfirm(t('deleteContractConfirm'), t('cannotUndo'), '📜', t('deleteBtn'), '#ef4444', function() {
     saveContracts(getContracts().filter(function(c){ return c.id!==id; }));
     renderContracts();
-    showToast('Contract deleted');
+    showToast(t('toastContractDeleted'));
   });
 }
 
@@ -3640,7 +3874,7 @@ function selectPayMethod(btn, method) {
 
 function savePayment() {
   var amount = parseFloat($('payAmount').value);
-  if (!amount || amount <= 0) { showToast('Enter a valid amount'); return; }
+  if (!amount || amount <= 0) { showToast(t('toastEnterAmount')); return; }
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===currentContractId; });
   if (!c) return;
@@ -3793,7 +4027,7 @@ function uploadSignedContract(e) {
     c.signedDate  = new Date().toISOString().slice(0,10);
     saveContracts(contracts);
     renderSignedSection(c);
-    showToast('✅ Signed contract saved');
+    showToast(t('toastSignedSaved'));
   };
   reader.readAsDataURL(file);
   e.target.value = '';
@@ -3874,13 +4108,13 @@ function viewInOverlay(html, title, type) {
 function viewContractDoc() {
   var c = getContracts().find(function(x){ return x.id===currentContractId; });
   if (!c) return;
-  viewInOverlay(getContractDoc(c), 'Service Contract', 'contract');
+  viewInOverlay(getContractDoc(c), t('serviceContractTitle'), 'contract');
 }
 function viewEstimateDoc() {
   var c = getContracts().find(function(x){ return x.id===currentContractId; });
-  if (!c) { showToast('No estimate data'); return; }
-  if (!c.estimateData) { showToast('Estimate not available for older contracts'); return; }
-  viewInOverlay(getEstimateDoc(c.estimateData), 'Original Estimate \xb7 ' + (c.estNum||''), 'estimate');
+  if (!c) { showToast(t('noEstimateData')); return; }
+  if (!c.estimateData) { showToast(t('estimateUnavailable')); return; }
+  viewInOverlay(getEstimateDoc(c.estimateData), t('originalEstimateTitle') + ' \xb7 ' + (c.estNum||''), 'estimate');
 }
 
 var STATE_LAW = {
@@ -3962,7 +4196,7 @@ function getContractDoc(c) {
   var payReceipts = (c.payments||[]).filter(function(pr){ return pr.receiptPhoto; });
   var receiptSection = payReceipts.length > 0
     ? '<div class="pay-card" style="margin-top:10px;">' +
-        '<div class="pay-title"><span>📷</span>PAYMENT RECEIPTS</div>' +
+        '<div class="pay-title"><span>📷</span>'+pdfStr('PAYMENT RECEIPTS','COMPROBANTES DE PAGO')+'</div>' +
         '<div style="padding:12px;display:flex;flex-wrap:wrap;gap:10px;">' +
         payReceipts.map(function(pr){
           var lbl = ((c.schedule||[]).find(function(s){ return s.sid===pr.scheduleId; })||{}).label || '';
@@ -4030,90 +4264,90 @@ function getContractDoc(c) {
       '<img src="' + logoSrc() + '" class="logo">' +
       '<div class="company">' +
         '<h1>' + escapeHtml(p.companyName) + '</h1>' +
-        '<p>' + escapeHtml(p.companyLocation) + (p.companyLocation ? ' · ' : '') + 'Licensed &amp; Insured</p>' +
+        '<p>' + escapeHtml(p.companyLocation) + (p.companyLocation ? ' · ' : '') + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</p>' +
         '<div class="contact"><div>☎ ' + escapeHtml(p.companyPhone) + '</div><div>✉ ' + escapeHtml(p.companyEmail) + '</div></div>' +
       '</div>' +
     '</div>' +
     '<div class="contract-box">' +
-      '<h2>CONTRACT</h2>' +
-      '<div class="cref"><strong>Contract #:</strong><span>' + escapeHtml(c.estNum||'—') + '</span></div>' +
-      '<div class="cref"><strong>Date:</strong><span>' + c.acceptedDate + '</span></div>' +
-      '<div class="cref"><strong>Client:</strong><span>' + escapeHtml(c.clientName) + '</span></div>' +
+      '<h2>'+pdfStr('CONTRACT','CONTRATO')+'</h2>' +
+      '<div class="cref"><strong>'+pdfStr('Contract #:','Contrato #:')+'</strong><span>' + escapeHtml(c.estNum||'—') + '</span></div>' +
+      '<div class="cref"><strong>'+pdfStr('Date:','Fecha:')+'</strong><span>' + c.acceptedDate + '</span></div>' +
+      '<div class="cref"><strong>'+pdfStr('Client:','Cliente:')+'</strong><span>' + escapeHtml(c.clientName) + '</span></div>' +
     '</div>' +
   '</div>' +
 
   '<div class="cards">' +
-    '<div class="info-card"><div class="card-title"><span>●</span>CONTRACTOR</div>' +
+    '<div class="info-card"><div class="card-title"><span>●</span>'+pdfStr('CONTRACTOR','CONTRATISTA')+'</div>' +
     '<div class="card-body">' +
-      '<div class="info-line"><strong>Company:</strong><div>' + escapeHtml(p.companyName) + '</div></div>' +
-      '<div class="info-line"><strong>Location:</strong><div>' + escapeHtml(p.companyLocation) + '</div></div>' +
-      '<div class="info-line"><strong>Phone:</strong><div>' + escapeHtml(p.companyPhone) + '</div></div>' +
-      (p.contactName ? '<div class="info-line"><strong>Contact:</strong><div>' + escapeHtml(p.contactName) + '</div></div>' : '') +
-      '<div class="info-line"><strong>License:</strong><div>Licensed &amp; Insured</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Company:','Empresa:')+'</strong><div>' + escapeHtml(p.companyName) + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Location:','Ubicación:')+'</strong><div>' + escapeHtml(p.companyLocation) + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Phone:','Teléfono:')+'</strong><div>' + escapeHtml(p.companyPhone) + '</div></div>' +
+      (p.contactName ? '<div class="info-line"><strong>'+pdfStr('Contact:','Contacto:')+'</strong><div>' + escapeHtml(p.contactName) + '</div></div>' : '') +
+      '<div class="info-line"><strong>'+pdfStr('License:','Licencia:')+'</strong><div>'+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</div></div>' +
     '</div></div>' +
-    '<div class="info-card"><div class="card-title"><span>▣</span>CLIENT &amp; PROJECT</div>' +
+    '<div class="info-card"><div class="card-title"><span>▣</span>'+pdfStr('CLIENT &amp; PROJECT','CLIENTE Y PROYECTO')+'</div>' +
     '<div class="card-body">' +
-      '<div class="info-line"><strong>Client:</strong><div>' + escapeHtml(c.clientName) + '</div></div>' +
-      '<div class="info-line"><strong>Project:</strong><div>' + escapeHtml(c.projectName||'—') + '</div></div>' +
-      '<div class="info-line"><strong>Address:</strong><div>' + escapeHtml(c.projectAddress||'—') + '</div></div>' +
-      '<div class="info-line"><strong>Scope:</strong><div>' + escapeHtml(c.scopeWork||'As per estimate ' + (c.estNum||'')) + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Client:','Cliente:')+'</strong><div>' + escapeHtml(c.clientName) + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Project:','Proyecto:')+'</strong><div>' + escapeHtml(c.projectName||'—') + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Address:','Dirección:')+'</strong><div>' + escapeHtml(c.projectAddress||'—') + '</div></div>' +
+      '<div class="info-line"><strong>'+pdfStr('Scope:','Alcance:')+'</strong><div>' + escapeHtml(c.scopeWork||pdfStr('As per estimate ','Según estimado ') + (c.estNum||'')) + '</div></div>' +
     '</div></div>' +
   '</div>' +
 
   '<div class="pay-card">' +
-    '<div class="pay-title"><span>$</span>CONTRACT AMOUNT &amp; PAYMENT SCHEDULE</div>' +
+    '<div class="pay-title"><span>$</span>'+pdfStr('CONTRACT AMOUNT &amp; PAYMENT SCHEDULE','MONTO DEL CONTRATO Y PLAN DE PAGOS')+'</div>' +
     '<table>' +
-      '<tr><th>Payment Milestone</th><th>Amount</th><th>Due Date</th></tr>' +
+      '<tr><th>'+pdfStr('Payment Milestone','Hito de Pago')+'</th><th>'+pdfStr('Amount','Monto')+'</th><th>'+pdfStr('Due Date','Fecha de Vencimiento')+'</th></tr>' +
       payRows +
-      '<tr class="total-row"><td><strong>TOTAL CONTRACT AMOUNT</strong></td><td colspan="2">' + fmt(c.totalAmount) + '</td></tr>' +
+      '<tr class="total-row"><td><strong>'+pdfStr('TOTAL CONTRACT AMOUNT','MONTO TOTAL DEL CONTRATO')+'</strong></td><td colspan="2">' + fmt(c.totalAmount) + '</td></tr>' +
     '</table>' +
   '</div>' +
 
   '<div class="terms-card">' +
-    '<div class="terms-title"><span>⚖</span>TERMS &amp; CONDITIONS — BINDING CONTRACT (' + sl.n + ' &amp; U.S. Law)</div>' +
+    '<div class="terms-title"><span>⚖</span>'+pdfStr('TERMS &amp; CONDITIONS — BINDING CONTRACT','TÉRMINOS Y CONDICIONES — CONTRATO VINCULANTE')+' (' + sl.n + ' &amp; '+pdfStr('U.S. Law','Ley Federal de EE.UU.')+')</div>' +
     '<div class="terms-body">' +
-      '<p class="clause"><strong>1. Payment &amp; Late Fees.</strong> Payments are due per schedule above. Balances unpaid after the due date accrue interest at 1.5% per month (18% per year), or the maximum rate permitted by applicable law. Contractor may stop all work without penalty if any payment is 5 days past due, and Client shall be liable for all costs of remobilization.</p>' +
-      '<p class="clause"><strong>2. Construction Trust Fund.</strong> All funds received by Contractor shall be applied to payment of subcontractors, laborers, and material suppliers for this project. Misappropriation of construction funds is a criminal offense under applicable state law and may give rise to civil liability and personal liability of the principals involved.</p>' +
-      '<p class="clause"><strong>3. Change Orders.</strong> Any change to scope, materials, or schedule must be agreed in writing via a signed Change Order before work begins. Verbal changes do not bind Contractor. Additional work is billed at Contractor\'s then-current rates plus 20% overhead and profit.</p>' +
-      '<p class="clause"><strong>4. Mechanics\' Lien Rights.</strong> Contractor expressly reserves all mechanics\' lien rights under ' + sl.ls + '. A conditional lien waiver will be issued with each payment; an unconditional lien waiver only upon receipt of the final payment in full. Client waives any claim against Contractor for filing a valid lien. Preliminary notice requirements vary by state; Contractor shall comply with all applicable notice deadlines to preserve lien rights.</p>' +
-      '<p class="clause"><strong>5. Client Responsibilities.</strong> Client shall provide clear, unobstructed access to all work areas, adequate utilities, and a safe working environment. Delays caused by Client\'s failure to meet these obligations will extend the schedule and may result in additional daily standby charges of $350/day.</p>' +
-      '<p class="clause"><strong>6. Client-Caused Delays.</strong> If Contractor\'s work is delayed by Client, other trades, inspectors, or conditions beyond Contractor\'s control, the completion date is extended by an equal period and Contractor is entitled to reasonable additional compensation for extended overhead and remobilization costs.</p>' +
-      '<p class="clause"><strong>7. Termination by Client.</strong> If Client terminates this contract for any reason other than Contractor\'s material uncured breach, Client shall pay: (a) all work completed to date at contract rates; (b) all materials ordered or on site; (c) 20% of the remaining contract balance as lost profit and overhead compensation. This remedy is agreed and reasonable under UCC § 2-708.</p>' +
-      '<p class="clause"><strong>8. Termination by Contractor.</strong> Contractor may terminate for non-payment, unsafe site conditions, or Client\'s material breach. Upon termination, all amounts due through the termination date become immediately payable, plus demobilization costs.</p>' +
-      '<p class="clause"><strong>9. Material Price Escalation.</strong> If material costs increase more than 5% from the date of this contract due to market conditions, tariffs, or supply chain disruptions, Contractor may adjust the contract price accordingly with 5 days\' written notice to Client.</p>' +
-      '<p class="clause"><strong>10. Warranty.</strong> Contractor warrants all workmanship for one (1) year from substantial completion. Warranty is void if Client or third parties alter, repair, or modify the work without Contractor\'s written consent. This warranty is in lieu of all other warranties, express or implied.</p>' +
-      '<p class="clause"><strong>11. Pre-Existing Conditions.</strong> Contractor is not responsible for damage to or cost of correcting pre-existing defects, code violations, mold, asbestos, hidden utilities, or structural issues discovered during work. Discovery of such conditions constitutes a changed condition and may result in a Change Order.</p>' +
-      '<p class="clause"><strong>12. Indemnification.</strong> Client shall indemnify, defend, and hold harmless Contractor and its employees from any claims, losses, or liabilities arising from (a) pre-existing site conditions; (b) Client\'s negligence or intentional acts; or (c) Client\'s failure to disclose known hazardous conditions. This clause survives contract completion.</p>' +
-      '<p class="clause"><strong>13. Limitation of Liability.</strong> Contractor\'s maximum liability for any claim shall not exceed the total amount paid to Contractor under this contract. Contractor is not liable for consequential, incidental, special, or punitive damages of any kind.</p>' +
-      '<p class="clause"><strong>14. Retainage.</strong> Unless otherwise agreed in writing, Client shall not withhold more than 10% of any payment as retainage, or such lesser amount as required by applicable state law. Retainage shall be released within 30 days of substantial completion and acceptance of the work.</p>' +
-      '<p class="clause"><strong>15. Attorney\'s Fees.</strong> In any legal action to enforce this contract, the prevailing party shall be entitled to recover reasonable attorney\'s fees, court costs, and collection expenses from the non-prevailing party. This clause is intended to discourage non-payment.</p>' +
-      '<p class="clause"><strong>16. Dispute Resolution.</strong> Parties agree to attempt mediation before litigation. If mediation fails, disputes shall be resolved by binding arbitration under AAA Construction Industry Rules, or at Contractor\'s election, in ' + sl.v + ', which both parties submit to as exclusive jurisdiction and venue.</p>' +
-      '<p class="clause"><strong>17. Entire Agreement.</strong> This contract, including any attached Change Orders and exhibits, constitutes the entire agreement between the parties. No oral representations or prior agreements are binding. Amendments must be in writing signed by both parties.</p>' +
-      '<p class="clause"><strong>18. Severability &amp; Waiver.</strong> If any provision is held unenforceable, the remaining provisions remain in full force. Failure to enforce any provision is not a waiver of future enforcement rights.</p>' +
+      '<p class="clause"><strong>1. '+pdfStr('Payment &amp; Late Fees.','Pagos y Cargos por Mora.')+'</strong> '+pdfStr('Payments are due per schedule above. Balances unpaid after the due date accrue interest at 1.5% per month (18% per year), or the maximum rate permitted by applicable law. Contractor may stop all work without penalty if any payment is 5 days past due, and Client shall be liable for all costs of remobilization.','Los pagos se realizarán conforme al calendario establecido. Los saldos no pagados a su vencimiento generarán intereses al 1.5% mensual (18% anual), o la tasa máxima permitida por la ley aplicable. El Contratista podrá suspender todos los trabajos sin penalidad si algún pago tiene más de 5 días de retraso, siendo el Cliente responsable de todos los costos de removilización.')+'</p>' +
+      '<p class="clause"><strong>2. '+pdfStr('Construction Trust Fund.','Fondo Fiduciario de Construcción.')+'</strong> '+pdfStr('All funds received by Contractor shall be applied to payment of subcontractors, laborers, and material suppliers for this project. Misappropriation of construction funds is a criminal offense under applicable state law and may give rise to civil liability and personal liability of the principals involved.','Todos los fondos recibidos por el Contratista se destinarán al pago de subcontratistas, trabajadores y proveedores de materiales de este proyecto. La malversación de fondos de construcción constituye un delito penal bajo la ley estatal aplicable y puede generar responsabilidad civil y personal de los directivos involucrados.')+'</p>' +
+      '<p class="clause"><strong>3. '+pdfStr('Change Orders.','Órdenes de Cambio.')+'</strong> '+pdfStr('Any change to scope, materials, or schedule must be agreed in writing via a signed Change Order before work begins. Verbal changes do not bind Contractor. Additional work is billed at Contractor\'s then-current rates plus 20% overhead and profit.','Cualquier cambio en el alcance, materiales o cronograma deberá ser acordado por escrito mediante una Orden de Cambio firmada antes de que comience el trabajo. Los cambios verbales no obligan al Contratista. El trabajo adicional se facturará a las tarifas vigentes del Contratista más un 20% de gastos generales y ganancia.')+'</p>' +
+      '<p class="clause"><strong>4. '+pdfStr('Mechanics\' Lien Rights.','Derechos de Gravamen Mecánico.')+'</strong> '+pdfStr('Contractor expressly reserves all mechanics\' lien rights under ','El Contratista se reserva expresamente todos los derechos de gravamen mecánico bajo ')+ sl.ls + pdfStr('. A conditional lien waiver will be issued with each payment; an unconditional lien waiver only upon receipt of the final payment in full. Client waives any claim against Contractor for filing a valid lien.','. Se emitirá una renuncia condicional de gravamen con cada pago; una renuncia incondicional solo al recibir el pago final en su totalidad. El Cliente renuncia a cualquier reclamación contra el Contratista por presentar un gravamen válido.')+'</p>' +
+      '<p class="clause"><strong>5. '+pdfStr('Client Responsibilities.','Responsabilidades del Cliente.')+'</strong> '+pdfStr('Client shall provide clear, unobstructed access to all work areas, adequate utilities, and a safe working environment. Delays caused by Client\'s failure to meet these obligations will extend the schedule and may result in additional daily standby charges of $350/day.','El Cliente deberá proporcionar acceso libre y sin obstáculos a todas las áreas de trabajo, servicios adecuados y un entorno de trabajo seguro. Los retrasos causados por el incumplimiento del Cliente de estas obligaciones extenderán el cronograma y podrán resultar en cargos adicionales de espera de $350/día.')+'</p>' +
+      '<p class="clause"><strong>6. '+pdfStr('Client-Caused Delays.','Retrasos Causados por el Cliente.')+'</strong> '+pdfStr('If Contractor\'s work is delayed by Client, other trades, inspectors, or conditions beyond Contractor\'s control, the completion date is extended by an equal period and Contractor is entitled to reasonable additional compensation for extended overhead and remobilization costs.','Si el trabajo del Contratista es retrasado por el Cliente, otros oficios, inspectores o condiciones fuera del control del Contratista, la fecha de terminación se extiende por igual período y el Contratista tiene derecho a compensación adicional razonable por gastos generales extendidos y costos de removilización.')+'</p>' +
+      '<p class="clause"><strong>7. '+pdfStr('Termination by Client.','Rescisión por el Cliente.')+'</strong> '+pdfStr('If Client terminates this contract for any reason other than Contractor\'s material uncured breach, Client shall pay: (a) all work completed to date at contract rates; (b) all materials ordered or on site; (c) 20% of the remaining contract balance as lost profit and overhead compensation. This remedy is agreed and reasonable under UCC § 2-708.','Si el Cliente rescinde este contrato por cualquier razón distinta a un incumplimiento material no subsanado del Contratista, el Cliente deberá pagar: (a) todo el trabajo completado hasta la fecha a las tarifas del contrato; (b) todos los materiales pedidos o en el sitio; (c) el 20% del saldo restante del contrato como compensación por pérdida de ganancias y gastos generales. Este remedio es acordado y razonable bajo el UCC § 2-708.')+'</p>' +
+      '<p class="clause"><strong>8. '+pdfStr('Termination by Contractor.','Rescisión por el Contratista.')+'</strong> '+pdfStr('Contractor may terminate for non-payment, unsafe site conditions, or Client\'s material breach. Upon termination, all amounts due through the termination date become immediately payable, plus demobilization costs.','El Contratista podrá rescindir por falta de pago, condiciones inseguras en el sitio o incumplimiento material del Cliente. Ante la rescisión, todos los montos adeudados hasta la fecha de rescisión serán inmediatamente exigibles, más los costos de desmovilización.')+'</p>' +
+      '<p class="clause"><strong>9. '+pdfStr('Material Price Escalation.','Escalada de Precios de Materiales.')+'</strong> '+pdfStr('If material costs increase more than 5% from the date of this contract due to market conditions, tariffs, or supply chain disruptions, Contractor may adjust the contract price accordingly with 5 days\' written notice to Client.','Si los costos de materiales aumentan más del 5% desde la fecha de este contrato debido a condiciones de mercado, aranceles o interrupciones en la cadena de suministro, el Contratista podrá ajustar el precio del contrato con 5 días de aviso previo por escrito al Cliente.')+'</p>' +
+      '<p class="clause"><strong>10. '+pdfStr('Warranty.','Garantía.')+'</strong> '+pdfStr('Contractor warrants all workmanship for one (1) year from substantial completion. Warranty is void if Client or third parties alter, repair, or modify the work without Contractor\'s written consent. This warranty is in lieu of all other warranties, express or implied.','El Contratista garantiza todos los trabajos por un (1) año a partir de la terminación sustancial. La garantía será nula si el Cliente o terceros alteran, reparan o modifican el trabajo sin el consentimiento escrito del Contratista. Esta garantía sustituye a todas las demás garantías, expresas o implícitas.')+'</p>' +
+      '<p class="clause"><strong>11. '+pdfStr('Pre-Existing Conditions.','Condiciones Preexistentes.')+'</strong> '+pdfStr('Contractor is not responsible for damage to or cost of correcting pre-existing defects, code violations, mold, asbestos, hidden utilities, or structural issues discovered during work. Discovery of such conditions constitutes a changed condition and may result in a Change Order.','El Contratista no es responsable de daños ni del costo de corregir defectos preexistentes, violaciones de código, moho, asbesto, servicios ocultos o problemas estructurales descubiertos durante el trabajo. El descubrimiento de tales condiciones constituye una condición modificada y puede resultar en una Orden de Cambio.')+'</p>' +
+      '<p class="clause"><strong>12. '+pdfStr('Indemnification.','Indemnización.')+'</strong> '+pdfStr('Client shall indemnify, defend, and hold harmless Contractor and its employees from any claims, losses, or liabilities arising from (a) pre-existing site conditions; (b) Client\'s negligence or intentional acts; or (c) Client\'s failure to disclose known hazardous conditions. This clause survives contract completion.','El Cliente deberá indemnizar, defender y eximir de responsabilidad al Contratista y sus empleados de cualquier reclamación, pérdida o responsabilidad derivada de (a) condiciones preexistentes del sitio; (b) negligencia o actos intencionales del Cliente; o (c) el incumplimiento del Cliente de divulgar condiciones peligrosas conocidas. Esta cláusula sobrevive a la finalización del contrato.')+'</p>' +
+      '<p class="clause"><strong>13. '+pdfStr('Limitation of Liability.','Limitación de Responsabilidad.')+'</strong> '+pdfStr('Contractor\'s maximum liability for any claim shall not exceed the total amount paid to Contractor under this contract. Contractor is not liable for consequential, incidental, special, or punitive damages of any kind.','La responsabilidad máxima del Contratista por cualquier reclamación no excederá el monto total pagado al Contratista bajo este contrato. El Contratista no será responsable de daños consecuentes, incidentales, especiales o punitivos de ningún tipo.')+'</p>' +
+      '<p class="clause"><strong>14. '+pdfStr('Retainage.','Retención.')+'</strong> '+pdfStr('Unless otherwise agreed in writing, Client shall not withhold more than 10% of any payment as retainage, or such lesser amount as required by applicable state law. Retainage shall be released within 30 days of substantial completion and acceptance of the work.','A menos que se acuerde lo contrario por escrito, el Cliente no retendrá más del 10% de cualquier pago como retención, o el monto menor requerido por la ley estatal aplicable. La retención se liberará dentro de los 30 días siguientes a la terminación sustancial y aceptación del trabajo.')+'</p>' +
+      '<p class="clause"><strong>15. '+pdfStr('Attorney\'s Fees.','Honorarios de Abogados.')+'</strong> '+pdfStr('In any legal action to enforce this contract, the prevailing party shall be entitled to recover reasonable attorney\'s fees, court costs, and collection expenses from the non-prevailing party. This clause is intended to discourage non-payment.','En cualquier acción legal para hacer cumplir este contrato, la parte prevaleciente tendrá derecho a recuperar honorarios razonables de abogados, costas judiciales y gastos de cobranza de la parte no prevaleciente. Esta cláusula tiene como objetivo desalentar el incumplimiento de pago.')+'</p>' +
+      '<p class="clause"><strong>16. '+pdfStr('Dispute Resolution.','Resolución de Controversias.')+'</strong> '+pdfStr('Parties agree to attempt mediation before litigation. If mediation fails, disputes shall be resolved by binding arbitration under AAA Construction Industry Rules, or at Contractor\'s election, in ','Las partes acuerdan intentar la mediación antes de litigar. Si la mediación fracasa, las disputas se resolverán mediante arbitraje vinculante bajo las Reglas de la Industria de Construcción de la AAA, o a elección del Contratista, en ')+ sl.v + pdfStr(', which both parties submit to as exclusive jurisdiction and venue.',', jurisdicción y sede exclusiva a la que ambas partes se someten.')+'</p>' +
+      '<p class="clause"><strong>17. '+pdfStr('Entire Agreement.','Acuerdo Completo.')+'</strong> '+pdfStr('This contract, including any attached Change Orders and exhibits, constitutes the entire agreement between the parties. No oral representations or prior agreements are binding. Amendments must be in writing signed by both parties.','Este contrato, incluyendo las Órdenes de Cambio y anexos adjuntos, constituye el acuerdo completo entre las partes. Ninguna declaración verbal o acuerdo previo es vinculante. Las modificaciones deben constar por escrito y ser firmadas por ambas partes.')+'</p>' +
+      '<p class="clause"><strong>18. '+pdfStr('Severability &amp; Waiver.','Divisibilidad y Renuncia.')+'</strong> '+pdfStr('If any provision is held unenforceable, the remaining provisions remain in full force. Failure to enforce any provision is not a waiver of future enforcement rights.','Si alguna disposición es declarada inaplicable, las disposiciones restantes permanecerán en plena vigencia. El no hacer cumplir cualquier disposición no constituye una renuncia a los derechos de aplicación futuros.')+'</p>' +
     '</div>' +
   '</div>' +
 
   receiptSection +
   '<div class="bottom-grid">' +
-    '<div class="bottom-box"><h3><span>✎</span>CONTRACTOR SIGNATURE</h3>' +
+    '<div class="bottom-box"><h3><span>✎</span>'+pdfStr('CONTRACTOR SIGNATURE','FIRMA DEL CONTRATISTA')+'</h3>' +
       ((c.signatures&&c.signatures.authorized) ? '<img src="'+c.signatures.authorized+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
-      '<div class="sig-line">Authorized Signature &amp; Date</div>' +
+      '<div class="sig-line">'+pdfStr('Authorized Signature &amp; Date','Firma Autorizada y Fecha')+'</div>' +
       '<div class="sig-name">' + escapeHtml(p.companyName) + '</div>' +
-      '<div class="sig-line" style="margin-top:18px;">Printed Name &amp; Title</div>' +
+      '<div class="sig-line" style="margin-top:18px;">'+pdfStr('Printed Name &amp; Title','Nombre y Cargo')+'</div>' +
     '</div>' +
-    '<div class="bottom-box"><h3><span>✎</span>CLIENT SIGNATURE</h3>' +
+    '<div class="bottom-box"><h3><span>✎</span>'+pdfStr('CLIENT SIGNATURE','FIRMA DEL CLIENTE')+'</h3>' +
       ((c.signatures&&c.signatures.client) ? '<img src="'+c.signatures.client+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
-      '<div class="sig-line">Client Signature &amp; Date</div>' +
+      '<div class="sig-line">'+pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha')+'</div>' +
       '<div class="sig-name">' + escapeHtml(c.clientName) + '</div>' +
-      '<div class="sig-line" style="margin-top:18px;">Printed Name</div>' +
+      '<div class="sig-line" style="margin-top:18px;">'+pdfStr('Printed Name','Nombre')+'</div>' +
     '</div>' +
   '</div>' +
 
   '<div class="footer">' +
-    '<div>📍 ' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · Licensed &amp; Insured</div>' +
+    '<div>📍 ' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
     '<div>☎ ' + escapeHtml(p.companyPhone) + ' · ✉ ' + escapeHtml(p.companyEmail) + '</div>' +
   '</div>' +
-  '<div class="copyright">This is a legally binding contract governed by the laws of ' + sl.n + ' and applicable federal law · © 2026 ' + escapeHtml(p.companyName) + ' · All rights reserved</div>' +
+  '<div class="copyright">'+pdfStr('This is a legally binding contract governed by the laws of ','Este es un contrato legalmente vinculante regido por las leyes de ') + sl.n + pdfStr(' and applicable federal law · © 2026 ',' y la ley federal aplicable · © 2026 ') + escapeHtml(p.companyName) + pdfStr(' · All rights reserved',' · Todos los derechos reservados') + '</div>' +
   '</body></html>';
   return injectAccentColors(contractHtml);
 }
@@ -4136,7 +4370,7 @@ function doPDFContract() {
   var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
   var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
   if (window.AndroidBridge) { AndroidBridge.saveHtmlAsPdf(html, name); }
-  else { showToast('AndroidBridge not connected'); }
+  else { showToast(t('toastBridgeError')); }
 }
 
 function doPrintContract() {
@@ -4145,7 +4379,7 @@ function doPrintContract() {
   var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
   var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
   if (window.AndroidBridge) { AndroidBridge.printHtml(html, name); }
-  else { showToast('AndroidBridge not connected'); }
+  else { showToast(t('toastBridgeError')); }
 }
 
 function getEstimateDoc(est) {
@@ -4196,27 +4430,27 @@ function getEstimateDoc(est) {
   +'.photos img{height:110px;width:auto;max-width:160px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;margin-right:6px;}'
   +'@media print{body{padding:0}}'
   +'</style></head><body>'
-  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>'+(p.companyLocation?escapeHtml(p.companyLocation)+' · ':'')+'Licensed &amp; Insured</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
-  +'<div class="est-box"><h2>ESTIMATE</h2><div class="er"><strong>Estimate #:</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>Date:</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>Valid Until:</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
-  +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>CLIENT INFORMATION</div><div class="cb"><div class="il"><strong>Client:</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>Project:</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>Address:</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
-  +'<div class="info-card"><div class="ct"><span>▣</span>SCOPE OF WORK</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
-  +'<div class="cost-card"><div class="ct"><span>$</span>PROJECT COSTS</div><table><tr><th>Description</th><th>Total</th></tr>'
-  +(unit>0?'<tr><td>Unit Pricing ('+esc(est.unitType||'')+')</td><td>'+fm(unit)+'</td></tr>':'')
-  +(labor>0?'<tr><td>Labor</td><td>'+fm(labor)+'</td></tr>':'')
-  +(mat>0?'<tr><td>Materials</td><td>'+fm(mat)+'</td></tr>':'')
+  +(function(){ var p=getProfile(); return '<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1><p>'+(p.companyLocation?escapeHtml(p.companyLocation)+' · ':'')+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</p><p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'; })()
+  +'<div class="est-box"><h2>'+pdfStr('ESTIMATE','ESTIMADO')+'</h2><div class="er"><strong>'+pdfStr('Estimate #:','Estimado #:')+'</strong><span>'+esc(est.estNum||'-')+'</span></div><div class="er"><strong>'+pdfStr('Date:','Fecha:')+'</strong><span>'+esc(dateStr||est.date||'-')+'</span></div><div class="er"><strong>'+pdfStr('Valid Until:','Válido Hasta:')+'</strong><span>'+esc(est.validUntil||'-')+'</span></div></div></div>'
+  +'<div class="cards"><div class="info-card"><div class="ct"><span>●</span>'+pdfStr('CLIENT INFORMATION','INFORMACIÓN DEL CLIENTE')+'</div><div class="cb"><div class="il"><strong>'+pdfStr('Client:','Cliente:')+'</strong><div>'+esc(est.client||'-')+'</div></div><div class="il"><strong>'+pdfStr('Project:','Proyecto:')+'</strong><div>'+esc(est.project||'-')+'</div></div><div class="il"><strong>'+pdfStr('Address:','Dirección:')+'</strong><div>'+esc(est.address||'-')+'</div></div></div></div>'
+  +'<div class="info-card"><div class="ct"><span>▣</span>'+pdfStr('SCOPE OF WORK','ALCANCE DEL TRABAJO')+'</div><div class="cb"><ul style="margin-left:14px;">'+(est.scope||'-').split('\n').map(function(x){return '<li>'+esc(x.trim()||'-')+'</li>';}).join('')+'</ul></div></div></div>'
+  +'<div class="cost-card"><div class="ct"><span>$</span>'+pdfStr('PROJECT COSTS','COSTOS DEL PROYECTO')+'</div><table><tr><th>'+pdfStr('Description','Descripción')+'</th><th>'+pdfStr('Total','Total')+'</th></tr>'
+  +(unit>0?'<tr><td>'+pdfStr('Unit Pricing (','Precio Unitario (')+esc(est.unitType||'')+')</td><td>'+fm(unit)+'</td></tr>':'')
+  +(labor>0?'<tr><td>'+pdfStr('Labor','Mano de Obra')+'</td><td>'+fm(labor)+'</td></tr>':'')
+  +(mat>0?'<tr><td>'+pdfStr('Materials','Materiales')+'</td><td>'+fm(mat)+'</td></tr>':'')
   +matRows+otherRows
-  +'<tr style="font-weight:800;"><td>Subtotal</td><td>'+fm(sub)+'</td></tr>'
-  +'<tr style="font-weight:800;"><td>Tax ('+taxP+'%)</td><td>'+fm(tax)+'</td></tr>'
-  +(dep>0?'<tr class="dep"><td>Deposit Paid</td><td>-'+fm(dep)+'</td></tr>':'')
-  +'<tr class="bal"><td>BALANCE DUE</td><td>'+fm(bal)+'</td></tr></table></div>'
-  +(receipts.length>0?'<div class="photos"><div>📷 DEPOSIT RECEIPT'+(receipts.length>1?'S':'')+'</div>'+receipts.map(function(s){return '<img src="'+s+'">';}).join('')+'</div>':'')
-  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CONTRACTOR SIGNATURE</h3>'
+  +'<tr style="font-weight:800;"><td>'+pdfStr('Subtotal','Subtotal')+'</td><td>'+fm(sub)+'</td></tr>'
+  +'<tr style="font-weight:800;"><td>'+pdfStr('Tax (','Impuesto (')+taxP+'%)</td><td>'+fm(tax)+'</td></tr>'
+  +(dep>0?'<tr class="dep"><td>'+pdfStr('Deposit Paid','Depósito Pagado')+'</td><td>-'+fm(dep)+'</td></tr>':'')
+  +'<tr class="bal"><td>'+pdfStr('BALANCE DUE','SALDO A PAGAR')+'</td><td>'+fm(bal)+'</td></tr></table></div>'
+  +(receipts.length>0?'<div class="photos"><div>📷 '+pdfStr('DEPOSIT RECEIPT'+(receipts.length>1?'S':''),'COMPROBANTE'+(receipts.length>1?'S':'')+' DE DEPÓSITO')+'</div>'+receipts.map(function(s){return '<img src="'+s+'">';}).join('')+'</div>':'')
+  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ '+pdfStr('CONTRACTOR SIGNATURE','FIRMA DEL CONTRATISTA')+'</h3>'
   +((est.signatures&&est.signatures.authorized)?'<img src="'+est.signatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
-  +'<div class="sig-line">Authorized Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div>'
-  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ CLIENT SIGNATURE</h3>'
+  +'<div class="sig-line">'+pdfStr('Authorized Signature &amp; Date','Firma Autorizada y Fecha')+'</div><div class="sig-line" style="margin-top:16px;">'+pdfStr('Printed Name','Nombre')+'</div></div>'
+  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ '+pdfStr('CLIENT SIGNATURE','FIRMA DEL CLIENTE')+'</h3>'
   +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
-  +'<div class="sig-line">Client Signature &amp; Date</div><div class="sig-line" style="margin-top:16px;">Printed Name</div></div></div>'
-  +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · Licensed &amp; Insured</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · All rights reserved</div>'; })()
+  +'<div class="sig-line">'+pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha')+'</div><div class="sig-line" style="margin-top:16px;">'+pdfStr('Printed Name','Nombre')+'</div></div></div>'
+  +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · '+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · '+pdfStr('All rights reserved','Todos los derechos reservados')+'</div>'; })()
   +'</body></html>';
   return injectAccentColors(estDocHtml);
 }
