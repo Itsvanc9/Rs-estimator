@@ -600,6 +600,49 @@
 
   .footer { margin-top: 16px; font-size: 10px; color: var(--n400); text-align: center; padding: 12px 20px 8px; letter-spacing: 0.2px; }
 
+  /* ── COLOR PICKER ── */
+  .color-picker-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:30000;display:none;align-items:flex-end;justify-content:center; }
+  .color-picker-overlay.open { display:flex; }
+  .color-picker-sheet { background:var(--card-bg);border-radius:20px 20px 0 0;padding:24px 20px 36px;width:100%;max-width:480px;box-shadow:var(--shadow-lg); }
+  .cp-title { font-weight:800;font-size:16px;color:var(--text);margin-bottom:4px; }
+  .cp-sub { font-size:12px;color:var(--muted);margin-bottom:20px; }
+  .cp-swatches { display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px; }
+  .cp-swatch { border-radius:16px;aspect-ratio:1;cursor:pointer;border:3px solid transparent;transition:transform 0.15s,border-color 0.15s;display:flex;align-items:center;justify-content:center;font-size:18px; }
+  .cp-swatch.active { border-color:#fff;transform:scale(1.08);box-shadow:0 0 0 2px var(--text); }
+  .cp-custom-row { display:flex;align-items:center;gap:12px;margin-bottom:20px; }
+  .cp-custom-label { font-size:13px;font-weight:600;color:var(--text);flex:1; }
+  .cp-custom-input { width:44px;height:44px;border-radius:12px;border:1px solid var(--border);cursor:pointer;padding:2px;background:none; }
+
+  /* ── CALENDAR ── */
+  .cal-nav { display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; }
+  .cal-month-label { font-weight:800;font-size:15px;color:var(--text); }
+  .cal-nav-btn { background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:10px;padding:6px 14px;font-size:14px;font-weight:700;cursor:pointer; }
+  .cal-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:3px; }
+  .cal-dow { text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding:4px 0; }
+  .cal-day { min-height:46px;border-radius:10px;padding:4px;cursor:pointer;transition:background 0.15s;position:relative; }
+  .cal-day:hover { background:var(--lime-light); }
+  .cal-day.today { background:var(--lime-mid);font-weight:800; }
+  .cal-day.has-job { background:var(--lime-light); }
+  .cal-day-num { font-size:12px;font-weight:600;color:var(--text2);line-height:1; }
+  .cal-dots { display:flex;flex-wrap:wrap;gap:2px;margin-top:3px; }
+  .cal-dot { width:7px;height:7px;border-radius:50%;background:var(--lime);flex-shrink:0; }
+  .cal-dot.status-completed { background:#10b981; }
+  .cal-dot.status-active { background:var(--lime); }
+  .cal-dot.status-pending { background:#f59e0b; }
+  .cal-job-list { margin-top:14px;display:flex;flex-direction:column;gap:8px; }
+  .cal-job-item { background:var(--lime-light);border:1px solid var(--lime);border-radius:12px;padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px; }
+  .cal-job-dot { width:10px;height:10px;border-radius:50%;flex-shrink:0; }
+  .cal-job-info { flex:1; }
+  .cal-job-client { font-weight:700;font-size:13px;color:var(--text); }
+  .cal-job-meta { font-size:11px;color:var(--muted);margin-top:1px; }
+  .cal-empty { text-align:center;color:var(--muted);font-size:13px;padding:24px 0; }
+
+  /* ── JOB DATES in contract detail ── */
+  .cd-dates-row { display:flex;gap:10px;margin-bottom:10px; }
+  .cd-date-field { flex:1;display:flex;flex-direction:column;gap:4px; }
+  .cd-date-field label { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px; }
+  .cd-date-field input[type=date] { width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit; }
+
   /* ══════════════════════════════════════════
      SPLASH SCREEN
   ══════════════════════════════════════════ */
@@ -769,6 +812,20 @@
   </div>
 </div>
 
+<!-- ═══════════ COLOR PICKER ═══════════ -->
+<div class="color-picker-overlay" id="colorPickerOverlay" onclick="if(event.target===this)closeColorPicker()">
+  <div class="color-picker-sheet">
+    <div class="cp-title">🎨 App Colors</div>
+    <div class="cp-sub">Choose your accent color — applies everywhere</div>
+    <div class="cp-swatches" id="cpSwatches"></div>
+    <div class="cp-custom-row">
+      <span class="cp-custom-label">Custom color</span>
+      <input type="color" class="cp-custom-input" id="cpCustom" oninput="applyAccent(this.value,'custom')">
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="closeColorPicker()">Done</button>
+  </div>
+</div>
+
 <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
 <div class="settings-panel" id="settingsPanel">
   <div class="settings-head">
@@ -785,6 +842,7 @@
           <div class="toggle-knob"></div>
         </div>
       </div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="openColorPicker()">🎨 App Colors</button>
     </div>
 
     <div class="setting-section">
@@ -1210,6 +1268,18 @@
       </div>
     </div>
 
+    <!-- Job Calendar -->
+    <div class="op-card">
+      <div class="op-card-title">📅 Job Schedule</div>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="moveCalMonth(-1)">‹</button>
+        <span class="cal-month-label" id="calMonthLabel"></span>
+        <button class="cal-nav-btn" onclick="moveCalMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-job-list" id="calJobList"></div>
+    </div>
+
   </div>
 </div>
 
@@ -1261,6 +1331,21 @@
         <div class="cd-section-title">Payment Progress</div>
         <div class="cd-progress-bar-lg"><div class="cd-progress-fill-lg" id="cdProgressFill" style="width:0%"></div></div>
         <div class="cd-progress-pct" id="cdProgressPct">0% collected</div>
+      </div>
+    </div>
+
+    <!-- Job Dates -->
+    <div>
+      <div class="cd-section-title">📅 Job Dates</div>
+      <div class="cd-dates-row">
+        <div class="cd-date-field">
+          <label>Start Date</label>
+          <input type="date" id="cdJobStart" onchange="saveContractDates()">
+        </div>
+        <div class="cd-date-field">
+          <label>End Date</label>
+          <input type="date" id="cdJobEnd" onchange="saveContractDates()">
+        </div>
       </div>
     </div>
 
@@ -1643,6 +1728,169 @@ function updateDarkToggleUI() {
   let isDark = document.body.getAttribute('data-theme') === 'dark';
   let wrap = $('darkToggle');
   if (wrap) wrap.className = 'toggle-wrap' + (isDark ? ' on' : '');
+}
+
+// ═══════════════════════════════════════════════════════
+// COLOR PICKER
+// ═══════════════════════════════════════════════════════
+var ACCENT_PRESETS = [
+  { key:'lime',   hex:'#84cc16', dark:'#5a8c0a', label:'🌿' },
+  { key:'blue',   hex:'#3b82f6', dark:'#1d4ed8', label:'💙' },
+  { key:'purple', hex:'#8b5cf6', dark:'#6d28d9', label:'💜' },
+  { key:'orange', hex:'#f97316', dark:'#c2410c', label:'🟠' },
+  { key:'red',    hex:'#ef4444', dark:'#b91c1c', label:'❤️' },
+  { key:'teal',   hex:'#14b8a6', dark:'#0f766e', label:'🩵' },
+  { key:'pink',   hex:'#ec4899', dark:'#be185d', label:'🩷' },
+  { key:'gold',   hex:'#eab308', dark:'#a16207', label:'⭐' },
+];
+
+function hexToRgb(hex) {
+  var r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+function darkenHex(hex) {
+  var r = Math.max(0,parseInt(hex.slice(1,3),16)-60);
+  var g = Math.max(0,parseInt(hex.slice(3,5),16)-60);
+  var b = Math.max(0,parseInt(hex.slice(5,7),16)-60);
+  return '#'+[r,g,b].map(function(v){return v.toString(16).padStart(2,'0');}).join('');
+}
+function applyAccent(hex, key) {
+  var preset = ACCENT_PRESETS.find(function(p){return p.key===key;});
+  var dark = preset ? preset.dark : darkenHex(hex);
+  var rgb = hexToRgb(hex);
+  var root = document.documentElement.style;
+  root.setProperty('--lime',      hex);
+  root.setProperty('--lime-dark', dark);
+  root.setProperty('--lime-light','rgba('+rgb+',0.1)');
+  root.setProperty('--lime-mid',  'rgba('+rgb+',0.2)');
+  root.setProperty('--lime-glow', 'rgba('+rgb+',0.18)');
+  localStorage.setItem('RS_ACCENT', JSON.stringify({hex:hex, key:key||'custom'}));
+  renderSwatches();
+}
+function loadAccent() {
+  var saved = localStorage.getItem('RS_ACCENT');
+  if (!saved) return;
+  try { var a = JSON.parse(saved); applyAccent(a.hex, a.key); } catch(e) {}
+}
+function renderSwatches() {
+  var saved = localStorage.getItem('RS_ACCENT');
+  var activeKey = saved ? (JSON.parse(saved).key || 'lime') : 'lime';
+  var el = $('cpSwatches'); if (!el) return;
+  el.innerHTML = ACCENT_PRESETS.map(function(p) {
+    return '<div class="cp-swatch'+(activeKey===p.key?' active':'')+'" style="background:'+p.hex+';" onclick="applyAccent(\''+p.hex+'\',\''+p.key+'\')">'+p.label+'</div>';
+  }).join('');
+}
+function openColorPicker() {
+  renderSwatches();
+  var saved = localStorage.getItem('RS_ACCENT');
+  if (saved) { try { $('cpCustom').value = JSON.parse(saved).hex; } catch(e){} }
+  $('colorPickerOverlay').classList.add('open');
+}
+function closeColorPicker() {
+  $('colorPickerOverlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════
+// JOB CALENDAR
+// ═══════════════════════════════════════════════════════
+var calYear  = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+
+function saveContractDates() {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  c.jobStart = $('cdJobStart').value;
+  c.jobEnd   = $('cdJobEnd').value;
+  saveContracts(contracts);
+}
+
+function moveCalMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  renderScheduleCalendar();
+}
+
+function renderScheduleCalendar() {
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  var lbl = $('calMonthLabel'); if (!lbl) return;
+  lbl.textContent = MONTHS[calMonth] + ' ' + calYear;
+
+  var contracts = getContracts().filter(function(c){ return c.jobStart; });
+  var today = new Date(); today.setHours(0,0,0,0);
+  var firstDay = new Date(calYear, calMonth, 1).getDay();
+  var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  // Map each day → contracts active that day
+  var dayMap = {};
+  contracts.forEach(function(c) {
+    var start = new Date(c.jobStart+'T00:00:00');
+    var end   = c.jobEnd ? new Date(c.jobEnd+'T00:00:00') : start;
+    for (var d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+      if (d.getFullYear()===calYear && d.getMonth()===calMonth) {
+        var day = d.getDate();
+        if (!dayMap[day]) dayMap[day] = [];
+        dayMap[day].push(c);
+      }
+    }
+  });
+
+  var grid = $('calGrid'); if (!grid) return;
+  var html = DAYS.map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
+
+  // Empty cells before first day
+  for (var i=0;i<firstDay;i++) html += '<div class="cal-day"></div>';
+
+  for (var day=1; day<=daysInMonth; day++) {
+    var dateObj = new Date(calYear, calMonth, day);
+    var isToday = dateObj.getTime()===today.getTime();
+    var jobs = dayMap[day] || [];
+    var cls = 'cal-day' + (isToday?' today':'') + (jobs.length?' has-job':'');
+    html += '<div class="'+cls+'" onclick="calDayClick('+day+')">' +
+      '<div class="cal-day-num">'+day+'</div>' +
+      (jobs.length ? '<div class="cal-dots">'+jobs.slice(0,4).map(function(c){
+        return '<div class="cal-dot status-'+c.status+'"></div>';
+      }).join('')+'</div>' : '') +
+    '</div>';
+  }
+  grid.innerHTML = html;
+
+  // Job list for this month
+  var monthJobs = contracts.filter(function(c) {
+    var s = new Date(c.jobStart+'T00:00:00');
+    return s.getFullYear()===calYear && s.getMonth()===calMonth;
+  }).sort(function(a,b){ return a.jobStart.localeCompare(b.jobStart); });
+
+  var list = $('calJobList'); if (!list) return;
+  if (monthJobs.length===0) {
+    list.innerHTML = '<div class="cal-empty">No jobs scheduled this month</div>';
+  } else {
+    var statusColor = {active:'var(--lime)',completed:'#10b981',pending:'#f59e0b'};
+    list.innerHTML = monthJobs.map(function(c){
+      var col = statusColor[c.status]||'var(--lime)';
+      return '<div class="cal-job-item" onclick="closeOwnerPage();setTimeout(function(){openContractDetail(\''+c.id+'\')},200)">' +
+        '<div class="cal-job-dot" style="background:'+col+'"></div>' +
+        '<div class="cal-job-info">' +
+          '<div class="cal-job-client">'+escapeHtml(c.clientName)+'</div>' +
+          '<div class="cal-job-meta">'+c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'')+(c.projectName?' · '+escapeHtml(c.projectName):'')+'</div>' +
+        '</div>' +
+        '<span style="font-size:11px;color:'+col+';font-weight:700;text-transform:capitalize;">'+c.status+'</span>' +
+      '</div>';
+    }).join('');
+  }
+}
+
+function calDayClick(day) {
+  var contracts = getContracts().filter(function(c){
+    if (!c.jobStart) return false;
+    var s = new Date(c.jobStart+'T00:00:00');
+    var e = c.jobEnd ? new Date(c.jobEnd+'T00:00:00') : s;
+    var d = new Date(calYear, calMonth, day);
+    return d>=s && d<=e;
+  });
+  if (contracts.length===1) { closeOwnerPage(); setTimeout(function(){openContractDetail(contracts[0].id);},200); }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -2156,6 +2404,9 @@ function openOwnerPage() {
     updateTotal();
     refreshOwnerStats();
     renderSalesChart();
+    calYear = new Date().getFullYear();
+    calMonth = new Date().getMonth();
+    renderScheduleCalendar();
   } catch(e) {}
   var el = $('ownerPage');
   el.classList.add('open');
@@ -3125,6 +3376,8 @@ function openContractDetail(id) {
   $('cdClientName').textContent = c.clientName;
   $('cdProjectName').textContent = c.estNum + (c.projectName ? ' · ' + c.projectName : '');
   $('cdTotal').textContent   = '$' + fmtMoney(c.totalAmount);
+  $('cdJobStart').value = c.jobStart || '';
+  $('cdJobEnd').value   = c.jobEnd   || '';
   $('cdPaid').textContent    = '$' + fmtMoney(paid);
   $('cdBalance').textContent = '$' + fmtMoney(Math.max(0, balance));
   $('cdProgressFill').style.width = pct + '%';
@@ -3899,6 +4152,7 @@ function navTo(tab) {
   let theme = localStorage.getItem('RS_THEME') || 'light';
   document.body.setAttribute('data-theme', theme);
   updateDarkToggleUI();
+  loadAccent();
 
   // Restore language
   setLanguage(currentLang);
