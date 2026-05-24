@@ -1282,7 +1282,6 @@
     <div class="ep-tabs">
       <button class="ep-tab active" id="epTabEstimates" onclick="switchEpTab('estimates')">📋 Estimates <span class="saved-badge" id="savedCount2">0</span></button>
       <button class="ep-tab" id="epTabContracts" onclick="switchEpTab('contracts')">📜 Contracts <span class="saved-badge" id="contractCount">0</span></button>
-      <button class="ep-tab" id="epTabSchedule" onclick="switchEpTab('schedule')">📅 Schedule</button>
     </div>
   </div>
   <div class="estimates-page-body">
@@ -1297,7 +1296,19 @@
     <div id="epContractsPanel" style="display:none;">
       <div id="contractsList"></div>
     </div>
-    <div id="epSchedulePanel" style="display:none;padding:4px 0;">
+  </div>
+</div>
+
+<!-- CALENDAR PAGE -->
+<div id="calendarPage" class="estimates-page" style="display:none;">
+  <div class="estimates-page-header">
+    <div class="ep-header-row">
+      <span class="estimates-page-title">📅 Schedule</span>
+      <button class="estimates-page-back" onclick="closeCalendarPage()">✕ Close</button>
+    </div>
+  </div>
+  <div class="estimates-page-body">
+    <div style="padding:4px 0;">
       <div class="cal-nav">
         <button class="cal-nav-btn" onclick="moveCalMonth(-1)">‹</button>
         <span class="cal-month-label" id="calMonthLabel"></span>
@@ -1618,6 +1629,10 @@
     <div class="nav-icon">📨</div>
     <div class="nav-label">Share</div>
   </button>
+  <button class="nav-tab" id="navCalendar" onclick="openCalendarPage()">
+    <div class="nav-icon">📅</div>
+    <div class="nav-label">Schedule</div>
+  </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
     <div class="nav-label">Settings</div>
@@ -1873,6 +1888,23 @@ function populateTeamSuggestions(contracts) {
   var teams = {};
   (contracts||getContracts()).forEach(function(c){ if(c.team) teams[c.team]=1; });
   ds.innerHTML = Object.keys(teams).map(function(t){return '<option value="'+escapeHtml(t)+'">'+escapeHtml(t)+'</option>';}).join('');
+}
+
+function openCalendarPage() {
+  history.pushState({ panel: 'calendarPage' }, '');
+  calYear  = new Date().getFullYear();
+  calMonth = new Date().getMonth();
+  var el = $('calendarPage');
+  el.style.display = 'block';
+  el.scrollTop = 0;
+  renderScheduleCalendar();
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
+  var nc = $('navCalendar'); if (nc) nc.classList.add('active');
+}
+function closeCalendarPage() {
+  $('calendarPage').style.display = 'none';
+  document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
 }
 
 function moveCalMonth(dir) {
@@ -3342,16 +3374,10 @@ function importBackup(e) {
 function switchEpTab(tab) {
   $('epTabEstimates').classList.toggle('active', tab==='estimates');
   $('epTabContracts').classList.toggle('active', tab==='contracts');
-  $('epTabSchedule').classList.toggle('active', tab==='schedule');
+
   $('epEstimatesPanel').style.display = tab==='estimates' ? '' : 'none';
   $('epContractsPanel').style.display = tab==='contracts'  ? '' : 'none';
-  $('epSchedulePanel').style.display  = tab==='schedule'   ? '' : 'none';
   if (tab==='contracts') renderContracts();
-  if (tab==='schedule') {
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    renderScheduleCalendar();
-  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4303,6 +4329,7 @@ function navTo(tab) {
     if ($('ownerPage') && $('ownerPage').classList.contains('open')) { closeOwnerPage(); return; }
     if ($('settingsPanel') && $('settingsPanel').classList.contains('open')) { closeSettings(); return; }
     if ($('estimatesPage') && $('estimatesPage').classList.contains('open')) { closeEstimatesPage(); return; }
+    if ($('calendarPage') && $('calendarPage').style.display !== 'none') { closeCalendarPage(); return; }
   });
 })();
 </script>
