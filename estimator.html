@@ -3534,7 +3534,7 @@ function getContractShareText(c) {
 function doShareSend(method) {
   closeShareModal();
   // Try to share as PDF file if bridge supports it
-  if (window.AndroidBridge) {
+  if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
     var doc = _getShareDoc();
     if (doc) {
       AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
@@ -4550,8 +4550,10 @@ function getEstimateDoc(est) {
   +'th:last-child,td:last-child{text-align:right;}td{padding:7px 12px;border-bottom:1px solid #e5e7eb;font-size:11.5px;}'
   +'.bal{background:#84cc16;}.bal td{font-size:16px;font-weight:900;color:#0f172a;border-bottom:none;}'
   +'.dep td:last-child{color:#dc2626;font-weight:800;}'
-  +'.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;}'
-  +'.sig-line{border-top:1px solid #111827;margin-top:28px;padding-top:4px;font-size:10px;color:#475569;}'
+  +'.sig-grid{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:12px;margin-top:12px;}'
+  +'.sig-line{border-top:1px solid #111827;margin-top:18px;padding-top:4px;font-size:10px;color:#475569;}'
+  +'.bh{font-size:11px;margin:0 0 5px;border-bottom:2px solid #84cc16;padding-bottom:3px;}'
+  +'.bp{font-size:11px;line-height:1.4;margin:0 0 4px;}'
   +'.footer{margin-top:10px;border-top:2px solid #0f172a;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10.5px;}'
   +'.photos{margin-top:10px;padding:10px 14px;background:#f8fdf0;border:1px solid #c6e89a;border-radius:8px;}'
   +'.photos div{font-weight:800;font-size:11px;color:#365314;margin-bottom:8px;}'
@@ -4572,12 +4574,23 @@ function getEstimateDoc(est) {
   +(dep>0?'<tr class="dep"><td>'+pdfStr('Deposit Paid','Depósito Pagado')+'</td><td>-'+fm(dep)+'</td></tr>':'')
   +'<tr class="bal"><td>'+pdfStr('BALANCE DUE','SALDO A PAGAR')+'</td><td>'+fm(bal)+'</td></tr></table></div>'
   +(receipts.length>0?'<div class="photos"><div>📷 '+pdfStr('DEPOSIT RECEIPT'+(receipts.length>1?'S':''),'COMPROBANTE'+(receipts.length>1?'S':'')+' DE DEPÓSITO')+'</div>'+receipts.map(function(s){return '<img src="'+s+'">';}).join('')+'</div>':'')
-  +'<div class="sig-grid"><div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ '+pdfStr('CONTRACTOR SIGNATURE','FIRMA DEL CONTRATISTA')+'</h3>'
+  +'<div class="sig-grid">'
+  +'<div><h3 class="bh"><span style="color:#84cc16;margin-right:4px;">▣</span>'+pdfStr('NOTES','NOTAS')+'</h3>'
+  +'<p class="bp">'+esc(est.notes||pdfStr('Standard installation and cleanup included.','Instalación estándar y limpieza incluida.'))+'</p>'
+  +'<p class="bp">'+pdfStr('Additional repairs or change orders may affect pricing.','Reparaciones adicionales u órdenes de cambio pueden afectar el precio.')+'</p>'
+  +'<p class="bp">'+pdfStr('Thank you for the opportunity!','¡Gracias por la oportunidad!')+'</p>'
+  +'</div>'
+  +'<div><h3 class="bh"><span style="color:#84cc16;margin-right:4px;">🛡</span>'+pdfStr('TERMS &amp; CONDITIONS','TÉRMINOS Y CONDICIONES')+'</h3>'
+  +'<p class="bp">'+pdfStr('This estimate is valid until the date listed above.','Este estimado es válido hasta la fecha indicada arriba.')+'</p>'
+  +'<p class="bp">'+pdfStr('Final pricing may change if work description, materials, or site conditions change.','El precio final puede cambiar si la descripción del trabajo, materiales o condiciones del sitio cambian.')+'</p>'
+  +'<p class="bp">'+pdfStr('A deposit may be required before scheduling work.','Puede requerirse un depósito antes de programar el trabajo.')+'</p>'
+  +'</div>'
+  +'<div><h3 class="bh"><span style="color:#84cc16;margin-right:4px;">✎</span>'+pdfStr('SIGNATURES','FIRMAS')+'</h3>'
   +((est.signatures&&est.signatures.authorized)?'<img src="'+est.signatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
-  +'<div class="sig-line">'+pdfStr('Authorized Signature &amp; Date','Firma Autorizada y Fecha')+'</div><div class="sig-line" style="margin-top:16px;">'+pdfStr('Printed Name','Nombre')+'</div></div>'
-  +'<div><h3 style="font-size:11px;margin:0 0 4px;border-bottom:2px solid #84cc16;padding-bottom:3px;">✎ '+pdfStr('CLIENT SIGNATURE','FIRMA DEL CLIENTE')+'</h3>'
-  +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">':'')
-  +'<div class="sig-line">'+pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha')+'</div><div class="sig-line" style="margin-top:16px;">'+pdfStr('Printed Name','Nombre')+'</div></div></div>'
+  +'<div class="sig-line">'+pdfStr('Authorized Signature','Firma del Contratista')+'</div>'
+  +((est.signatures&&est.signatures.client)?'<img src="'+est.signatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-top:10px;margin-bottom:2px;">':'')
+  +'<div class="sig-line">'+pdfStr('Client Signature','Firma del Cliente')+'</div>'
+  +'</div></div>'
   +(function(){ var p=getProfile(); return '<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · '+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</div><div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'+'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · '+pdfStr('All rights reserved','Todos los derechos reservados')+'</div>'; })()
   +'</body></html>';
   return injectAccentColors(estDocHtml);
