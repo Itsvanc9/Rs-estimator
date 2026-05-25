@@ -3533,15 +3533,33 @@ function getContractShareText(c) {
 
 function doShareSend(method) {
   closeShareModal();
-  // Try to share as PDF file if bridge supports it
+  var doc = _getShareDoc();
+  if (!doc) { showToast(t('toastDocNotFound')||'Document not found'); return; }
+
+  // 1. Native Android PDF bridge (new APK)
   if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
-    var doc = _getShareDoc();
-    if (doc) {
-      AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
-      return;
-    }
+    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
+    return;
   }
-  // Fallback: plain-text share (browser / no bridge)
+
+  // 2. Web Share API — shares HTML file via native Android share sheet
+  if (typeof navigator.share === 'function') {
+    try {
+      var blob = new Blob([doc.html], { type: 'text/html' });
+      var file = new File([blob], doc.name + '.html', { type: 'text/html' });
+      var shareData = { files: [file], title: doc.name };
+      if (typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
+        navigator.share(shareData).catch(function() { _doTextShare(method); });
+        return;
+      }
+    } catch(e) {}
+  }
+
+  // 3. Text fallback (legacy APK / desktop browser)
+  _doTextShare(method);
+}
+
+function _doTextShare(method) {
   var text = '', title = '';
   if (_shareDocType === 'contract') {
     var c = getContracts().find(function(x){ return x.id === _shareDocId; });
