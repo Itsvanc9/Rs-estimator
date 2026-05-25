@@ -330,6 +330,56 @@ public class MainActivity extends BridgeActivity {
         }
 
         @JavascriptInterface
+        public void shareHtmlAsImage(final String html, final String name, final String channel) {
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    final WebView iv = new WebView(MainActivity.this);
+                    iv.getSettings().setJavaScriptEnabled(true);
+                    iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
+                    iv.setWebViewClient(new WebViewClient() {
+                        public void onPageFinished(WebView view, String url) {
+                            int width = 1080;
+                            int height = Math.max(view.getContentHeight(), 400);
+                            if (height > 8000) height = 8000;
+                            view.layout(0, 0, width, height);
+                            try {
+                                android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(
+                                    width, height, android.graphics.Bitmap.Config.ARGB_8888);
+                                android.graphics.Canvas c = new android.graphics.Canvas(bmp);
+                                c.drawColor(android.graphics.Color.WHITE);
+                                view.draw(c);
+                                String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                File imgFile = new File(getCacheDir(), safeName + ".png");
+                                FileOutputStream fos = new FileOutputStream(imgFile);
+                                bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, fos);
+                                fos.close();
+                                bmp.recycle();
+                                Uri uri = FileProvider.getUriForFile(
+                                    MainActivity.this, getPackageName() + ".fileprovider", imgFile);
+                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                intent.setType("image/png");
+                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                if ("whatsapp".equals(channel)) {
+                                    intent.setPackage("com.whatsapp");
+                                }
+                                try {
+                                    startActivity(intent);
+                                } catch (Exception e) {
+                                    startActivity(Intent.createChooser(intent, "Share"));
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(MainActivity.this,
+                                    "Error al generar imagen", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void shareHtmlAsPdf(final String html, final String name, final String channel) {
             runOnUiThread(new Runnable() {
                 public void run() {

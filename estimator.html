@@ -3536,27 +3536,89 @@ function doShareSend(method) {
   var doc = _getShareDoc();
   if (!doc) { showToast(t('toastDocNotFound')||'Document not found'); return; }
 
-  // 1. Native Android PDF bridge (new APK)
+  // 1. Native PDF bridge (new APK with shareHtmlAsPdf)
   if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
     AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
     return;
   }
 
-  // 2. Web Share API — shares HTML file via native Android share sheet
-  if (typeof navigator.share === 'function') {
-    try {
-      var blob = new Blob([doc.html], { type: 'text/html' });
-      var file = new File([blob], doc.name + '.html', { type: 'text/html' });
-      var shareData = { files: [file], title: doc.name };
-      if (typeof navigator.canShare === 'function' && navigator.canShare(shareData)) {
-        navigator.share(shareData).catch(function() { _doTextShare(method); });
-        return;
-      }
-    } catch(e) {}
+  // 2. Native image bridge (new APK with shareHtmlAsImage)
+  if (window.AndroidBridge && AndroidBridge.shareHtmlAsImage) {
+    AndroidBridge.shareHtmlAsImage(doc.html, doc.name, method);
+    return;
   }
 
-  // 3. Text fallback (legacy APK / desktop browser)
-  _doTextShare(method);
+  // 3. Render HTML → canvas (pure JS, no library) → share as PNG image
+  showToast('Generando imagen...');
+  _renderDocToBlob(doc.html, function(imgBlob) {
+    if (!imgBlob) { _doTextShare(method); return; }
+    var imgFile = new File([imgBlob], doc.name + '.png', { type: 'image/png' });
+
+    // 3a. Web Share API with image (works on modern Android WebView)
+    if (typeof navigator.share === 'function') {
+      var sd = { files: [imgFile], title: doc.name };
+      if (typeof navigator.canShare === 'function' && navigator.canShare(sd)) {
+        navigator.share(sd).catch(function() { _doTextShare(method); });
+        return;
+      }
+    }
+
+    // 3b. Save PNG to Downloads gallery via existing bridge
+    if (window.AndroidBridge && AndroidBridge.saveBase64File) {
+      var reader = new FileReader();
+      reader.onload = function(ev) {
+        AndroidBridge.saveBase64File(ev.target.result, doc.name + '.png', 'image/png');
+        showToast('Imagen guardada en Descargas');
+        setTimeout(function() { _doTextShare(method); }, 900);
+      };
+      reader.readAsDataURL(imgBlob);
+      return;
+    }
+
+    // 4. Plain-text fallback
+    _doTextShare(method);
+  });
+}
+
+// Render full HTML document to PNG Blob using SVG foreignObject (no external library)
+function _renderDocToBlob(html, cb) {
+  try {
+    // Strip base64 src to avoid canvas security errors; hide broken imgs with CSS
+    var clean = html.replace(/src="data:[^"]*"/gi, 'src=""');
+    var parser = new DOMParser();
+    var parsed = parser.parseFromString(clean, 'text/html');
+    var styles = [].slice.call(parsed.querySelectorAll('style'))
+      .map(function(s) { return s.textContent; }).join('');
+    styles += 'img[src=""]{display:none!important}';
+    var bodyHtml = parsed.body ? parsed.body.innerHTML : clean;
+    var W = 820, H = 2600;
+    var svgStr = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '">'
+      + '<foreignObject width="100%" height="100%">'
+      + '<html xmlns="http://www.w3.org/1999/xhtml"><head><style>'
+      + 'body{margin:0;padding:14px;background:#fff;font-family:Arial,sans-serif;}'
+      + styles
+      + '</style></head><body>' + bodyHtml + '</body></html>'
+      + '</foreignObject></svg>';
+    var svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    var svgUrl = URL.createObjectURL(svgBlob);
+    var img = new Image();
+    img.onload = function() {
+      setTimeout(function() { // allow foreignObject to finish rendering
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = W; canvas.height = H;
+          var ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, W, H);
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(svgUrl);
+          canvas.toBlob(function(b) { cb(b); }, 'image/png', 0.92);
+        } catch(e) { URL.revokeObjectURL(svgUrl); cb(null); }
+      }, 700);
+    };
+    img.onerror = function() { URL.revokeObjectURL(svgUrl); cb(null); };
+    img.src = svgUrl;
+  } catch(e) { cb(null); }
 }
 
 function _doTextShare(method) {
@@ -3577,6 +3639,7 @@ function _doTextShare(method) {
     _openIntentUrl('intent://compose?subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end');
   }
 }
+
 
 function closeShareModal() { $('shareModalOverlay').style.display = 'none'; }
 
