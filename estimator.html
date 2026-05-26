@@ -4082,7 +4082,7 @@ function acceptEstimate(id) {
 
 function updateContractCount() {
   var cc = $('contractCount');
-  if (cc) cc.innerText = getContracts().filter(function(c){ return c.status==='active'; }).length;
+  if (cc) cc.innerText = getContracts().filter(function(c){ return c.status!=='completed'; }).length;
 }
 
 function renderContracts() {
@@ -4109,7 +4109,7 @@ function renderContracts() {
       '</div>' +
       '<div class="contract-card-footer">' +
         '<button class="btn btn-primary btn-sm" onclick="openContractDetail(\'' + c.id + '\')">📋 ' + t('viewDetailsBtn') + '</button>' +
-        (c.status==='active' ? '<button class="btn btn-light btn-sm" onclick="markContractComplete(\'' + c.id + '\')">✓ ' + t('markCompleteBtn') + '</button>' : '<span style="font-size:11px;color:var(--muted);padding:4px 8px;">' + t('completedLabel') + '</span>') +
+        (c.status!=='completed' ? '<button class="btn btn-light btn-sm" onclick="markContractComplete(\'' + c.id + '\')">✓ ' + t('markCompleteBtn') + '</button>' : '<span style="font-size:11px;color:var(--muted);padding:4px 8px;">' + t('completedLabel') + '</span>') +
         '<button class="btn btn-danger btn-sm" onclick="deleteContract(\'' + c.id + '\')">🗑️</button>' +
       '</div>' +
     '</div>';
@@ -4311,6 +4311,7 @@ function openJobDaySheet(day) {
     '</div>';
   }).join('') + '<div style="height:14px;"></div>';
 
+  history.pushState({ panel: 'jobDaySheet' }, '');
   $('jobDaySheet').style.display = 'flex';
 }
 

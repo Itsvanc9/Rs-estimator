@@ -497,6 +497,7 @@ public class AndroidBridge {
                                                             MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
                                                     if (dlUri == null) throw new Exception("MediaStore insert failed");
                                                     OutputStream dlOs = context.getContentResolver().openOutputStream(dlUri);
+                                                    if (dlOs == null) throw new Exception("MediaStore openOutputStream returned null");
                                                     document.writeTo(dlOs);
                                                     dlOs.close();
                                                     shareUri = dlUri;
