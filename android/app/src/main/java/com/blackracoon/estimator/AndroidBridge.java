@@ -289,7 +289,7 @@ public class AndroidBridge {
                                         mostrarMensaje("Error al imprimir");
                                     }
                                 }
-                            }, 800);
+                            }, 400);
                         }
                     });
 
@@ -393,7 +393,7 @@ public class AndroidBridge {
                                     mostrarMensaje("Error al generar imagen");
                                 }
                             }
-                        }, 800);
+                        }, 400);
                     }
                 });
             }
@@ -500,7 +500,7 @@ public class AndroidBridge {
                                     mostrarMensaje("Error generando PDF");
                                 }
                             }
-                        }, 800);
+                        }, 400);
                     }
                 });
             }
