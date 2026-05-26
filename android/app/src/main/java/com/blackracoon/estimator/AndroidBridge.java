@@ -316,11 +316,11 @@ public class AndroidBridge {
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
                 final int imgW = 1080;
+                final int physW = (int)(imgW * activity.getResources().getDisplayMetrics().density);
                 final WebView iv = new WebView(activity);
                 iv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 iv.getSettings().setJavaScriptEnabled(true);
-                // Fix viewport so content renders at imgW CSS px on any screen density
-                activity.addContentView(iv, new ViewGroup.LayoutParams(imgW, 10000));
+                activity.addContentView(iv, new ViewGroup.LayoutParams(physW, 10000));
                 iv.loadDataWithBaseURL("file:///android_asset/",
                         injectViewport(html, imgW), "text/html", "UTF-8", null);
                 iv.setWebViewClient(new WebViewClient() {
@@ -329,8 +329,8 @@ public class AndroidBridge {
                             @Override public void run() {
                                 try {
                                     int h = Math.min(Math.max(view.getContentHeight(), 400), 10000);
-                                    view.layout(0, 0, imgW, h);
-                                    final Bitmap bmp = Bitmap.createBitmap(imgW, h, Bitmap.Config.ARGB_8888);
+                                    view.layout(0, 0, physW, h);
+                                    final Bitmap bmp = Bitmap.createBitmap(physW, h, Bitmap.Config.ARGB_8888);
                                     Canvas c = new Canvas(bmp);
                                     c.drawColor(Color.WHITE);
                                     view.draw(c);
@@ -359,7 +359,6 @@ public class AndroidBridge {
                                                             context.getContentResolver(), bmp, safeName, name);
                                                     if (uriStr != null) imgUri = Uri.parse(uriStr);
                                                 }
-                                                bmp.recycle();
                                                 if (imgUri == null) { mostrarMensaje("Error guardando imagen"); return; }
                                                 final Intent intent = new Intent(Intent.ACTION_SEND);
                                                 intent.setType("image/png");
@@ -374,7 +373,11 @@ public class AndroidBridge {
                                                         }
                                                     }
                                                 });
-                                            } catch (Exception e) { mostrarMensaje("Error al guardar imagen"); }
+                                            } catch (Exception e) {
+                                                mostrarMensaje("Error al guardar imagen");
+                                            } finally {
+                                                if (!bmp.isRecycled()) bmp.recycle();
+                                            }
                                         }
                                     }).start();
                                 } catch (OutOfMemoryError oom) {
@@ -406,11 +409,11 @@ public class AndroidBridge {
                 final int pageW = 794;
                 final int pageH = 1123;
                 final int maxH  = 15000;
+                final int physW = (int)(pageW * activity.getResources().getDisplayMetrics().density);
                 final WebView pv = new WebView(activity);
                 pv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 pv.getSettings().setJavaScriptEnabled(true);
-                // Fix viewport so content renders at pageW CSS px on any screen density
-                activity.addContentView(pv, new ViewGroup.LayoutParams(pageW, maxH));
+                activity.addContentView(pv, new ViewGroup.LayoutParams(physW, maxH));
                 pv.loadDataWithBaseURL("file:///android_asset/",
                         injectViewport(html, pageW), "text/html", "UTF-8", null);
                 pv.setWebViewClient(new WebViewClient() {
@@ -419,9 +422,9 @@ public class AndroidBridge {
                             @Override public void run() {
                                 try {
                                     final int totalH = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
-                                    pv.layout(0, 0, pageW, totalH);
+                                    pv.layout(0, 0, physW, totalH);
                                     // Draw WebView ONCE to bitmap — single render pass
-                                    final Bitmap bmp = Bitmap.createBitmap(pageW, totalH, Bitmap.Config.ARGB_8888);
+                                    final Bitmap bmp = Bitmap.createBitmap(physW, totalH, Bitmap.Config.ARGB_8888);
                                     Canvas bmpCanvas = new Canvas(bmp);
                                     bmpCanvas.drawColor(Color.WHITE);
                                     pv.draw(bmpCanvas);
@@ -445,12 +448,11 @@ public class AndroidBridge {
                                                     Canvas canvas = page.getCanvas();
                                                     canvas.drawColor(Color.WHITE);
                                                     android.graphics.Rect src = new android.graphics.Rect(
-                                                            0, yOff, pageW, Math.min(yOff + thisH, bmp.getHeight()));
+                                                            0, yOff, physW, Math.min(yOff + thisH, bmp.getHeight()));
                                                     canvas.drawBitmap(bmp, src,
                                                             new android.graphics.RectF(0, 0, pageW, thisH), null);
                                                     document.finishPage(page);
                                                 }
-                                                bmp.recycle();
                                                 String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
                                                 File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
                                                 FileOutputStream fos = new FileOutputStream(pdfFile);
@@ -477,6 +479,8 @@ public class AndroidBridge {
                                                 });
                                             } catch (Exception e) {
                                                 mostrarMensaje("Error al guardar PDF");
+                                            } finally {
+                                                if (!bmp.isRecycled()) bmp.recycle();
                                             }
                                         }
                                     }).start();

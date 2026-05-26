@@ -2971,8 +2971,8 @@ var cameraContext = 'receipt';
 
 function openCamera(context) {
   cameraContext = context || 'receipt';
-  if (window.AndroidBridge && AndroidBridge.takePhoto) {
-    AndroidBridge.takePhoto();
+  if (window.AndroidBridge && window.AndroidBridge.takePhoto) {
+    window.AndroidBridge.takePhoto();
   } else if (context === 'payReceipt') $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
   else $('receiptInput').click();
@@ -3390,11 +3390,11 @@ body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background
 
 function doPDF() {
   if (!window.AndroidBridge) { showToast(t('toastBridgeError')); return; }
-  AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
+  window.AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 function doPrint() {
   if (!window.AndroidBridge) { showToast(t('toastBridgeError')); return; }
-  AndroidBridge.printHtml(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
+  window.AndroidBridge.printHtml(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
 }
 
 function getEstimateShareText() {
@@ -3518,9 +3518,9 @@ function _getShareDoc() {
 
 function _openIntentUrl(url) {
   var a = document.createElement('a');
-  a.href = url; a.style.display = 'none';
+  a.href = url; a.style.position = 'fixed'; a.style.left = '-9999px';
   document.body.appendChild(a); a.click();
-  setTimeout(function(){ document.body.removeChild(a); }, 500);
+  setTimeout(function(){ if (document.body.contains(a)) document.body.removeChild(a); }, 500);
 }
 
 function getContractShareText(c) {
@@ -3807,8 +3807,8 @@ function exportBackup() {
     RS_CONTRACTS: JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]')
   };
   var filename = 'RS_backup_' + new Date().toISOString().slice(0,10) + '.json';
-  if (window.AndroidBridge && AndroidBridge.saveTextFile) {
-    AndroidBridge.saveTextFile(JSON.stringify(data), filename, 'application/json');
+  if (window.AndroidBridge && window.AndroidBridge.saveTextFile) {
+    window.AndroidBridge.saveTextFile(JSON.stringify(data), filename, 'application/json');
   } else {
     showToast(t('toastBridgeError'));
   }
@@ -4620,7 +4620,7 @@ function doPDFContract() {
   if (!c) return;
   var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
   var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
-  if (window.AndroidBridge) { AndroidBridge.saveHtmlAsPdf(html, name); }
+  if (window.AndroidBridge) { window.AndroidBridge.saveHtmlAsPdf(html, name); }
   else { showToast(t('toastBridgeError')); }
 }
 
@@ -4629,7 +4629,7 @@ function doPrintContract() {
   if (!c) return;
   var html = _viewerType==='estimate' && c.estimateData ? getEstimateDoc(c.estimateData) : getContractDoc(c);
   var name = (_viewerType==='estimate'?'Estimate_':'Contract_') + (c.estNum||'RS');
-  if (window.AndroidBridge) { AndroidBridge.printHtml(html, name); }
+  if (window.AndroidBridge) { window.AndroidBridge.printHtml(html, name); }
   else { showToast(t('toastBridgeError')); }
 }
 
