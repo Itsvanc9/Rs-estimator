@@ -315,17 +315,20 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
+                final int imgW = 1080;
                 final WebView iv = new WebView(activity);
+                iv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 iv.getSettings().setJavaScriptEnabled(true);
-                activity.addContentView(iv, new ViewGroup.LayoutParams(1, 1));
+                // Add at full target width + max height so all content renders on first pass
+                activity.addContentView(iv, new ViewGroup.LayoutParams(imgW, 10000));
                 iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 iv.setWebViewClient(new WebViewClient() {
                     @Override public void onPageFinished(WebView view, String url) {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int w = 1080;
-                                    int h = Math.min(Math.max(view.getContentHeight(), 400), 8000);
+                                    int w = imgW;
+                                    int h = Math.min(Math.max(view.getContentHeight(), 400), 10000);
                                     view.layout(0, 0, w, h);
                                     Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                                     Canvas c = new Canvas(bmp);
@@ -388,17 +391,19 @@ public class AndroidBridge {
             @Override public void run() {
                 final int pageW = 794;  // A4 width at 96 dpi
                 final int pageH = 1123; // A4 height at 96 dpi
+                final int maxH  = 15000;
                 final WebView pv = new WebView(activity);
                 pv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 pv.getSettings().setJavaScriptEnabled(true);
-                activity.addContentView(pv, new ViewGroup.LayoutParams(pageW, pageH));
+                // Add at full page width + max height so all content renders on first pass
+                activity.addContentView(pv, new ViewGroup.LayoutParams(pageW, maxH));
                 pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 pv.setWebViewClient(new WebViewClient() {
                     @Override public void onPageFinished(WebView view, String url) {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int totalH = Math.min(Math.max(pv.getContentHeight(), 200), 20000);
+                                    int totalH = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
                                     pv.layout(0, 0, pageW, totalH);
 
                                     android.graphics.pdf.PdfDocument document =
