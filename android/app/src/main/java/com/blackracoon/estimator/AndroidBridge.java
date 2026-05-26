@@ -459,21 +459,39 @@ public class AndroidBridge {
                                                     document.finishPage(page);
                                                 }
                                                 String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
-                                                File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
-                                                FileOutputStream fos = new FileOutputStream(pdfFile);
-                                                document.writeTo(fos);
-                                                fos.close();
+                                                final Uri shareUri;
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                                    // API 29+: save to MediaStore Downloads.
+                                                    // This gives a content://media URI that Gmail,
+                                                    // WhatsApp and every other app can read without
+                                                    // custom permission grants.
+                                                    ContentValues cv = new ContentValues();
+                                                    cv.put(MediaStore.Downloads.DISPLAY_NAME, safeName + ".pdf");
+                                                    cv.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
+                                                    cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                                                    Uri dlUri = context.getContentResolver().insert(
+                                                            MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                                                    if (dlUri == null) throw new Exception("MediaStore insert failed");
+                                                    OutputStream dlOs = context.getContentResolver().openOutputStream(dlUri);
+                                                    document.writeTo(dlOs);
+                                                    dlOs.close();
+                                                    shareUri = dlUri;
+                                                } else {
+                                                    // API < 29: write to cache and use custom provider
+                                                    File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
+                                                    FileOutputStream fos = new FileOutputStream(pdfFile);
+                                                    document.writeTo(fos);
+                                                    fos.close();
+                                                    shareUri = Uri.parse(
+                                                            "content://com.blackracoon.estimator.rsprovider"
+                                                            + pdfFile.getAbsolutePath());
+                                                }
                                                 document.close();
-                                                final Uri uri = Uri.parse(
-                                                        "content://com.blackracoon.estimator.rsprovider"
-                                                        + pdfFile.getAbsolutePath());
                                                 final Intent intent = new Intent(Intent.ACTION_SEND);
                                                 intent.setType("application/pdf");
-                                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                                intent.putExtra(Intent.EXTRA_STREAM, shareUri);
                                                 intent.putExtra(Intent.EXTRA_SUBJECT, name);
-                                                // ClipData is required so URI read permission
-                                                // propagates to whichever app the chooser launches
-                                                intent.setClipData(ClipData.newRawUri("", uri));
+                                                intent.setClipData(ClipData.newRawUri("", shareUri));
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                                 if ("whatsapp".equals(channel)) {
                                                     intent.setPackage("com.whatsapp");
