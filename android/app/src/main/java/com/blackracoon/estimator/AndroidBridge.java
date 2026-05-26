@@ -68,7 +68,7 @@ public class AndroidBridge {
                 try {
                     activity.startActivityForResult(intent, REQUEST_BACKUP);
                 } catch (Exception e) {
-                    mostrarMensaje("Error al abrir selector");
+                    showToastByKey("toastErrOpenSelector");
                 }
             }
         });
@@ -93,7 +93,7 @@ public class AndroidBridge {
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
                     if (pendingPhotoUri == null) {
-                        mostrarMensaje("Error preparando cámara");
+                        showToastByKey("toastErrPrepCamera");
                         return;
                     }
 
@@ -105,7 +105,7 @@ public class AndroidBridge {
                     intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", false);
                     activity.startActivityForResult(intent, REQUEST_CAMERA);
                 } catch (Exception e) {
-                    mostrarMensaje("Error al abrir cámara");
+                    showToastByKey("toastErrOpenCamera");
                 }
             }
         });
@@ -121,10 +121,10 @@ public class AndroidBridge {
 
             try {
                 Uri uri = data.getData();
-                if (uri == null) { mostrarMensaje("No se seleccionó archivo"); return; }
+                if (uri == null) { showToastByKey("toastNoFileSelected"); return; }
 
                 InputStream is = context.getContentResolver().openInputStream(uri);
-                if (is == null) { mostrarMensaje("No se pudo leer el archivo"); return; }
+                if (is == null) { showToastByKey("toastErrReadFile"); return; }
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buffer = new byte[4096];
@@ -136,7 +136,7 @@ public class AndroidBridge {
                 webView.evaluateJavascript("importBackupBase64('" + base64Json + "')", null);
 
             } catch (Exception e) {
-                mostrarMensaje("Error al leer archivo");
+                showToastByKey("toastErrReadFile");
             }
         }
 
@@ -146,7 +146,7 @@ public class AndroidBridge {
 
             try {
                 InputStream is = context.getContentResolver().openInputStream(pendingPhotoUri);
-                if (is == null) { mostrarMensaje("No se pudo leer la foto"); return; }
+                if (is == null) { showToastByKey("toastErrReadPhoto"); return; }
 
                 // Decode and scale down to ~1200px max dimension
                 BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -154,7 +154,7 @@ public class AndroidBridge {
                 Bitmap bitmap = BitmapFactory.decodeStream(is, null, opts);
                 is.close();
 
-                if (bitmap == null) { mostrarMensaje("Error procesando foto"); return; }
+                if (bitmap == null) { showToastByKey("toastErrProcessPhoto"); return; }
 
                 // Scale to max 1200px
                 int maxDim = 1200;
@@ -184,7 +184,7 @@ public class AndroidBridge {
                 });
 
             } catch (Exception e) {
-                mostrarMensaje("Error guardando foto");
+                showToastByKey("toastErrSavePhoto");
             } finally {
                 pendingPhotoUri = null;
             }
@@ -214,9 +214,9 @@ public class AndroidBridge {
                     OutputStream os = context.getContentResolver().openOutputStream(uri);
                     os.write(bytes);
                     os.close();
-                    mostrarMensaje("✅ Backup guardado");
+                    showToastByKey("toastBackupSaved");
                 } else {
-                    mostrarMensaje("❌ No se pudo crear backup");
+                    showToastByKey("toastBackupFailed");
                 }
 
             } else {
@@ -229,11 +229,11 @@ public class AndroidBridge {
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(bytes);
                 fos.close();
-                mostrarMensaje("✅ Backup guardado");
+                showToastByKey("toastBackupSaved");
             }
 
         } catch (Exception e) {
-            mostrarMensaje("❌ Error guardando backup");
+            showToastByKey("toastBackupError");
         }
     }
 
@@ -287,7 +287,7 @@ public class AndroidBridge {
                                                 .build();
                                         printManager.print(filename, adapter, attributes);
                                     } catch (Exception e) {
-                                        mostrarMensaje("Error al imprimir");
+                                        showToastByKey("toastErrPrint");
                                     }
                                 }
                             }, 400);
@@ -298,7 +298,7 @@ public class AndroidBridge {
                             "file:///android_asset/", htmlContent, "text/html", "UTF-8", null);
 
                 } catch (Exception e) {
-                    mostrarMensaje("Error preparando impresión");
+                    showToastByKey("toastErrPrepPrint");
                 }
             }
         });
@@ -361,7 +361,7 @@ public class AndroidBridge {
                                                             context.getContentResolver(), bmp, safeName, name);
                                                     if (uriStr != null) imgUri = Uri.parse(uriStr);
                                                 }
-                                                if (imgUri == null) { mostrarMensaje("Error guardando imagen"); return; }
+                                                if (imgUri == null) { showToastByKey("toastErrSaveImage"); return; }
                                                 final Intent intent = new Intent(Intent.ACTION_SEND);
                                                 intent.setType("image/png");
                                                 intent.putExtra(Intent.EXTRA_STREAM, imgUri);
@@ -376,7 +376,7 @@ public class AndroidBridge {
                                                     }
                                                 });
                                             } catch (Exception e) {
-                                                mostrarMensaje("Error al guardar imagen");
+                                                showToastByKey("toastErrSaveImage");
                                             } finally {
                                                 if (!bmp.isRecycled()) bmp.recycle();
                                             }
@@ -386,12 +386,12 @@ public class AndroidBridge {
                                     if (iv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) iv.getParent()).removeView(iv);
                                     iv.destroy();
-                                    mostrarMensaje("Error al generar imagen");
+                                    showToastByKey("toastErrGenImage");
                                 } catch (Exception e) {
                                     if (iv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) iv.getParent()).removeView(iv);
                                     iv.destroy();
-                                    mostrarMensaje("Error al generar imagen");
+                                    showToastByKey("toastErrGenImage");
                                 }
                             }
                         }, 400);
@@ -509,7 +509,7 @@ public class AndroidBridge {
                                                     }
                                                 });
                                             } catch (Exception e) {
-                                                mostrarMensaje("Error al guardar PDF");
+                                                showToastByKey("toastErrSavePdf");
                                             } finally {
                                                 if (!bmp.isRecycled()) bmp.recycle();
                                             }
@@ -519,12 +519,12 @@ public class AndroidBridge {
                                     if (pv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) pv.getParent()).removeView(pv);
                                     pv.destroy();
-                                    mostrarMensaje("Error generando PDF");
+                                    showToastByKey("toastErrGenPdf");
                                 } catch (Exception e) {
                                     if (pv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) pv.getParent()).removeView(pv);
                                     pv.destroy();
-                                    mostrarMensaje("Error generando PDF");
+                                    showToastByKey("toastErrGenPdf");
                                 }
                             }
                         }, 400);
@@ -559,7 +559,7 @@ public class AndroidBridge {
                     OutputStream os = context.getContentResolver().openOutputStream(uri);
                     os.write(bytes);
                     os.close();
-                    mostrarMensaje("Guardado en Descargas: " + fileName);
+                    showToastParam("toastSavedToDownloads", fileName);
                 }
             } else {
                 File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -568,10 +568,10 @@ public class AndroidBridge {
                 FileOutputStream fos = new FileOutputStream(file);
                 fos.write(bytes);
                 fos.close();
-                mostrarMensaje("Guardado en Descargas: " + fileName);
+                showToastParam("toastSavedToDownloads", fileName);
             }
         } catch (Exception e) {
-            mostrarMensaje("Error guardando archivo");
+            showToastByKey("toastErrSaveFile");
         }
     }
 
@@ -598,7 +598,7 @@ public class AndroidBridge {
                         activity.startActivity(Intent.createChooser(intent, "Compartir"));
                     }
                 } catch (Exception e) {
-                    mostrarMensaje("Error al compartir");
+                    showToastByKey("toastErrShare");
                 }
             }
         });
@@ -612,6 +612,25 @@ public class AndroidBridge {
             @Override
             public void run() {
                 Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void showToastByKey(final String key) {
+        webView.post(new Runnable() {
+            @Override public void run() {
+                webView.evaluateJavascript(
+                    "typeof showToast==='function'&&showToast(typeof t==='function'?t('" + key + "'):'" + key + "')", null);
+            }
+        });
+    }
+
+    private void showToastParam(final String key, final String param) {
+        webView.post(new Runnable() {
+            @Override public void run() {
+                String safeParam = param.replace("'", "\\'");
+                webView.evaluateJavascript(
+                    "typeof showToast==='function'&&showToast((typeof t==='function'?t('" + key + "'):'" + key + "')+'"+safeParam+"')", null);
             }
         });
     }
