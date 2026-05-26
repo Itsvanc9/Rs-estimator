@@ -316,7 +316,8 @@ public class AndroidBridge {
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
                 final int imgW = 1080;
-                final int physW = (int)(imgW * activity.getResources().getDisplayMetrics().density);
+                final float density = activity.getResources().getDisplayMetrics().density;
+                final int physW = (int)(imgW * density);
                 final WebView iv = new WebView(activity);
                 iv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 iv.getSettings().setJavaScriptEnabled(true);
@@ -328,7 +329,7 @@ public class AndroidBridge {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int h = Math.min(Math.max(view.getContentHeight(), 400), 10000);
+                                    int h = (int)(Math.min(Math.max(view.getContentHeight(), 400), (int)(10000 / density)) * density);
                                     view.layout(0, 0, physW, h);
                                     final Bitmap bmp = Bitmap.createBitmap(physW, h, Bitmap.Config.ARGB_8888);
                                     Canvas c = new Canvas(bmp);
@@ -409,7 +410,9 @@ public class AndroidBridge {
                 final int pageW = 794;
                 final int pageH = 1123;
                 final int maxH  = 15000;
-                final int physW = (int)(pageW * activity.getResources().getDisplayMetrics().density);
+                final float density = activity.getResources().getDisplayMetrics().density;
+                final int physW = (int)(pageW * density);
+                final int physPageH = (int)(pageH * density);
                 final WebView pv = new WebView(activity);
                 pv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 pv.getSettings().setJavaScriptEnabled(true);
@@ -421,7 +424,7 @@ public class AndroidBridge {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    final int totalH = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
+                                    final int totalH = Math.min((int)(Math.max(pv.getContentHeight(), 200) * density), maxH);
                                     pv.layout(0, 0, physW, totalH);
                                     // Draw WebView ONCE to bitmap — single render pass
                                     final Bitmap bmp = Bitmap.createBitmap(physW, totalH, Bitmap.Config.ARGB_8888);
@@ -438,19 +441,20 @@ public class AndroidBridge {
                                                 android.graphics.pdf.PdfDocument document =
                                                         new android.graphics.pdf.PdfDocument();
                                                 int pageNum = 1;
-                                                for (int yOff = 0; yOff < totalH; yOff += pageH) {
-                                                    int thisH = Math.min(pageH, totalH - yOff);
+                                                for (int yOff = 0; yOff < totalH; yOff += physPageH) {
+                                                    int srcH = Math.min(physPageH, totalH - yOff);
+                                                    int dstH = Math.max(1, (int) Math.round((float) srcH / density));
                                                     android.graphics.pdf.PdfDocument.PageInfo info =
                                                         new android.graphics.pdf.PdfDocument.PageInfo
-                                                            .Builder(pageW, thisH, pageNum++).create();
+                                                            .Builder(pageW, dstH, pageNum++).create();
                                                     android.graphics.pdf.PdfDocument.Page page =
                                                         document.startPage(info);
                                                     Canvas canvas = page.getCanvas();
                                                     canvas.drawColor(Color.WHITE);
                                                     android.graphics.Rect src = new android.graphics.Rect(
-                                                            0, yOff, physW, Math.min(yOff + thisH, bmp.getHeight()));
+                                                            0, yOff, physW, Math.min(yOff + srcH, bmp.getHeight()));
                                                     canvas.drawBitmap(bmp, src,
-                                                            new android.graphics.RectF(0, 0, pageW, thisH), null);
+                                                            new android.graphics.RectF(0, 0, pageW, dstH), null);
                                                     document.finishPage(page);
                                                 }
                                                 String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
