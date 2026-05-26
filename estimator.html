@@ -1405,18 +1405,18 @@
       <strong id="cdClientName">Client</strong>
       <span id="cdProjectName">Project</span>
     </div>
-    <button class="cd-back" onclick="closeContractDetail()">← Back</button>
+    <button class="cd-back" onclick="closeContractDetail()" data-i18n="backBtn">← Back</button>
   </div>
   <div class="cd-body">
     <!-- KPI summary -->
     <div class="cd-summary">
       <div class="cd-summary-header">
-        <div class="cd-kpi"><div class="cd-kpi-val" id="cdTotal">$0</div><div class="cd-kpi-lbl">Total</div></div>
-        <div class="cd-kpi"><div class="cd-kpi-val" id="cdPaid">$0</div><div class="cd-kpi-lbl">Paid</div></div>
-        <div class="cd-kpi"><div class="cd-kpi-val" id="cdBalance">$0</div><div class="cd-kpi-lbl">Balance</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdTotal">$0</div><div class="cd-kpi-lbl" data-i18n="kpiTotal">Total</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdPaid">$0</div><div class="cd-kpi-lbl" data-i18n="kpiPaid">Paid</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="cdBalance">$0</div><div class="cd-kpi-lbl" data-i18n="kpiBalance">Balance</div></div>
       </div>
       <div class="cd-progress-block">
-        <div class="cd-section-title">Payment Progress</div>
+        <div class="cd-section-title" data-i18n="paymentProgress">Payment Progress</div>
         <div class="cd-progress-bar-lg"><div class="cd-progress-fill-lg" id="cdProgressFill" style="width:0%"></div></div>
         <div class="cd-progress-pct" id="cdProgressPct">0% collected</div>
       </div>
@@ -1663,27 +1663,27 @@
 <!-- SCHEDULE EDIT MODAL -->
 <div id="schedEditOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
   <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:340px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
-    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;">✏️ Edit Payment Milestone</div>
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;" data-i18n="editMilestoneTitle">✏️ Edit Payment Milestone</div>
     <div id="schedEditLabel" style="font-size:13px;font-weight:600;color:var(--lime-dark);margin-bottom:12px;"></div>
     <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Percentage (%)</label>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="schedPctLabel">Percentage (%)</label>
       <input type="number" id="schedEditPct" inputmode="decimal" min="0" max="100" step="0.5" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;" oninput="schedPctChanged()">
     </div>
     <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Due Date</label>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="schedDueDateLabel">Due Date</label>
       <input type="date" id="schedEditDate" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
     </div>
     <div style="margin-bottom:12px;">
-      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Amount ($)</label>
-      <input type="number" id="schedEditAmount" inputmode="decimal" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="schedAmountLabel">Amount ($)</label>
+      <input type="number" id="schedEditAmount" inputmode="decimal" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;" oninput="schedAmountChanged()">
     </div>
     <div style="margin-bottom:18px;">
-      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Note (optional)</label>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;" data-i18n="schedNoteOptLabel">Note (optional)</label>
       <input type="text" id="schedEditNote" style="width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;">
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeSchedEdit()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
-      <button onclick="saveSchedEdit()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;">💾 Save</button>
+      <button onclick="closeSchedEdit()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
+      <button onclick="saveSchedEdit()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
     </div>
   </div>
 </div>
@@ -1916,6 +1916,17 @@ const T = {
     toastSavedToDownloads:'Saved to Downloads: ',
     toastErrSaveFile:'Error saving file',
     toastErrShare:'Error sharing',
+    kpiTotal:'Total', kpiPaid:'Paid', kpiBalance:'Balance',
+    backBtn:'← Back', editBtn:'Edit', schedUpdated:'✅ Schedule updated',
+    editMilestoneTitle:'✏️ Edit Payment Milestone',
+    schedPctLabel:'Percentage (%)', schedDueDateLabel:'Due Date',
+    schedAmountLabel:'Amount ($)', schedNoteOptLabel:'Note (optional)',
+    cancelBtn:'Cancel', saveBtn:'💾 Save',
+    schedDeposit:'Deposit', schedProgress:'Progress', schedFinal:'Final',
+    schedNoteDeposit:'Due at contract signing. C.R.S. § 38-22-127: hold in trust.',
+    schedNoteProgress:'Due at mid-project milestone.',
+    schedNoteFinal:'Due on completion. Request signed lien waiver.',
+    depositFromEstimate:'Deposit from estimate',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2108,6 +2119,17 @@ const T = {
     toastSavedToDownloads:'Guardado en Descargas: ',
     toastErrSaveFile:'Error guardando archivo',
     toastErrShare:'Error al compartir',
+    kpiTotal:'Total', kpiPaid:'Pagado', kpiBalance:'Saldo',
+    backBtn:'← Atrás', editBtn:'Editar', schedUpdated:'✅ Plan actualizado',
+    editMilestoneTitle:'✏️ Editar Hito de Pago',
+    schedPctLabel:'Porcentaje (%)', schedDueDateLabel:'Fecha de Vencimiento',
+    schedAmountLabel:'Monto ($)', schedNoteOptLabel:'Nota (opcional)',
+    cancelBtn:'Cancelar', saveBtn:'💾 Guardar',
+    schedDeposit:'Depósito', schedProgress:'Progreso', schedFinal:'Final',
+    schedNoteDeposit:'Al firmar el contrato. C.R.S. § 38-22-127: mantener en fideicomiso.',
+    schedNoteProgress:'Al alcanzar el punto medio del proyecto.',
+    schedNoteFinal:'Al completar el trabajo. Solicitar liberación de gravamen firmada.',
+    depositFromEstimate:'Depósito del estimado',
   }
 };
 
@@ -3971,9 +3993,9 @@ function acceptEstimate(id) {
     acceptedDate: today,
     status: 'active',
     schedule: [
-      { sid:1, label:'Deposit (30%)',  pct:30, amount:dep,  due: today,           note:'Due at contract signing. C.R.S. § 38-22-127: hold in trust.' },
-      { sid:2, label:'Progress (40%)', pct:40, amount:prog, due: addDays(today,14), note:'Due at mid-project milestone.' },
-      { sid:3, label:'Final (30%)',    pct:30, amount:fin,  due: addDays(today,30), note:'Due on completion. Request signed lien waiver.' }
+      { sid:1, labelKey:'schedDeposit', label:'Deposit (30%)',  pct:30, amount:dep,  due: today,           noteKey:'schedNoteDeposit', note:'Due at contract signing. C.R.S. § 38-22-127: hold in trust.' },
+      { sid:2, labelKey:'schedProgress',label:'Progress (40%)', pct:40, amount:prog, due: addDays(today,14), noteKey:'schedNoteProgress', note:'Due at mid-project milestone.' },
+      { sid:3, labelKey:'schedFinal',   label:'Final (30%)',    pct:30, amount:fin,  due: addDays(today,30), noteKey:'schedNoteFinal',    note:'Due on completion. Request signed lien waiver.' }
     ],
     payments: []
   };
@@ -3983,6 +4005,18 @@ function acceptEstimate(id) {
   contract.validUntil   = est.validUntil || '';
   contract.signedPhoto  = null;
   contract.estimateData = JSON.parse(JSON.stringify(est)); // full snapshot incl. photos
+  // Carry over any deposit already paid on the estimate
+  var depositPaid = parseFloat(est.deposit || 0);
+  if (depositPaid > 0) {
+    contract.payments.push({
+      pid: 'dep_' + Date.now(),
+      scheduleId: 1,
+      amount: depositPaid,
+      date: today,
+      method: '',
+      note: t('depositFromEstimate')
+    });
+  }
   contracts.push(contract);
   saveContracts(contracts);
   // Remove from estimates
@@ -4057,14 +4091,16 @@ function openContractDetail(id) {
   // Schedule
   $('cdSchedule').innerHTML = c.schedule.map(function(s) {
     var isPaid = c.payments.some(function(p){ return p.scheduleId===s.sid; });
+    var lbl  = (s.labelKey ? t(s.labelKey) : escapeHtml(s.label)) + ' (' + s.pct + '%)';
+    var note = s.noteKey ? t(s.noteKey) : escapeHtml(s.note);
     return '<div class="pay-schedule-item">' +
       '<div class="psi-indicator ' + (isPaid?'paid':'pending') + '">' + (isPaid?'✅':'🔔') + '</div>' +
-      '<div class="psi-info"><div class="psi-label">' + escapeHtml(s.label) + '</div>' +
-        '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">'+t('paidLabel')+'</span>':t('dueLabel')+' '+s.due) + ' · ' + escapeHtml(s.note) + '</div></div>' +
+      '<div class="psi-info"><div class="psi-label">' + lbl + '</div>' +
+        '<div class="psi-meta">' + (isPaid?'<span style="color:#10b981;font-weight:700;">'+t('paidLabel')+'</span>':t('dueLabel')+' '+s.due) + ' · ' + note + '</div></div>' +
       '<div class="psi-amount" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
         '<strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong>' +
         '<span>' + s.pct + '%</span>' +
-        (!isPaid ? '<button onclick="openSchedEdit(' + s.sid + ')" style="-webkit-tap-highlight-color:transparent;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;">✏️ Edit</button>' : '') +
+        (!isPaid ? '<button onclick="openSchedEdit(' + s.sid + ')" style="-webkit-tap-highlight-color:transparent;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;">✏️ ' + t('editBtn') + '</button>' : '') +
       '</div>' +
     '</div>';
   }).join('');
@@ -4249,7 +4285,7 @@ function openSchedEdit(sid) {
   if (!s) return;
   _schedEditSid   = sid;
   _schedEditTotal = parseFloat(c.totalAmount) || 0;
-  $('schedEditLabel').textContent = s.label;
+  $('schedEditLabel').textContent = (s.labelKey ? t(s.labelKey) : s.label) + ' (' + s.pct + '%)';
   $('schedEditPct').value    = s.pct;
   $('schedEditDate').value   = s.due;
   $('schedEditAmount').value = s.amount;
@@ -4261,6 +4297,12 @@ function schedPctChanged() {
   var pct = parseFloat($('schedEditPct').value);
   if (!isNaN(pct) && _schedEditTotal > 0) {
     $('schedEditAmount').value = (pct / 100 * _schedEditTotal).toFixed(2);
+  }
+}
+function schedAmountChanged() {
+  var amt = parseFloat($('schedEditAmount').value);
+  if (!isNaN(amt) && _schedEditTotal > 0) {
+    $('schedEditPct').value = (amt / _schedEditTotal * 100).toFixed(1);
   }
 }
 function closeSchedEdit() {
@@ -4283,7 +4325,7 @@ function saveSchedEdit() {
   saveContracts(contracts);
   closeSchedEdit();
   openContractDetail(currentContractId);
-  showToast('✅ Schedule updated');
+  showToast(t('schedUpdated'));
 }
 
 function fmtMoney(n) {
