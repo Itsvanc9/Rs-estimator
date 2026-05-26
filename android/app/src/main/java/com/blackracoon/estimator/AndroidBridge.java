@@ -316,13 +316,13 @@ public class AndroidBridge {
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
                 final int imgW = 1080; // CSS pixels
-                final float density = activity.getResources().getDisplayMetrics().density;
-                final int physW = Math.round(imgW * density);
+                // Cap at 2x to keep bitmap size reasonable (1x: ~20MB, 2x: ~80MB)
+                final float density = Math.min(activity.getResources().getDisplayMetrics().density, 2.0f);
+                final int physW    = Math.round(imgW  * density);
                 final int physMaxH = Math.round(10000 * density);
                 final WebView iv = new WebView(activity);
                 iv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 iv.getSettings().setJavaScriptEnabled(true);
-                // Physical pixel dimensions so CSS pixels map 1:1 at any screen density
                 activity.addContentView(iv, new ViewGroup.LayoutParams(physW, physMaxH));
                 iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 iv.setWebViewClient(new WebViewClient() {
@@ -330,53 +330,63 @@ public class AndroidBridge {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    // getContentHeight() returns CSS pixels; convert to physical
                                     int cssH = Math.min(Math.max(view.getContentHeight(), 400), 10000);
-                                    int w = physW;
                                     int h = Math.round(cssH * density);
-                                    view.layout(0, 0, w, h);
-                                    Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                                    view.layout(0, 0, physW, h);
+                                    Bitmap bmp = Bitmap.createBitmap(physW, h, Bitmap.Config.ARGB_8888);
                                     Canvas c = new Canvas(bmp);
                                     c.drawColor(Color.WHITE);
                                     view.draw(c);
-                                    // Remove hidden WebView
                                     if (iv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) iv.getParent()).removeView(iv);
                                     iv.destroy();
-                                    // Save to MediaStore to get a shareable content URI
-                                    String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
-                                    Uri imgUri = null;
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        ContentValues cv = new ContentValues();
-                                        cv.put(MediaStore.Images.Media.DISPLAY_NAME, safeName + ".png");
-                                        cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
-                                        cv.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/BuildRacoon");
-                                        imgUri = context.getContentResolver().insert(
-                                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
-                                        if (imgUri != null) {
-                                            OutputStream os = context.getContentResolver().openOutputStream(imgUri);
-                                            bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
-                                            os.close();
+                                    final Bitmap bmpFinal = bmp;
+                                    new Thread(new Runnable() {
+                                        @Override public void run() {
+                                            try {
+                                                String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                                Uri imgUri = null;
+                                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                                    ContentValues cv = new ContentValues();
+                                                    cv.put(MediaStore.Images.Media.DISPLAY_NAME, safeName + ".png");
+                                                    cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                                                    cv.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/BuildRacoon");
+                                                    imgUri = context.getContentResolver().insert(
+                                                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
+                                                    if (imgUri != null) {
+                                                        OutputStream os = context.getContentResolver().openOutputStream(imgUri);
+                                                        bmpFinal.compress(Bitmap.CompressFormat.PNG, 90, os);
+                                                        os.close();
+                                                    }
+                                                } else {
+                                                    String uriStr = MediaStore.Images.Media.insertImage(
+                                                            context.getContentResolver(), bmpFinal, safeName, name);
+                                                    if (uriStr != null) imgUri = Uri.parse(uriStr);
+                                                }
+                                                bmpFinal.recycle();
+                                                if (imgUri == null) { mostrarMensaje("Error guardando imagen"); return; }
+                                                final Intent intent = new Intent(Intent.ACTION_SEND);
+                                                intent.setType("image/png");
+                                                intent.putExtra(Intent.EXTRA_STREAM, imgUri);
+                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                                activity.runOnUiThread(new Runnable() {
+                                                    @Override public void run() {
+                                                        try { activity.startActivity(intent); }
+                                                        catch (Exception e) {
+                                                            activity.startActivity(Intent.createChooser(intent, "Compartir"));
+                                                        }
+                                                    }
+                                                });
+                                            } catch (Exception e) {
+                                                mostrarMensaje("Error al guardar imagen");
+                                            }
                                         }
-                                    } else {
-                                        String uriStr = MediaStore.Images.Media.insertImage(
-                                                context.getContentResolver(), bmp, safeName, name);
-                                        if (uriStr != null) imgUri = Uri.parse(uriStr);
-                                    }
-                                    bmp.recycle();
-                                    if (imgUri == null) { mostrarMensaje("Error guardando imagen"); return; }
-                                    Intent intent = new Intent(Intent.ACTION_SEND);
-                                    intent.setType("image/png");
-                                    intent.putExtra(Intent.EXTRA_STREAM, imgUri);
-                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
-                                    try {
-                                        activity.startActivity(intent);
-                                    } catch (Exception e) {
-                                        activity.startActivity(Intent.createChooser(intent, "Compartir"));
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                                    }).start();
+                                } catch (OutOfMemoryError | Exception e) {
+                                    if (iv.getParent() instanceof ViewGroup)
+                                        ((ViewGroup) iv.getParent()).removeView(iv);
+                                    iv.destroy();
                                     mostrarMensaje("Error al generar imagen");
                                 }
                             }
@@ -394,11 +404,11 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
-                final int pageW = 794;  // CSS pixels — A4 width at 96 dpi
-                final int pageH = 1123; // CSS pixels — A4 height at 96 dpi
-                final int maxH  = 15000; // CSS pixels
-                final float density = activity.getResources().getDisplayMetrics().density;
-                // Physical pixel dimensions so the WebView viewport = pageW CSS px on any screen
+                final int pageW = 794;
+                final int pageH = 1123;
+                final int maxH  = 15000;
+                // Cap at 2x: a 3x density phone drawing 6 pages at 3x blocks UI >5s → ANR
+                final float density = Math.min(activity.getResources().getDisplayMetrics().density, 2.0f);
                 final int physW    = Math.round(pageW * density);
                 final int physMaxH = Math.round(maxH  * density);
                 final WebView pv = new WebView(activity);
@@ -411,67 +421,103 @@ public class AndroidBridge {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    // getContentHeight() = CSS pixels; convert to physical
                                     int cssTotalH  = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
-                                    int physTotalH = Math.round(cssTotalH * density);
+                                    final int physTotalH = Math.round(cssTotalH * density);
                                     pv.layout(0, 0, physW, physTotalH);
-
-                                    android.graphics.pdf.PdfDocument document =
+                                    final android.graphics.pdf.PdfDocument document =
                                             new android.graphics.pdf.PdfDocument();
-                                    int pageNum = 1;
-                                    int physPageH = Math.round(pageH * density);
-                                    for (int yOffset = 0; yOffset < physTotalH; yOffset += physPageH) {
-                                        int thisPhysH = Math.min(physPageH, physTotalH - yOffset);
-                                        // PDF page dimensions in CSS (logical) pixels
-                                        int thisLogH = Math.round(thisPhysH / density);
-                                        android.graphics.pdf.PdfDocument.PageInfo info =
-                                            new android.graphics.pdf.PdfDocument.PageInfo
-                                                .Builder(pageW, thisLogH, pageNum++).create();
-                                        android.graphics.pdf.PdfDocument.Page page =
-                                            document.startPage(info);
-                                        Canvas canvas = page.getCanvas();
-                                        canvas.drawColor(Color.WHITE);
-                                        // Scale canvas from logical to physical coords, then scroll
-                                        canvas.scale(1f / density, 1f / density);
-                                        canvas.translate(0, -yOffset);
-                                        pv.draw(canvas);
-                                        document.finishPage(page);
-                                    }
-
-                                    if (pv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) pv.getParent()).removeView(pv);
-                                    pv.destroy();
-
-                                    String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
-                                    File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
-                                    FileOutputStream fos = new FileOutputStream(pdfFile);
-                                    document.writeTo(fos);
-                                    fos.close();
-                                    document.close();
-
-                                    Uri uri = Uri.parse("content://com.blackracoon.estimator.rsprovider"
-                                            + pdfFile.getAbsolutePath());
-                                    Intent intent = new Intent(Intent.ACTION_SEND);
-                                    intent.setType("application/pdf");
-                                    intent.putExtra(Intent.EXTRA_STREAM, uri);
-                                    intent.putExtra(Intent.EXTRA_SUBJECT, name);
-                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
-                                    try {
-                                        activity.startActivity(intent);
-                                    } catch (Exception e) {
-                                        activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
-                                    }
+                                    final int physPageH = Math.round(pageH * density);
+                                    // Draw one page at a time via Handler.post so the UI thread
+                                    // yields between pages — prevents ANR on multi-page contracts
+                                    drawPdfPage(activity, pv, document, 1, 0,
+                                            physTotalH, physW, physPageH, pageW, density, name, channel);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
                                     mostrarMensaje("Error generando PDF");
                                 }
                             }
-                        }, 1000);
+                        }, 800);
                     }
                 });
             }
         });
+    }
+
+    private void drawPdfPage(final Activity activity, final WebView pv,
+            final android.graphics.pdf.PdfDocument document,
+            final int pageNum, final int yOffset, final int physTotalH,
+            final int physW, final int physPageH, final int pageW,
+            final float density, final String name, final String channel) {
+
+        new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
+            @Override public void run() {
+                try {
+                    int thisPhysH = Math.min(physPageH, physTotalH - yOffset);
+                    int thisLogH  = Math.max(1, Math.round(thisPhysH / density));
+                    android.graphics.pdf.PdfDocument.PageInfo info =
+                        new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, thisLogH, pageNum).create();
+                    android.graphics.pdf.PdfDocument.Page page = document.startPage(info);
+                    Canvas canvas = page.getCanvas();
+                    canvas.drawColor(Color.WHITE);
+                    canvas.scale(1f / density, 1f / density);
+                    canvas.translate(0, -yOffset);
+                    pv.draw(canvas);
+                    document.finishPage(page);
+
+                    int nextOffset = yOffset + physPageH;
+                    if (nextOffset < physTotalH) {
+                        drawPdfPage(activity, pv, document, pageNum + 1, nextOffset,
+                                physTotalH, physW, physPageH, pageW, density, name, channel);
+                    } else {
+                        finalizePdf(activity, pv, document, name, channel);
+                    }
+                } catch (Exception e) {
+                    if (pv.getParent() instanceof ViewGroup)
+                        ((ViewGroup) pv.getParent()).removeView(pv);
+                    pv.destroy();
+                    document.close();
+                    mostrarMensaje("Error generando PDF");
+                }
+            }
+        });
+    }
+
+    private void finalizePdf(final Activity activity, final WebView pv,
+            final android.graphics.pdf.PdfDocument document,
+            final String name, final String channel) {
+        if (pv.getParent() instanceof ViewGroup)
+            ((ViewGroup) pv.getParent()).removeView(pv);
+        pv.destroy();
+        new Thread(new Runnable() {
+            @Override public void run() {
+                try {
+                    String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                    File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
+                    FileOutputStream fos = new FileOutputStream(pdfFile);
+                    document.writeTo(fos);
+                    fos.close();
+                    document.close();
+                    final Uri uri = Uri.parse("content://com.blackracoon.estimator.rsprovider"
+                            + pdfFile.getAbsolutePath());
+                    final Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("application/pdf");
+                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                    intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                    activity.runOnUiThread(new Runnable() {
+                        @Override public void run() {
+                            try { activity.startActivity(intent); }
+                            catch (Exception e) {
+                                activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
+                            }
+                        }
+                    });
+                } catch (Exception e) {
+                    document.close();
+                    mostrarMensaje("Error al guardar PDF");
+                }
+            }
+        }).start();
     }
 
     // ── SAVE BASE64 FILE ──────────────────────────────────────────────────────
