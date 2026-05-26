@@ -6,16 +6,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
+import android.os.CancellationSignal;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
@@ -301,6 +309,185 @@ public class AndroidBridge {
     @JavascriptInterface
     public void saveHtmlAsPdf(final String htmlContent, final String filename) {
         printHtml(htmlContent, filename);
+    }
+
+    // ── SHARE AS IMAGE ────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void shareHtmlAsImage(final String html, final String name, final String channel) {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                final WebView iv = new WebView(activity);
+                iv.getSettings().setJavaScriptEnabled(true);
+                activity.addContentView(iv, new ViewGroup.LayoutParams(1, 1));
+                iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
+                iv.setWebViewClient(new WebViewClient() {
+                    @Override public void onPageFinished(WebView view, String url) {
+                        view.postDelayed(new Runnable() {
+                            @Override public void run() {
+                                try {
+                                    int w = 1080;
+                                    int h = Math.min(Math.max(view.getContentHeight(), 400), 8000);
+                                    view.layout(0, 0, w, h);
+                                    Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                                    Canvas c = new Canvas(bmp);
+                                    c.drawColor(Color.WHITE);
+                                    view.draw(c);
+                                    // Remove hidden WebView
+                                    if (iv.getParent() instanceof ViewGroup)
+                                        ((ViewGroup) iv.getParent()).removeView(iv);
+                                    iv.destroy();
+                                    // Save to MediaStore to get a shareable content URI
+                                    String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                    Uri imgUri = null;
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                        ContentValues cv = new ContentValues();
+                                        cv.put(MediaStore.Images.Media.DISPLAY_NAME, safeName + ".png");
+                                        cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                                        cv.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/BuildRacoon");
+                                        imgUri = context.getContentResolver().insert(
+                                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
+                                        if (imgUri != null) {
+                                            OutputStream os = context.getContentResolver().openOutputStream(imgUri);
+                                            bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
+                                            os.close();
+                                        }
+                                    } else {
+                                        String uriStr = MediaStore.Images.Media.insertImage(
+                                                context.getContentResolver(), bmp, safeName, name);
+                                        if (uriStr != null) imgUri = Uri.parse(uriStr);
+                                    }
+                                    bmp.recycle();
+                                    if (imgUri == null) { mostrarMensaje("Error guardando imagen"); return; }
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    intent.setType("image/png");
+                                    intent.putExtra(Intent.EXTRA_STREAM, imgUri);
+                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                    try {
+                                        activity.startActivity(intent);
+                                    } catch (Exception e) {
+                                        activity.startActivity(Intent.createChooser(intent, "Compartir"));
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    mostrarMensaje("Error al generar imagen");
+                                }
+                            }
+                        }, 800);
+                    }
+                });
+            }
+        });
+    }
+
+    // ── SHARE AS PDF ──────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void shareHtmlAsPdf(final String html, final String name, final String channel) {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                final WebView pv = new WebView(activity);
+                pv.getSettings().setJavaScriptEnabled(true);
+                activity.addContentView(pv, new ViewGroup.LayoutParams(1, 1));
+                pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
+                pv.setWebViewClient(new WebViewClient() {
+                    @Override public void onPageFinished(WebView view, String url) {
+                        view.postDelayed(new Runnable() {
+                            @Override public void run() {
+                                try {
+                                    final PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(name);
+                                    final PrintAttributes attrs = new PrintAttributes.Builder()
+                                            .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
+                                            .setResolution(new PrintAttributes.Resolution("pdf","PDF",300,300))
+                                            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                                            .build();
+                                    String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                    final File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
+                                    final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
+                                            ParcelFileDescriptor.MODE_READ_WRITE |
+                                            ParcelFileDescriptor.MODE_CREATE |
+                                            ParcelFileDescriptor.MODE_TRUNCATE);
+                                    adapter.onStart();
+                                    adapter.onLayout(null, attrs, new CancellationSignal(),
+                                        new PrintDocumentAdapter.LayoutResultCallback() {
+                                            @Override public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
+                                                try {
+                                                    adapter.onWrite(new PageRange[]{PageRange.ALL_PAGES}, pfd,
+                                                        new CancellationSignal(),
+                                                        new PrintDocumentAdapter.WriteResultCallback() {
+                                                            @Override public void onWriteFinished(PageRange[] pages) {
+                                                                try { pfd.close(); } catch (Exception ignored) {}
+                                                                adapter.onFinish();
+                                                                if (pv.getParent() instanceof ViewGroup)
+                                                                    ((ViewGroup) pv.getParent()).removeView(pv);
+                                                                pv.destroy();
+                                                                // Share PDF via RsFileProvider
+                                                                Uri uri = Uri.parse("content://com.blackracoon.estimator.rsprovider"
+                                                                        + pdfFile.getAbsolutePath());
+                                                                Intent intent = new Intent(Intent.ACTION_SEND);
+                                                                intent.setType("application/pdf");
+                                                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                                                intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                                if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                                                try {
+                                                                    activity.startActivity(intent);
+                                                                } catch (Exception e) {
+                                                                    activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
+                                                                }
+                                                            }
+                                                        });
+                                                } catch (Exception e) {
+                                                    try { pfd.close(); } catch (Exception ignored) {}
+                                                    mostrarMensaje("Error generando PDF");
+                                                }
+                                            }
+                                        }, null);
+                                } catch (Exception e) {
+                                    mostrarMensaje("Error al preparar PDF");
+                                }
+                            }
+                        }, 800);
+                    }
+                });
+            }
+        });
+    }
+
+    // ── SAVE BASE64 FILE ──────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void saveBase64File(final String base64Data, final String fileName, final String mimeType) {
+        try {
+            byte[] bytes = cleanDecode(base64Data);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ContentValues cv = new ContentValues();
+                cv.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
+                cv.put(MediaStore.Downloads.MIME_TYPE, mimeType);
+                cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+                Uri uri = context.getContentResolver().insert(
+                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                if (uri != null) {
+                    OutputStream os = context.getContentResolver().openOutputStream(uri);
+                    os.write(bytes);
+                    os.close();
+                    mostrarMensaje("Guardado en Descargas: " + fileName);
+                }
+            } else {
+                File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                if (!dir.exists()) dir.mkdirs();
+                File file = new File(dir, fileName);
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(bytes);
+                fos.close();
+                mostrarMensaje("Guardado en Descargas: " + fileName);
+            }
+        } catch (Exception e) {
+            mostrarMensaje("Error guardando archivo");
+        }
     }
 
     // ── TOAST ─────────────────────────────────────────────────────────────────
