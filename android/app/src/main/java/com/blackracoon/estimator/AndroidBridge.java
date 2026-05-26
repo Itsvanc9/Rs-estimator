@@ -315,20 +315,25 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
-                final int imgW = 1080;
+                final int imgW = 1080; // CSS pixels
+                final float density = activity.getResources().getDisplayMetrics().density;
+                final int physW = Math.round(imgW * density);
+                final int physMaxH = Math.round(10000 * density);
                 final WebView iv = new WebView(activity);
                 iv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 iv.getSettings().setJavaScriptEnabled(true);
-                // Add at full target width + max height so all content renders on first pass
-                activity.addContentView(iv, new ViewGroup.LayoutParams(imgW, 10000));
+                // Physical pixel dimensions so CSS pixels map 1:1 at any screen density
+                activity.addContentView(iv, new ViewGroup.LayoutParams(physW, physMaxH));
                 iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 iv.setWebViewClient(new WebViewClient() {
                     @Override public void onPageFinished(WebView view, String url) {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int w = imgW;
-                                    int h = Math.min(Math.max(view.getContentHeight(), 400), 10000);
+                                    // getContentHeight() returns CSS pixels; convert to physical
+                                    int cssH = Math.min(Math.max(view.getContentHeight(), 400), 10000);
+                                    int w = physW;
+                                    int h = Math.round(cssH * density);
                                     view.layout(0, 0, w, h);
                                     Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
                                     Canvas c = new Canvas(bmp);
@@ -389,35 +394,45 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
-                final int pageW = 794;  // A4 width at 96 dpi
-                final int pageH = 1123; // A4 height at 96 dpi
-                final int maxH  = 15000;
+                final int pageW = 794;  // CSS pixels — A4 width at 96 dpi
+                final int pageH = 1123; // CSS pixels — A4 height at 96 dpi
+                final int maxH  = 15000; // CSS pixels
+                final float density = activity.getResources().getDisplayMetrics().density;
+                // Physical pixel dimensions so the WebView viewport = pageW CSS px on any screen
+                final int physW    = Math.round(pageW * density);
+                final int physMaxH = Math.round(maxH  * density);
                 final WebView pv = new WebView(activity);
                 pv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 pv.getSettings().setJavaScriptEnabled(true);
-                // Add at full page width + max height so all content renders on first pass
-                activity.addContentView(pv, new ViewGroup.LayoutParams(pageW, maxH));
+                activity.addContentView(pv, new ViewGroup.LayoutParams(physW, physMaxH));
                 pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 pv.setWebViewClient(new WebViewClient() {
                     @Override public void onPageFinished(WebView view, String url) {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int totalH = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
-                                    pv.layout(0, 0, pageW, totalH);
+                                    // getContentHeight() = CSS pixels; convert to physical
+                                    int cssTotalH  = Math.min(Math.max(pv.getContentHeight(), 200), maxH);
+                                    int physTotalH = Math.round(cssTotalH * density);
+                                    pv.layout(0, 0, physW, physTotalH);
 
                                     android.graphics.pdf.PdfDocument document =
                                             new android.graphics.pdf.PdfDocument();
                                     int pageNum = 1;
-                                    for (int yOffset = 0; yOffset < totalH; yOffset += pageH) {
-                                        int thisH = Math.min(pageH, totalH - yOffset);
+                                    int physPageH = Math.round(pageH * density);
+                                    for (int yOffset = 0; yOffset < physTotalH; yOffset += physPageH) {
+                                        int thisPhysH = Math.min(physPageH, physTotalH - yOffset);
+                                        // PDF page dimensions in CSS (logical) pixels
+                                        int thisLogH = Math.round(thisPhysH / density);
                                         android.graphics.pdf.PdfDocument.PageInfo info =
                                             new android.graphics.pdf.PdfDocument.PageInfo
-                                                .Builder(pageW, thisH, pageNum++).create();
+                                                .Builder(pageW, thisLogH, pageNum++).create();
                                         android.graphics.pdf.PdfDocument.Page page =
                                             document.startPage(info);
                                         Canvas canvas = page.getCanvas();
                                         canvas.drawColor(Color.WHITE);
+                                        // Scale canvas from logical to physical coords, then scroll
+                                        canvas.scale(1f / density, 1f / density);
                                         canvas.translate(0, -yOffset);
                                         pv.draw(canvas);
                                         document.finishPage(page);
