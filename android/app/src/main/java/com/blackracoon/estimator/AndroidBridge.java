@@ -1,6 +1,7 @@
 package com.blackracoon.estimator;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -470,12 +471,20 @@ public class AndroidBridge {
                                                 intent.setType("application/pdf");
                                                 intent.putExtra(Intent.EXTRA_STREAM, uri);
                                                 intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                                                // ClipData is required so URI read permission
+                                                // propagates to whichever app the chooser launches
+                                                intent.setClipData(ClipData.newRawUri("", uri));
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                                if ("whatsapp".equals(channel)) {
+                                                    intent.setPackage("com.whatsapp");
+                                                } else if ("email".equals(channel)) {
+                                                    intent.setPackage("com.google.android.gm");
+                                                }
                                                 activity.runOnUiThread(new Runnable() {
                                                     @Override public void run() {
                                                         try { activity.startActivity(intent); }
                                                         catch (Exception e) {
+                                                            intent.setPackage(null);
                                                             activity.startActivity(
                                                                     Intent.createChooser(intent, "Compartir PDF"));
                                                         }

@@ -1148,21 +1148,21 @@
 
   <!-- ESTIMATE SIGNATURES -->
   <div class="card" style="border:1px solid var(--border);">
-    <div class="card-header"><div class="si">✍️</div><h2>Firmas Electrónicas</h2></div>
+    <div class="card-header"><div class="si">✍️</div><h2 data-i18n="signaturesTitle">Electronic Signatures</h2></div>
     <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="contractorLabel">Contractor</div>
         <div id="estSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-auth')">
-          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+          <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="estSigAuthClear" onclick="clearEstSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+        <button id="estSigAuthClear" data-i18n="clearSigBtn" onclick="clearEstSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
       </div>
       <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="clientLabel">Client</div>
         <div id="estSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-client')">
-          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+          <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="estSigClientClear" onclick="clearEstSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+        <button id="estSigClientClear" data-i18n="clearSigBtn" onclick="clearEstSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
       </div>
     </div>
   </div>
@@ -1511,21 +1511,21 @@
     </div>
 
     <!-- Contract electronic signatures -->
-    <div class="cd-section-title">✍️ Firmas Electrónicas</div>
+    <div class="cd-section-title">✍️ <span data-i18n="signaturesTitle">Electronic Signatures</span></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
       <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="contractorLabel">Contractor</div>
         <div id="conSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-auth')">
-          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+          <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="conSigAuthClear" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+        <button id="conSigAuthClear" data-i18n="clearSigBtn" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
       </div>
       <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="clientLabel">Client</div>
         <div id="conSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-client')">
-          <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
+          <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="conSigClientClear" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
+        <button id="conSigClientClear" data-i18n="clearSigBtn" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
       </div>
     </div>
 
@@ -1888,6 +1888,14 @@ const T = {
     clientTotalValue:'Total Value', clientNewEst:'📝 New Estimate',
     deleteClientConfirm:'Delete this client?',
     loadClientBtn:'👥 Load Client',
+    toastDocNotFound:'Document not found',
+    toastGeneratingPdf:'Generating PDF...',
+    toastGeneratingImg:'Generating image...',
+    signaturesTitle:'Electronic Signatures',
+    contractorLabel:'Contractor',
+    clientLabel:'Client',
+    tapToSign:'Tap to sign',
+    clearSigBtn:'✕ Clear',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2052,6 +2060,14 @@ const T = {
     clientTotalValue:'Valor Total', clientNewEst:'📝 Nuevo Estimado',
     deleteClientConfirm:'¿Eliminar este cliente?',
     loadClientBtn:'👥 Cargar Cliente',
+    toastDocNotFound:'Documento no encontrado',
+    toastGeneratingPdf:'Generando PDF...',
+    toastGeneratingImg:'Generando imagen...',
+    signaturesTitle:'Firmas Electrónicas',
+    contractorLabel:'Contratista',
+    clientLabel:'Cliente',
+    tapToSign:'Toca para firmar',
+    clearSigBtn:'✕ Borrar',
   }
 };
 
@@ -3554,17 +3570,17 @@ function doShareSend(method) {
   closeShareModal();
   try {
     var doc = _getShareDoc();
-    if (!doc) { showToast(t('toastDocNotFound')||'Documento no encontrado'); return; }
+    if (!doc) { showToast(t('toastDocNotFound')); return; }
 
     // 1. Native PDF bridge (new APK)
     if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsPdf) {
-      showToast('Generando PDF...');
+      showToast(t('toastGeneratingPdf'));
       window.AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
       return;
     }
     // 2. Native image bridge (new APK)
     if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsImage) {
-      showToast('Generando imagen...');
+      showToast(t('toastGeneratingImg'));
       window.AndroidBridge.shareHtmlAsImage(doc.html, doc.name, method);
       return;
     }
@@ -3770,7 +3786,7 @@ function renderEstSigs() {
   function setSlot(elId, clearId, img) {
     var el = $(elId), cl = $(clearId); if (!el) return;
     if (img) { el.innerHTML='<img src="'+img+'" style="width:100%;height:100%;object-fit:contain;">'; if(cl)cl.style.display=''; }
-    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">Toca para firmar</span>'; if(cl)cl.style.display='none'; }
+    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">'+t('tapToSign')+'</span>'; if(cl)cl.style.display='none'; }
   }
   setSlot('estSigAuth','estSigAuthClear', estimateSignatures.authorized);
   setSlot('estSigClient','estSigClientClear', estimateSignatures.client);
@@ -3783,7 +3799,7 @@ function renderConSigs(c) {
   function setSlot(elId, clearId, img) {
     var el = $(elId), cl = $(clearId); if (!el) return;
     if (img) { el.innerHTML='<img src="'+img+'" style="width:100%;height:100%;object-fit:contain;">'; if(cl)cl.style.display=''; }
-    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">Toca para firmar</span>'; if(cl)cl.style.display='none'; }
+    else { el.innerHTML='<span style="font-size:12px;color:var(--muted);">'+t('tapToSign')+'</span>'; if(cl)cl.style.display='none'; }
   }
   setSlot('conSigAuth','conSigAuthClear', sigs.authorized);
   setSlot('conSigClient','conSigClientClear', sigs.client);
