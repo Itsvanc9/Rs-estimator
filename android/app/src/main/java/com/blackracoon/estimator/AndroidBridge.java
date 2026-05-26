@@ -10,16 +10,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import android.os.CancellationSignal;
 import android.os.Environment;
-import android.os.ParcelFileDescriptor;
-import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
-import android.print.PrintDocumentInfo;
 import android.print.PrintManager;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
@@ -389,68 +386,68 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
+                final int pageW = 794;  // A4 width at 96 dpi
+                final int pageH = 1123; // A4 height at 96 dpi
                 final WebView pv = new WebView(activity);
+                pv.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
                 pv.getSettings().setJavaScriptEnabled(true);
-                activity.addContentView(pv, new ViewGroup.LayoutParams(1, 1));
+                activity.addContentView(pv, new ViewGroup.LayoutParams(pageW, pageH));
                 pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                 pv.setWebViewClient(new WebViewClient() {
                     @Override public void onPageFinished(WebView view, String url) {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    final PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(name);
-                                    final PrintAttributes attrs = new PrintAttributes.Builder()
-                                            .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
-                                            .setResolution(new PrintAttributes.Resolution("pdf","PDF",300,300))
-                                            .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
-                                            .build();
+                                    int totalH = Math.min(Math.max(pv.getContentHeight(), 200), 20000);
+                                    pv.layout(0, 0, pageW, totalH);
+
+                                    android.graphics.pdf.PdfDocument document =
+                                            new android.graphics.pdf.PdfDocument();
+                                    int pageNum = 1;
+                                    for (int yOffset = 0; yOffset < totalH; yOffset += pageH) {
+                                        int thisH = Math.min(pageH, totalH - yOffset);
+                                        android.graphics.pdf.PdfDocument.PageInfo info =
+                                            new android.graphics.pdf.PdfDocument.PageInfo
+                                                .Builder(pageW, thisH, pageNum++).create();
+                                        android.graphics.pdf.PdfDocument.Page page =
+                                            document.startPage(info);
+                                        Canvas canvas = page.getCanvas();
+                                        canvas.drawColor(Color.WHITE);
+                                        canvas.translate(0, -yOffset);
+                                        pv.draw(canvas);
+                                        document.finishPage(page);
+                                    }
+
+                                    if (pv.getParent() instanceof ViewGroup)
+                                        ((ViewGroup) pv.getParent()).removeView(pv);
+                                    pv.destroy();
+
                                     String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
-                                    final File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
-                                    final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
-                                            ParcelFileDescriptor.MODE_READ_WRITE |
-                                            ParcelFileDescriptor.MODE_CREATE |
-                                            ParcelFileDescriptor.MODE_TRUNCATE);
-                                    adapter.onStart();
-                                    adapter.onLayout(null, attrs, new CancellationSignal(),
-                                        new PrintDocumentAdapter.LayoutResultCallback() {
-                                            @Override public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
-                                                try {
-                                                    adapter.onWrite(new PageRange[]{PageRange.ALL_PAGES}, pfd,
-                                                        new CancellationSignal(),
-                                                        new PrintDocumentAdapter.WriteResultCallback() {
-                                                            @Override public void onWriteFinished(PageRange[] pages) {
-                                                                try { pfd.close(); } catch (Exception ignored) {}
-                                                                adapter.onFinish();
-                                                                if (pv.getParent() instanceof ViewGroup)
-                                                                    ((ViewGroup) pv.getParent()).removeView(pv);
-                                                                pv.destroy();
-                                                                // Share PDF via RsFileProvider
-                                                                Uri uri = Uri.parse("content://com.blackracoon.estimator.rsprovider"
-                                                                        + pdfFile.getAbsolutePath());
-                                                                Intent intent = new Intent(Intent.ACTION_SEND);
-                                                                intent.setType("application/pdf");
-                                                                intent.putExtra(Intent.EXTRA_STREAM, uri);
-                                                                intent.putExtra(Intent.EXTRA_SUBJECT, name);
-                                                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                                if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
-                                                                try {
-                                                                    activity.startActivity(intent);
-                                                                } catch (Exception e) {
-                                                                    activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
-                                                                }
-                                                            }
-                                                        });
-                                                } catch (Exception e) {
-                                                    try { pfd.close(); } catch (Exception ignored) {}
-                                                    mostrarMensaje("Error generando PDF");
-                                                }
-                                            }
-                                        }, null);
+                                    File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
+                                    FileOutputStream fos = new FileOutputStream(pdfFile);
+                                    document.writeTo(fos);
+                                    fos.close();
+                                    document.close();
+
+                                    Uri uri = Uri.parse("content://com.blackracoon.estimator.rsprovider"
+                                            + pdfFile.getAbsolutePath());
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    intent.setType("application/pdf");
+                                    intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                    intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                    try {
+                                        activity.startActivity(intent);
+                                    } catch (Exception e) {
+                                        activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
+                                    }
                                 } catch (Exception e) {
-                                    mostrarMensaje("Error al preparar PDF");
+                                    e.printStackTrace();
+                                    mostrarMensaje("Error generando PDF");
                                 }
                             }
-                        }, 800);
+                        }, 1000);
                     }
                 });
             }
