@@ -1557,19 +1557,31 @@
     <!-- Contract electronic signatures -->
     <div class="cd-section-title">✍️ <span data-i18n="signaturesTitle">Electronic Signatures</span></div>
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-      <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="contractorLabel">Contractor</div>
+      <div style="flex:1;min-width:140px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;text-align:center;" data-i18n="contractorLabel">Contractor</div>
         <div id="conSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-auth')">
           <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="conSigAuthClear" data-i18n="clearSigBtn" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px;">
+          <span id="conSigAuthDate" style="font-size:10px;color:var(--muted);"></span>
+          <button id="conSigAuthClear" data-i18n="clearSigBtn" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
+        </div>
+        <input id="conAuthPrintName" type="text" data-i18n-ph="printNameLabel" placeholder="Print Name" oninput="saveConSigField('authorizedPrintName',this.value)"
+          style="width:100%;margin-top:7px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;">
+        <input id="conAuthTitle" type="text" data-i18n-ph="titlePositionLabel" placeholder="Title / Position" oninput="saveConSigField('authorizedTitle',this.value)"
+          style="width:100%;margin-top:6px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;">
       </div>
-      <div style="flex:1;min-width:130px;text-align:center;">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;" data-i18n="clientLabel">Client</div>
+      <div style="flex:1;min-width:140px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;text-align:center;" data-i18n="clientLabel">Client</div>
         <div id="conSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-client')">
           <span style="font-size:12px;color:var(--muted);" data-i18n="tapToSign">Tap to sign</span>
         </div>
-        <button id="conSigClientClear" data-i18n="clearSigBtn" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:3px;">
+          <span id="conSigClientDate" style="font-size:10px;color:var(--muted);"></span>
+          <button id="conSigClientClear" data-i18n="clearSigBtn" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Clear</button>
+        </div>
+        <input id="conClientPrintName" type="text" data-i18n-ph="printNameLabel" placeholder="Print Name" oninput="saveConSigField('clientPrintName',this.value)"
+          style="width:100%;margin-top:7px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:12px;font-family:inherit;box-sizing:border-box;">
       </div>
     </div>
 
@@ -1977,6 +1989,8 @@ const T = {
     schedNoteProgress:'Due at mid-project milestone.',
     schedNoteFinal:'Due on completion. Request signed lien waiver.',
     depositFromEstimate:'Deposit from estimate',
+    printNameLabel:'Print Name',
+    titlePositionLabel:'Title / Position',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2186,6 +2200,8 @@ const T = {
     schedNoteProgress:'Al alcanzar el punto medio del proyecto.',
     schedNoteFinal:'Al completar el trabajo. Solicitar liberación de gravamen firmada.',
     depositFromEstimate:'Depósito del estimado',
+    printNameLabel:'Nombre',
+    titlePositionLabel:'Cargo / Título',
   }
 };
 
@@ -3862,8 +3878,9 @@ function saveSigPad() {
     var con = contracts.find(function(x){ return x.id===currentContractId; });
     if (con) {
       if (!con.signatures) con.signatures = {};
-      if (ctx === 'con-auth') con.signatures.authorized = img;
-      else con.signatures.client = img;
+      var today = new Date().toISOString().slice(0,10);
+      if (ctx === 'con-auth') { con.signatures.authorized = img; con.signatures.authorizedDate = today; }
+      else { con.signatures.client = img; con.signatures.clientDate = today; }
       saveContracts(contracts);
       renderConSigs(con);
     }
@@ -3914,6 +3931,11 @@ function renderConSigs(c) {
   }
   setSlot('conSigAuth','conSigAuthClear', sigs.authorized);
   setSlot('conSigClient','conSigClientClear', sigs.client);
+  var authDate = $('conSigAuthDate'); if (authDate) authDate.textContent = sigs.authorizedDate || '';
+  var clientDate = $('conSigClientDate'); if (clientDate) clientDate.textContent = sigs.clientDate || '';
+  var authName = $('conAuthPrintName'); if (authName) authName.value = sigs.authorizedPrintName || '';
+  var authTitle = $('conAuthTitle'); if (authTitle) authTitle.value = sigs.authorizedTitle || '';
+  var clientName = $('conClientPrintName'); if (clientName) clientName.value = sigs.clientPrintName || '';
 }
 function clearConSig(role) {
   var contracts = getContracts();
@@ -3923,6 +3945,14 @@ function clearConSig(role) {
   c.signatures[role] = null;
   saveContracts(contracts);
   renderConSigs(c);
+}
+function saveConSigField(field, value) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id===currentContractId; });
+  if (!c) return;
+  if (!c.signatures) c.signatures = {};
+  c.signatures[field] = value;
+  saveContracts(contracts);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4830,13 +4860,14 @@ function getContractDoc(c) {
     '<div class="bottom-box"><h3><span>✎</span>'+pdfStr('CONTRACTOR SIGNATURE','FIRMA DEL CONTRATISTA')+'</h3>' +
       ((c.signatures&&c.signatures.authorized) ? '<img src="'+c.signatures.authorized+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
       '<div class="sig-line">'+pdfStr('Authorized Signature &amp; Date','Firma Autorizada y Fecha')+'</div>' +
-      '<div class="sig-name">' + escapeHtml(p.companyName) + '</div>' +
+      '<div class="sig-name">' + escapeHtml((c.signatures&&c.signatures.authorizedPrintName)||p.companyName) + '</div>' +
+      ((c.signatures&&c.signatures.authorizedTitle) ? '<div class="sig-name">' + escapeHtml(c.signatures.authorizedTitle) + '</div>' : '') +
       '<div class="sig-line" style="margin-top:18px;">'+pdfStr('Printed Name &amp; Title','Nombre y Cargo')+'</div>' +
     '</div>' +
     '<div class="bottom-box"><h3><span>✎</span>'+pdfStr('CLIENT SIGNATURE','FIRMA DEL CLIENTE')+'</h3>' +
       ((c.signatures&&c.signatures.client) ? '<img src="'+c.signatures.client+'" style="height:52px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : '') +
       '<div class="sig-line">'+pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha')+'</div>' +
-      '<div class="sig-name">' + escapeHtml(c.clientName) + '</div>' +
+      '<div class="sig-name">' + escapeHtml((c.signatures&&c.signatures.clientPrintName)||c.clientName) + '</div>' +
       '<div class="sig-line" style="margin-top:18px;">'+pdfStr('Printed Name','Nombre')+'</div>' +
     '</div>' +
   '</div>' +
