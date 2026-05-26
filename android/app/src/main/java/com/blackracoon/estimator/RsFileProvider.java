@@ -22,7 +22,12 @@ public class RsFileProvider extends ContentProvider {
         return ParcelFileDescriptor.open(file, m);
     }
 
-    @Override public String getType(Uri uri) { return "image/jpeg"; }
+    @Override public String getType(Uri uri) {
+        String path = uri.getPath();
+        if (path != null && path.endsWith(".pdf")) return "application/pdf";
+        if (path != null && path.endsWith(".png")) return "image/png";
+        return "image/jpeg";
+    }
     @Override public Cursor query(Uri u, String[] p, String s, String[] a, String o) { return null; }
     @Override public Uri insert(Uri u, ContentValues v) { return null; }
     @Override public int delete(Uri u, String s, String[] a) { return 0; }

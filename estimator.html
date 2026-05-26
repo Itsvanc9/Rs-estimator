@@ -3533,21 +3533,27 @@ function getContractShareText(c) {
 
 function doShareSend(method) {
   closeShareModal();
-  var doc = _getShareDoc();
-  if (!doc) { showToast(t('toastDocNotFound')||'Documento no encontrado'); return; }
+  try {
+    var doc = _getShareDoc();
+    if (!doc) { showToast(t('toastDocNotFound')||'Documento no encontrado'); return; }
 
-  // 1. Native PDF bridge (new APK)
-  if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
-    AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
-    return;
+    // 1. Native PDF bridge (new APK)
+    if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsPdf) {
+      showToast('Generando PDF...');
+      window.AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
+      return;
+    }
+    // 2. Native image bridge (new APK)
+    if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsImage) {
+      showToast('Generando imagen...');
+      window.AndroidBridge.shareHtmlAsImage(doc.html, doc.name, method);
+      return;
+    }
+    // 3. Text fallback — called synchronously to keep user-gesture context
+    _doTextShare(method);
+  } catch(e) {
+    showToast('Error: ' + (e.message || 'No se pudo compartir'));
   }
-  // 2. Native image bridge (new APK)
-  if (window.AndroidBridge && AndroidBridge.shareHtmlAsImage) {
-    AndroidBridge.shareHtmlAsImage(doc.html, doc.name, method);
-    return;
-  }
-  // 3. Text fallback — called synchronously to keep user-gesture context for navigator.share
-  _doTextShare(method);
 }
 
 // Render full HTML document to PNG Blob using SVG foreignObject (no external library)
@@ -3637,8 +3643,8 @@ function _savedEstimateText(e) {
 
 function _fireShareIntent(method, text, title) {
   // Best: call Java directly (no URL scheme tricks)
-  if (window.AndroidBridge && AndroidBridge.shareText) {
-    AndroidBridge.shareText(text, method);
+  if (window.AndroidBridge && window.AndroidBridge.shareText) {
+    window.AndroidBridge.shareText(text, method);
     return;
   }
   // Fallback: intent URL via anchor click (confirmed working in this WebView)
@@ -3650,7 +3656,7 @@ function _fireShareIntent(method, text, title) {
     url = 'intent://compose?subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end';
   }
   var a = document.createElement('a');
-  a.href = url; a.style.display = 'none';
+  a.href = url; a.style.position = 'fixed'; a.style.left = '-9999px';
   document.body.appendChild(a);
   a.click();
   setTimeout(function(){ if (document.body.contains(a)) document.body.removeChild(a); }, 500);
