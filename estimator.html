@@ -3599,7 +3599,6 @@ function _doTextShare(method) {
     text  = getContractShareText(c);
     title = 'Contrato ' + (c.estNum||'');
   } else {
-    // Use saved estimate data when sharing from the list; fall back to form
     var saved = JSON.parse(localStorage.getItem('RS_ESTIMATES')||'[]')
                   .find(function(x){ return x.id === _shareDocId; });
     if (saved) {
@@ -3609,12 +3608,6 @@ function _doTextShare(method) {
       text  = getEstimateShareText();
       title = 'Estimado ' + ($('estNum').value||'');
     }
-  }
-  // navigator.share with plain text — works without file, no async needed
-  if (typeof navigator.share === 'function') {
-    navigator.share({ text: text, title: title })
-      .catch(function() { _fireShareIntent(method, text, title); });
-    return;
   }
   _fireShareIntent(method, text, title);
 }
@@ -3645,8 +3638,7 @@ function _savedEstimateText(e) {
 function _fireShareIntent(method, text, title) {
   var enc = encodeURIComponent(text);
   if (method === 'whatsapp') {
-    // window.location.href reliably triggers shouldOverrideUrlLoading in WebView
-    window.location.href = 'intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end';
+    window.location.href = 'whatsapp://send?text=' + enc;
   } else {
     window.location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + enc;
   }
