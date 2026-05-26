@@ -32,8 +32,9 @@ import java.io.OutputStream;
 
 public class AndroidBridge {
 
-    static final int REQUEST_BACKUP  = 1001;
-    static final int REQUEST_CAMERA  = 1003;
+    static final int REQUEST_BACKUP           = 1001;
+    static final int REQUEST_CAMERA           = 1003;
+    static final int REQUEST_CAMERA_PERMISSION = 1004;
 
     private Context context;
     private WebView webView;
@@ -83,32 +84,55 @@ public class AndroidBridge {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    ContentValues values = new ContentValues();
-                    values.put(MediaStore.Images.Media.DISPLAY_NAME,
-                            "receipt_" + System.currentTimeMillis() + ".jpg");
-                    values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
-                    pendingPhotoUri = context.getContentResolver().insert(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-                    if (pendingPhotoUri == null) {
-                        showToastByKey("toastErrPrepCamera");
-                        return;
-                    }
-
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
-                    // Request rear camera (non-standard extras, supported by most OEMs)
-                    intent.putExtra("android.intent.extras.CAMERA_FACING", 0);
-                    intent.putExtra("android.intent.extras.LENS_FACING_FRONT", 0);
-                    intent.putExtra("android.intent.extra.USE_FRONT_CAMERA", false);
-                    activity.startActivityForResult(intent, REQUEST_CAMERA);
-                } catch (Exception e) {
-                    showToastByKey("toastErrOpenCamera");
+                // Check CAMERA runtime permission (required on API 23+)
+                if (activity.checkSelfPermission("android.permission.CAMERA")
+                        != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    activity.requestPermissions(
+                            new String[]{"android.permission.CAMERA"},
+                            REQUEST_CAMERA_PERMISSION);
+                    return;
                 }
+                startCameraIntent(activity);
             }
         });
+    }
+
+    void startCameraIntent(final Activity activity) {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME,
+                    "receipt_" + System.currentTimeMillis() + ".jpg");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+
+            pendingPhotoUri = context.getContentResolver().insert(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
+            if (pendingPhotoUri == null) {
+                showToastByKey("toastErrPrepCamera");
+                return;
+            }
+
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            activity.startActivityForResult(intent, REQUEST_CAMERA);
+        } catch (Exception e) {
+            showToastByKey("toastErrOpenCamera");
+        }
+    }
+
+    public void onPermissionResult(int requestCode, int[] grantResults) {
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            final Activity activity = (Activity) context;
+            if (grantResults.length > 0
+                    && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override public void run() { startCameraIntent(activity); }
+                });
+            } else {
+                showToastByKey("toastErrOpenCamera");
+            }
+        }
     }
 
     // ── ACTIVITY RESULT ──────────────────────────────────────────────────────
