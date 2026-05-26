@@ -492,6 +492,35 @@ public class AndroidBridge {
         }
     }
 
+    // ── SHARE TEXT ────────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void shareText(final String text, final String channel) {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_SEND);
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_TEXT, text);
+                    if ("whatsapp".equals(channel)) {
+                        intent.setPackage("com.whatsapp");
+                    } else if ("email".equals(channel)) {
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "Estimado");
+                        intent.setType("message/rfc822");
+                    }
+                    try {
+                        activity.startActivity(intent);
+                    } catch (Exception e) {
+                        activity.startActivity(Intent.createChooser(intent, "Compartir"));
+                    }
+                } catch (Exception e) {
+                    mostrarMensaje("Error al compartir");
+                }
+            }
+        });
+    }
+
     // ── TOAST ─────────────────────────────────────────────────────────────────
 
     @JavascriptInterface

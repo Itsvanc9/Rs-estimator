@@ -3636,12 +3636,24 @@ function _savedEstimateText(e) {
 }
 
 function _fireShareIntent(method, text, title) {
-  var enc = encodeURIComponent(text);
-  if (method === 'whatsapp') {
-    window.location.href = 'whatsapp://send?text=' + enc;
-  } else {
-    window.location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + enc;
+  // Best: call Java directly (no URL scheme tricks)
+  if (window.AndroidBridge && AndroidBridge.shareText) {
+    AndroidBridge.shareText(text, method);
+    return;
   }
+  // Fallback: intent URL via anchor click (confirmed working in this WebView)
+  var enc = encodeURIComponent(text);
+  var url;
+  if (method === 'whatsapp') {
+    url = 'intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end';
+  } else {
+    url = 'intent://compose?subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end';
+  }
+  var a = document.createElement('a');
+  a.href = url; a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ if (document.body.contains(a)) document.body.removeChild(a); }, 500);
 }
 
 
