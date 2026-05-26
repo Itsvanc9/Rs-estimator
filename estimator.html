@@ -434,7 +434,8 @@
     border-bottom:1px solid var(--border);
   }
   .contract-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-  .contract-status-dot.active { background:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
+  .contract-status-dot.active { background:#84cc16; box-shadow:0 0 0 3px rgba(132,204,22,.2); }
+  .contract-status-dot.accepted { background:#10b981; box-shadow:0 0 0 3px rgba(16,185,129,.2); }
   .contract-status-dot.completed { background:#94a3b8; }
   .contract-card-name { flex:1; }
   .contract-card-name strong { font-size:14px; font-weight:700; display:block; }
@@ -637,6 +638,31 @@
   .cal-job-client { font-weight:700;font-size:13px;color:var(--text); }
   .cal-job-meta { font-size:11px;color:var(--muted);margin-top:1px; }
   .cal-empty { text-align:center;color:var(--muted);font-size:13px;padding:24px 0; }
+
+  /* ── JOB DAY SHEET ── */
+  .job-day-sheet { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.55);display:none;align-items:flex-end; }
+  .jds-body { width:100%;background:var(--surface);border-radius:22px 22px 0 0;max-height:82vh;overflow-y:auto;padding-bottom:40px; }
+  .jds-handle { width:36px;height:4px;background:var(--border-solid);border-radius:2px;margin:12px auto 0; }
+  .jds-header { padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between; }
+  .jds-date { font-size:16px;font-weight:800;color:var(--text); }
+  .jds-count { font-size:12px;color:var(--muted);margin-top:3px; }
+  .jds-close { background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 0 0 12px;line-height:1; }
+  .jds-card { margin:14px 14px 0;background:var(--bg);border-radius:16px;overflow:hidden;border:1px solid var(--border); }
+  .jds-card-top { padding:14px 14px 10px; }
+  .jds-client { font-size:17px;font-weight:800;color:var(--text); }
+  .jds-project { font-size:12px;color:var(--muted);margin-top:2px; }
+  .jds-tags { display:flex;gap:6px;flex-wrap:wrap;margin-top:10px; }
+  .jds-tag { font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;border:1px solid; }
+  .jds-scope { font-size:12px;color:var(--text2);padding:8px 14px;border-top:1px solid var(--border);line-height:1.55; }
+  .jds-bar-row { padding:8px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border); }
+  .jds-bar-wrap { flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden; }
+  .jds-bar-fill { height:100%;background:var(--lime);border-radius:3px; }
+  .jds-pay-pct { font-size:11px;font-weight:700;color:var(--lime-dark);white-space:nowrap; }
+  .jds-footer { padding:12px 14px;display:flex;gap:8px;border-top:1px solid var(--border); }
+  /* ── ACCEPT CONTRACT BANNER ── */
+  .cd-accept-wrap { margin-bottom:14px; }
+  .cd-accept-btn { width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#84cc16,#4d7c0f);color:#fff;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px; }
+  .cd-accepted-badge { display:none;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:10px 14px;font-size:13px;font-weight:700;color:#10b981;text-align:center; }
 
   /* ── JOB DATES in contract detail ── */
   .cd-dates-row { display:flex;gap:10px;margin-bottom:10px; }
@@ -1323,6 +1349,18 @@
   </div>
 </div>
 
+<!-- JOB DAY SHEET -->
+<div id="jobDaySheet" class="job-day-sheet" onclick="if(event.target===this)closeJobDaySheet()">
+  <div class="jds-body">
+    <div class="jds-handle"></div>
+    <div class="jds-header">
+      <div><div class="jds-date" id="jdsDate"></div><div class="jds-count" id="jdsCount"></div></div>
+      <button class="jds-close" onclick="closeJobDaySheet()">✕</button>
+    </div>
+    <div id="jdsCards"></div>
+  </div>
+</div>
+
 <!-- PRINT / PDF ACTION SHEET -->
 <div class="action-sheet" id="printPdfSheet" onclick="if(event.target===this)closePrintSheet()">
   <div class="action-sheet-body">
@@ -1421,6 +1459,12 @@
         <div class="cd-progress-pct" id="cdProgressPct">0% collected</div>
       </div>
     </div>
+
+    <!-- Accept Contract -->
+    <div class="cd-accept-wrap" id="cdAcceptWrap" style="display:none;">
+      <button class="cd-accept-btn" onclick="acceptContract()" data-i18n="acceptContractBtn">✅ Accept Contract</button>
+    </div>
+    <div class="cd-accepted-badge" id="cdAcceptedBadge"></div>
 
     <!-- Job Dates -->
     <div>
@@ -1918,6 +1962,12 @@ const T = {
     toastErrShare:'Error sharing',
     kpiTotal:'Total', kpiPaid:'Paid', kpiBalance:'Balance',
     backBtn:'← Back', editBtn:'Edit', schedUpdated:'✅ Schedule updated',
+    acceptContractBtn:'✅ Accept Contract',
+    contractAcceptedStatus:'✅ Accepted by Client',
+    toastContractClientAccepted:'✅ Contract marked as accepted',
+    confirmAcceptContract:'Mark this contract as accepted by the client?',
+    activeLabel:'Active', acceptedLabel:'Accepted',
+    jobScheduled:'job scheduled', jobsScheduled:'jobs scheduled',
     editMilestoneTitle:'✏️ Edit Payment Milestone',
     schedPctLabel:'Percentage (%)', schedDueDateLabel:'Due Date',
     schedAmountLabel:'Amount ($)', schedNoteOptLabel:'Note (optional)',
@@ -2121,6 +2171,12 @@ const T = {
     toastErrShare:'Error al compartir',
     kpiTotal:'Total', kpiPaid:'Pagado', kpiBalance:'Saldo',
     backBtn:'← Atrás', editBtn:'Editar', schedUpdated:'✅ Plan actualizado',
+    acceptContractBtn:'✅ Aceptar Contrato',
+    contractAcceptedStatus:'✅ Aceptado por el Cliente',
+    toastContractClientAccepted:'✅ Contrato marcado como aceptado',
+    confirmAcceptContract:'¿Marcar este contrato como aceptado por el cliente?',
+    activeLabel:'Activo', acceptedLabel:'Aceptado',
+    jobScheduled:'trabajo programado', jobsScheduled:'trabajos programados',
     editMilestoneTitle:'✏️ Editar Hito de Pago',
     schedPctLabel:'Porcentaje (%)', schedDueDateLabel:'Fecha de Vencimiento',
     schedAmountLabel:'Monto ($)', schedNoteOptLabel:'Nota (opcional)',
@@ -2423,14 +2479,7 @@ function renderScheduleCalendar() {
 }
 
 function calDayClick(day) {
-  var contracts = getContracts().filter(function(c){
-    if (!c.jobStart) return false;
-    var s = new Date(c.jobStart+'T00:00:00');
-    var e = c.jobEnd ? new Date(c.jobEnd+'T00:00:00') : s;
-    var d = new Date(calYear, calMonth, day);
-    return d>=s && d<=e;
-  });
-  if (contracts.length===1) { openContractDetail(contracts[0].id); }
+  openJobDaySheet(day);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -4158,6 +4207,20 @@ function openContractDetail(id) {
     galleryEl.innerHTML = galleryHtml;
     galleryWrap.style.display = galleryHtml ? '' : 'none';
   }
+  // Accept contract button
+  var acceptWrap = $('cdAcceptWrap');
+  var acceptedBadge = $('cdAcceptedBadge');
+  if (c.status === 'active') {
+    acceptWrap.style.display = '';
+    acceptedBadge.style.display = 'none';
+  } else if (c.status === 'accepted') {
+    acceptWrap.style.display = 'none';
+    acceptedBadge.style.display = '';
+    acceptedBadge.textContent = t('contractAcceptedStatus') + (c.acceptedByClientDate ? ' · ' + c.acceptedByClientDate : '');
+  } else {
+    acceptWrap.style.display = 'none';
+    acceptedBadge.style.display = 'none';
+  }
   // Signed contract section
   renderSignedSection(c);
   // Electronic signatures
@@ -4176,6 +4239,83 @@ function markContractComplete(id) {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===id; });
   if (c) { c.status = 'completed'; saveContracts(contracts); renderContracts(); showToast(t('toastContractComplete')); }
+}
+
+function acceptContract() {
+  showConfirm(t('confirmAcceptContract'), '', '✅', t('acceptContractBtn'), '#84cc16', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id===currentContractId; });
+    if (!c) return;
+    c.status = 'accepted';
+    c.acceptedByClientDate = new Date().toISOString().slice(0,10);
+    saveContracts(contracts);
+    openContractDetail(currentContractId);
+    showToast(t('toastContractClientAccepted'));
+  });
+}
+
+// ── JOB DAY SHEET ────────────────────────────────────────────────────────────
+
+function openJobDaySheet(day) {
+  var jobs = getContracts().filter(function(c) {
+    if (!c.jobStart) return false;
+    var s = new Date(c.jobStart + 'T00:00:00');
+    var e = c.jobEnd ? new Date(c.jobEnd + 'T00:00:00') : s;
+    var d = new Date(calYear, calMonth, day);
+    return d >= s && d <= e;
+  });
+  if (jobs.length === 0) return;
+
+  var MONTHS = currentLang === 'es'
+    ? ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+    : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DAYS_FULL = currentLang === 'es'
+    ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+    : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var dateObj = new Date(calYear, calMonth, day);
+  $('jdsDate').textContent = DAYS_FULL[dateObj.getDay()] + ', ' + MONTHS[calMonth] + ' ' + day + ', ' + calYear;
+  $('jdsCount').textContent = jobs.length + ' ' + (jobs.length === 1 ? t('jobScheduled') : t('jobsScheduled'));
+
+  $('jdsCards').innerHTML = jobs.map(function(c) {
+    var col = teamColor(c.team);
+    var paid = c.payments.reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+    var pct  = c.totalAmount > 0 ? Math.min(100, Math.round(paid / c.totalAmount * 100)) : 0;
+    var scope = ((c.scopeWork || '') + '').replace(/<[^>]*>/g, '').trim();
+    var scopeShort = scope.length > 120 ? scope.substring(0, 120) + '…' : scope;
+    var statusColor = c.status === 'completed' ? '#94a3b8'
+                    : c.status === 'accepted'  ? '#10b981' : 'var(--lime-dark)';
+    var statusLbl = c.status === 'completed' ? t('completedLabel')
+                  : c.status === 'accepted'  ? t('acceptedLabel') : t('activeLabel');
+    var phone = (c.estimateData && c.estimateData.clientPhone) ? c.estimateData.clientPhone : '';
+    return '<div class="jds-card" style="border-left:5px solid ' + col + ';">' +
+      '<div class="jds-card-top">' +
+        '<div class="jds-client">' + escapeHtml(c.clientName) + '</div>' +
+        (c.projectName ? '<div class="jds-project">' + escapeHtml((c.estNum ? '#' + c.estNum + ' · ' : '') + c.projectName) + '</div>' : '') +
+        '<div class="jds-tags">' +
+          (c.team ? '<span class="jds-tag" style="color:' + col + ';border-color:' + col + ';background:' + col + '1a;">👥 ' + escapeHtml(c.team) + '</span>' : '') +
+          '<span class="jds-tag" style="color:' + statusColor + ';border-color:' + statusColor + ';background:' + statusColor + '1a;">' + statusLbl + '</span>' +
+          '<span class="jds-tag" style="color:var(--muted);border-color:var(--border);">📅 ' + c.jobStart + (c.jobEnd && c.jobEnd !== c.jobStart ? ' → ' + c.jobEnd : '') + '</span>' +
+          '<span class="jds-tag" style="color:var(--muted);border-color:var(--border);">💰 $' + fmtMoney(c.totalAmount) + '</span>' +
+        '</div>' +
+      '</div>' +
+      (scopeShort ? '<div class="jds-scope">📋 ' + escapeHtml(scopeShort) + '</div>' : '') +
+      '<div class="jds-bar-row">' +
+        '<span style="font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;">' + t('kpiPaid') + '</span>' +
+        '<div class="jds-bar-wrap"><div class="jds-bar-fill" style="width:' + pct + '%;"></div></div>' +
+        '<span class="jds-pay-pct">$' + fmtMoney(paid) + ' (' + pct + '%)</span>' +
+      '</div>' +
+      '<div class="jds-footer">' +
+        '<button class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px;padding:10px;" onclick="closeJobDaySheet();openContractDetail(\'' + c.id + '\')">📋 ' + t('viewContractBtn') + '</button>' +
+        (phone ? '<a href="tel:' + encodeURIComponent(phone) + '" class="btn btn-light" style="justify-content:center;font-size:15px;padding:10px 16px;">📞</a>' : '') +
+      '</div>' +
+    '</div>';
+  }).join('') + '<div style="height:14px;"></div>';
+
+  $('jobDaySheet').style.display = 'flex';
+}
+
+function closeJobDaySheet() {
+  $('jobDaySheet').style.display = 'none';
 }
 
 function deleteContract(id) {
@@ -5149,6 +5289,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('signedPhotoViewer').style.display !== 'none')           { closeSignedPhotoViewer(); return; }
     if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
     if ($('companyProfilePanel').style.display !== 'none')         { closeCompanyProfile(); return; }
+    if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
     if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
     if ($('contractDetail').classList.contains('open'))             { closeContractDetail(); return; }
