@@ -1460,12 +1460,6 @@
       </div>
     </div>
 
-    <!-- Accept Contract -->
-    <div class="cd-accept-wrap" id="cdAcceptWrap" style="display:none;">
-      <button class="cd-accept-btn" onclick="acceptContract()" data-i18n="acceptContractBtn">✅ Accept Contract</button>
-    </div>
-    <div class="cd-accepted-badge" id="cdAcceptedBadge"></div>
-
     <!-- Job Dates -->
     <div>
       <div class="cd-section-title">📅 <span data-i18n="appointmentSection">Appointment</span></div>
@@ -1553,6 +1547,12 @@
       <div class="cd-section-title">📷 <span data-i18n="photosLabel">Photos</span></div>
       <div id="cdPhotoGallery" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0;"></div>
     </div>
+
+    <!-- Accept Contract -->
+    <div class="cd-accept-wrap" id="cdAcceptWrap" style="display:none;">
+      <button class="cd-accept-btn" onclick="acceptContract()" data-i18n="acceptContractBtn">✅ Accept Contract</button>
+    </div>
+    <div class="cd-accepted-badge" id="cdAcceptedBadge"></div>
 
     <!-- Contract electronic signatures -->
     <div class="cd-section-title">✍️ <span data-i18n="signaturesTitle">Electronic Signatures</span></div>
@@ -4054,9 +4054,17 @@ function acceptEstimate(id) {
   contract.validUntil   = est.validUntil || '';
   contract.signedPhoto  = null;
   contract.estimateData = JSON.parse(JSON.stringify(est)); // full snapshot incl. photos
-  // Carry over any deposit already paid on the estimate
+  // Carry over any deposit already paid on the estimate and sync schedule amounts
   var depositPaid = parseFloat(est.deposit || 0);
   if (depositPaid > 0) {
+    // Update deposit schedule item to reflect actual amount paid
+    var depItem = contract.schedule[0];
+    depItem.amount = depositPaid;
+    depItem.pct    = total > 0 ? Math.round(depositPaid / total * 1000) / 10 : 0;
+    // Adjust Final item so all three sum to total
+    var finalAmt = Math.max(0, Math.round((total - depositPaid - prog) * 100) / 100);
+    contract.schedule[2].amount = finalAmt;
+    contract.schedule[2].pct    = total > 0 ? Math.round(finalAmt / total * 1000) / 10 : 0;
     contract.payments.push({
       pid: 'dep_' + Date.now(),
       scheduleId: 1,
@@ -4149,7 +4157,7 @@ function openContractDetail(id) {
       '<div class="psi-amount" style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">' +
         '<strong style="color:' + (isPaid?'#10b981':'var(--text)') + '">$' + fmtMoney(s.amount) + '</strong>' +
         '<span>' + s.pct + '%</span>' +
-        (!isPaid ? '<button onclick="openSchedEdit(' + s.sid + ')" style="-webkit-tap-highlight-color:transparent;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;">✏️ ' + t('editBtn') + '</button>' : '') +
+        '<button onclick="openSchedEdit(' + s.sid + ')" style="-webkit-tap-highlight-color:transparent;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;margin-top:2px;">✏️ ' + t('editBtn') + '</button>' +
       '</div>' +
     '</div>';
   }).join('');
