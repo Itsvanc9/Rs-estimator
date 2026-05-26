@@ -3534,50 +3534,20 @@ function getContractShareText(c) {
 function doShareSend(method) {
   closeShareModal();
   var doc = _getShareDoc();
-  if (!doc) { showToast(t('toastDocNotFound')||'Document not found'); return; }
+  if (!doc) { showToast(t('toastDocNotFound')||'Documento no encontrado'); return; }
 
-  // 1. Native PDF bridge (new APK with shareHtmlAsPdf)
+  // 1. Native PDF bridge (new APK)
   if (window.AndroidBridge && AndroidBridge.shareHtmlAsPdf) {
     AndroidBridge.shareHtmlAsPdf(doc.html, doc.name, method);
     return;
   }
-
-  // 2. Native image bridge (new APK with shareHtmlAsImage)
+  // 2. Native image bridge (new APK)
   if (window.AndroidBridge && AndroidBridge.shareHtmlAsImage) {
     AndroidBridge.shareHtmlAsImage(doc.html, doc.name, method);
     return;
   }
-
-  // 3. Render HTML → canvas (pure JS, no library) → share as PNG image
-  showToast('Generando imagen...');
-  _renderDocToBlob(doc.html, function(imgBlob) {
-    if (!imgBlob) { _doTextShare(method); return; }
-    var imgFile = new File([imgBlob], doc.name + '.png', { type: 'image/png' });
-
-    // 3a. Web Share API with image (works on modern Android WebView)
-    if (typeof navigator.share === 'function') {
-      var sd = { files: [imgFile], title: doc.name };
-      if (typeof navigator.canShare === 'function' && navigator.canShare(sd)) {
-        navigator.share(sd).catch(function() { _doTextShare(method); });
-        return;
-      }
-    }
-
-    // 3b. Save PNG to Downloads gallery via existing bridge
-    if (window.AndroidBridge && AndroidBridge.saveBase64File) {
-      var reader = new FileReader();
-      reader.onload = function(ev) {
-        AndroidBridge.saveBase64File(ev.target.result, doc.name + '.png', 'image/png');
-        showToast('Imagen guardada en Descargas');
-        setTimeout(function() { _doTextShare(method); }, 900);
-      };
-      reader.readAsDataURL(imgBlob);
-      return;
-    }
-
-    // 4. Plain-text fallback
-    _doTextShare(method);
-  });
+  // 3. Text fallback — called synchronously to keep user-gesture context for navigator.share
+  _doTextShare(method);
 }
 
 // Render full HTML document to PNG Blob using SVG foreignObject (no external library)
@@ -3629,14 +3599,56 @@ function _doTextShare(method) {
     text  = getContractShareText(c);
     title = 'Contrato ' + (c.estNum||'');
   } else {
-    text  = getEstimateShareText();
-    title = 'Estimado ' + ($('estNum').value||'');
+    // Use saved estimate data when sharing from the list; fall back to form
+    var saved = JSON.parse(localStorage.getItem('RS_ESTIMATES')||'[]')
+                  .find(function(x){ return x.id === _shareDocId; });
+    if (saved) {
+      text  = _savedEstimateText(saved);
+      title = 'Estimado ' + (saved.estNum||'');
+    } else {
+      text  = getEstimateShareText();
+      title = 'Estimado ' + ($('estNum').value||'');
+    }
   }
+  // navigator.share with plain text — works without file, no async needed
+  if (typeof navigator.share === 'function') {
+    navigator.share({ text: text, title: title })
+      .catch(function() { _fireShareIntent(method, text, title); });
+    return;
+  }
+  _fireShareIntent(method, text, title);
+}
+
+function _savedEstimateText(e) {
+  var lines = [];
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📋 ESTIMADO ' + (e.estNum||'-'));
+  lines.push(getProfile().companyName);
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  lines.push('📅 Fecha: ' + (e.date||'-'));
+  lines.push('👤 Cliente: ' + (e.client||'-'));
+  if (e.project)    lines.push('🏗️ Proyecto: ' + e.project);
+  if (e.address)    lines.push('📍 Dirección: ' + e.address);
+  if (e.validUntil) lines.push('⏳ Válido hasta: ' + e.validUntil);
+  if (e.scope) { lines.push(''); lines.push('📝 Descripción:'); lines.push(e.scope); }
+  lines.push('─────────────────────────');
+  lines.push('💰 TOTAL: $' + fmtMoney(e.grand||0));
+  var dep = parseFloat(e.deposit)||0;
+  if (dep > 0) {
+    lines.push('✅ Depósito: $' + fmtMoney(dep));
+    lines.push('📌 Balance:  $' + fmtMoney(Math.max(0,(e.grand||0)-dep)));
+  }
+  lines.push('━━━━━━━━━━━━━━━━━━━━━━━━');
+  return lines.join('\n');
+}
+
+function _fireShareIntent(method, text, title) {
   var enc = encodeURIComponent(text);
   if (method === 'whatsapp') {
-    _openIntentUrl('intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end');
+    // window.location.href reliably triggers shouldOverrideUrlLoading in WebView
+    window.location.href = 'intent://send?text=' + enc + '#Intent;scheme=whatsapp;package=com.whatsapp;end';
   } else {
-    _openIntentUrl('intent://compose?subject=' + encodeURIComponent(title) + '&body=' + enc + '#Intent;scheme=mailto;end');
+    window.location.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + enc;
   }
 }
 
