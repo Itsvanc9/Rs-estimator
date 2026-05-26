@@ -1682,22 +1682,22 @@
     <!-- Step 1: document list -->
     <div id="shareStep1" style="display:flex;flex-direction:column;overflow:hidden;">
       <div style="text-align:center;font-size:30px;margin-bottom:6px;">📨</div>
-      <div style="text-align:center;font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;">¿Qué quieres enviar?</div>
-      <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px;">Elige el documento — se enviará como PDF</div>
+      <div style="text-align:center;font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px;" data-i18n="shareTitle">What do you want to send?</div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px;" data-i18n="shareSubtitle">Choose a document — it will be sent as PDF</div>
       <div id="shareDocList" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;"></div>
-      <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;">Cancelar</button>
+      <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;" data-i18n="cancelBtn">Cancel</button>
     </div>
     <!-- Step 2: send method -->
     <div id="shareStep2" style="display:none;">
-      <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:4px;">Enviando</div>
+      <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:4px;" data-i18n="shareSending">Sending</div>
       <div id="shareStep2Label" style="text-align:center;font-size:14px;font-weight:800;color:var(--text);margin-bottom:18px;line-height:1.3;"></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
         <button onclick="doShareSend('whatsapp')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:#25d366;border:none;color:#fff;border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">💬</span>WhatsApp</button>
         <button onclick="doShareSend('email')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:12px;background:var(--lime);border:none;color:var(--lime-dark);border-radius:14px;padding:14px 16px;font-size:15px;font-weight:700;cursor:pointer;touch-action:manipulation;width:100%;"><span style="font-size:22px;">✉️</span>Email</button>
       </div>
       <div style="display:flex;gap:8px;">
-        <button onclick="shareGoBack()" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">← Atrás</button>
-        <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;">Cancelar</button>
+        <button onclick="shareGoBack()" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;" data-i18n="backBtn">← Back</button>
+        <button onclick="closeShareModal()" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--border);border:none;color:var(--muted);border-radius:12px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation;" data-i18n="cancelBtn">Cancel</button>
       </div>
     </div>
   </div>
@@ -1991,6 +1991,15 @@ const T = {
     depositFromEstimate:'Deposit from estimate',
     printNameLabel:'Print Name',
     titlePositionLabel:'Title / Position',
+    shareTitle:'What do you want to send?',
+    shareSubtitle:'Choose a document — it will be sent as PDF',
+    shareSending:'Sending',
+    shareOpenEstimate:'Open Estimate',
+    shareNoClient:'No client',
+    shareSavedEstimates:'Saved Estimates',
+    shareAcceptedEstimates:'Accepted Estimates',
+    shareContracts:'Contracts',
+    shareNoDocs:'No saved documents',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2202,6 +2211,15 @@ const T = {
     depositFromEstimate:'Depósito del estimado',
     printNameLabel:'Nombre',
     titlePositionLabel:'Cargo / Título',
+    shareTitle:'¿Qué quieres enviar?',
+    shareSubtitle:'Elige el documento — se enviará como PDF',
+    shareSending:'Enviando',
+    shareOpenEstimate:'Estimado Abierto',
+    shareNoClient:'Sin cliente',
+    shareSavedEstimates:'Estimados Guardados',
+    shareAcceptedEstimates:'Estimados Aceptados',
+    shareContracts:'Contratos',
+    shareNoDocs:'No hay documentos guardados',
   }
 };
 
@@ -3585,39 +3603,55 @@ var _shareDocType = 'estimate';
 function shareEstimate() {
   var list = $('shareDocList');
   var html = '';
+  var btnStyle = '-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;';
 
-  // Current open estimate (even if unsaved) — always show at top if it has content
+  // Current open estimate (even if unsaved)
   var curNum    = ($('estNum')    ? $('estNum').value    : '') || '';
   var curClient = ($('clientName')? $('clientName').value: '') || '';
   if (curNum || curClient) {
-    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:2px 0 4px;">✏️ Estimado abierto</div>';
-    html += '<button onclick="sharePickDoc(\'current\',\'current\')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:2px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;">'
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:2px 0 4px;">✏️ ' + t('shareOpenEstimate') + '</div>';
+    html += '<button onclick="sharePickDoc(\'current\',\'current\')" style="' + btnStyle + 'border-color:var(--lime);border-width:2px;">'
       + '<span style="font-size:18px;">✏️</span>'
-      + '<div><div style="color:var(--text);">' + escapeHtml(curNum||'Estimado') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(curClient||'Sin cliente') + '</div></div>'
+      + '<div><div style="color:var(--text);">' + escapeHtml(curNum||t('shareOpenEstimate')) + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(curClient||t('shareNoClient')) + '</div></div>'
       + '</button>';
   }
 
   var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
   var contracts  = getContracts();
+
   if (estimates.length) {
-    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📋 Estimados guardados</div>';
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📋 ' + t('shareSavedEstimates') + '</div>';
     estimates.slice(0,6).forEach(function(e) {
-      html += '<button onclick="sharePickDoc(\'estimate\',\'' + e.id + '\')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;">'
+      html += '<button onclick="sharePickDoc(\'estimate\',\'' + e.id + '\')" style="' + btnStyle + '">'
         + '<span style="font-size:18px;">📋</span>'
-        + '<div><div style="color:var(--text);">' + escapeHtml(e.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(e.client||'Sin cliente') + ' · $' + fmtMoney(e.grand||0) + '</div></div>'
+        + '<div><div style="color:var(--text);">' + escapeHtml(e.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(e.client||t('shareNoClient')) + ' · $' + fmtMoney(e.grand||0) + '</div></div>'
         + '</button>';
     });
   }
+
+  // Accepted estimates — stored inside contracts as estimateData
+  var accepted = contracts.filter(function(c){ return c.estimateData; });
+  if (accepted.length) {
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">✅ ' + t('shareAcceptedEstimates') + '</div>';
+    accepted.slice(0,6).forEach(function(c) {
+      html += '<button onclick="sharePickDoc(\'accepted-estimate\',\'' + c.id + '\')" style="' + btnStyle + '">'
+        + '<span style="font-size:18px;">✅</span>'
+        + '<div><div style="color:var(--text);">' + escapeHtml(c.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(c.clientName||t('shareNoClient')) + ' · $' + fmtMoney(c.totalAmount||0) + '</div></div>'
+        + '</button>';
+    });
+  }
+
   if (contracts.length) {
-    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📜 Contratos</div>';
+    html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📜 ' + t('shareContracts') + '</div>';
     contracts.slice(0,6).forEach(function(c) {
-      html += '<button onclick="sharePickDoc(\'contract\',\'' + c.id + '\')" style="-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;">'
+      html += '<button onclick="sharePickDoc(\'contract\',\'' + c.id + '\')" style="' + btnStyle + '">'
         + '<span style="font-size:18px;">📜</span>'
-        + '<div><div style="color:var(--text);">' + escapeHtml(c.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(c.clientName||'Sin cliente') + ' · $' + fmtMoney(c.totalAmount||0) + '</div></div>'
+        + '<div><div style="color:var(--text);">' + escapeHtml(c.estNum||'-') + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(c.clientName||t('shareNoClient')) + ' · $' + fmtMoney(c.totalAmount||0) + '</div></div>'
         + '</button>';
     });
   }
-  if (!html) html = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No hay documentos guardados</div>';
+
+  if (!html) html = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">' + t('shareNoDocs') + '</div>';
   list.innerHTML = html;
   $('shareStep1').style.display = 'flex';
   $('shareStep2').style.display = 'none';
@@ -3630,15 +3664,18 @@ function sharePickDoc(type, id) {
   _shareDocId   = id;
   var label = '';
   if (type === 'current') {
-    var cn = ($('estNum')     ? $('estNum').value     : '') || 'Estimado';
+    var cn = ($('estNum')     ? $('estNum').value     : '') || t('shareOpenEstimate');
     var cc = ($('clientName') ? $('clientName').value : '') || '';
     label = '✏️ ' + cn + (cc ? '\n' + cc : '');
   } else if (type === 'estimate') {
     var e = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').find(function(x){ return x.id === id; });
-    label = e ? '📋 ' + (e.estNum||'Estimado') + '\n' + (e.client||'') : '📋 Estimado';
+    label = e ? '📋 ' + (e.estNum||t('shareSavedEstimates')) + '\n' + (e.client||'') : '📋 ' + t('shareSavedEstimates');
+  } else if (type === 'accepted-estimate') {
+    var c = getContracts().find(function(x){ return x.id === id; });
+    label = c ? '✅ ' + (c.estNum||t('shareAcceptedEstimates')) + '\n' + (c.clientName||'') : '✅ ' + t('shareAcceptedEstimates');
   } else {
     var c = getContracts().find(function(x){ return x.id === id; });
-    label = c ? '📜 ' + (c.estNum||'Contrato') + '\n' + (c.clientName||'') : '📜 Contrato';
+    label = c ? '📜 ' + (c.estNum||t('shareContracts')) + '\n' + (c.clientName||'') : '📜 ' + t('shareContracts');
   }
   $('shareStep2Label').textContent = label;
   $('shareStep1').style.display = 'none';
@@ -3648,15 +3685,19 @@ function sharePickDoc(type, id) {
 function _getShareDoc() {
   if (_shareDocType === 'contract') {
     var c = getContracts().find(function(x){ return x.id === _shareDocId; });
-    return c ? { html: getContractDoc(c), name: 'Contrato_' + (c.estNum||'RS') } : null;
+    return c ? { html: getContractDoc(c), name: 'Contract_' + (c.estNum||'RS') } : null;
+  }
+  if (_shareDocType === 'accepted-estimate') {
+    var c = getContracts().find(function(x){ return x.id === _shareDocId; });
+    if (c && c.estimateData) return { html: getEstimateDoc(c.estimateData), name: 'Estimate_' + (c.estNum||'RS') };
+    return null;
   }
   var e = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').find(function(x){ return x.id === _shareDocId; });
   if (e) {
-    // temporarily load estimate data for getPrintHTML
-    return { html: getEstimateDoc(e), name: 'Estimado_' + (e.estNum||'RS') };
+    return { html: getEstimateDoc(e), name: 'Estimate_' + (e.estNum||'RS') };
   }
   // fallback: current form
-  return { html: getPrintHTML(), name: 'Estimado_' + ($('estNum').value||'RS') };
+  return { html: getPrintHTML(), name: 'Estimate_' + ($('estNum').value||'RS') };
 }
 
 function _openIntentUrl(url) {
