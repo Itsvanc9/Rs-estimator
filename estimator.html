@@ -1508,6 +1508,13 @@
       <div class="pay-schedule" id="cdSchedule"></div>
     </div>
 
+    <!-- Change Orders -->
+    <div>
+      <div class="cd-section-title">📋 <span data-i18n="changeOrdersSection">Change Orders</span></div>
+      <div id="cdChangeOrders"></div>
+      <button onclick="openNewCO()" class="btn btn-light" style="width:100%;justify-content:center;margin-top:6px;">➕ <span data-i18n="addChangeOrderBtn">New Change Order</span></button>
+    </div>
+
     <!-- Contract document buttons -->
     <div>
       <div class="cd-section-title" data-i18n="contractDocSection">Contract Document</div>
@@ -1757,6 +1764,35 @@
     <div style="display:flex;gap:10px;">
       <button onclick="closeSchedEdit()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
       <button onclick="saveSchedEdit()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE ORDER MODAL -->
+<div id="coModalOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;" id="coModalTitle">📋 Change Order</div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coDescLabel">Description of Change</label>
+      <textarea id="coDesc" rows="4" data-i18n-ph="coDescPlaceholder" placeholder="Describe the scope change, extra work, or credit…"
+        style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coAmountLabel">Amount ($)</label>
+        <input type="number" id="coAmount" inputmode="decimal" step="0.01" placeholder="0.00"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coDateLabel">Date</label>
+        <input type="date" id="coDate"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:16px;" data-i18n="coAmountNote">Positive = extra charge · Negative = credit to client</div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeCOModal()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
+      <button onclick="saveCO()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
     </div>
   </div>
 </div>
@@ -2012,6 +2048,19 @@ const T = {
     depositFromEstimate:'Deposit from estimate',
     printNameLabel:'Print Name',
     titlePositionLabel:'Title / Position',
+    changeOrdersSection:'Change Orders', addChangeOrderBtn:'New Change Order',
+    coDescLabel:'Description of Change', coDescPlaceholder:'Describe the scope change, extra work, or credit…',
+    coAmountLabel:'Amount ($)', coDateLabel:'Date',
+    coAmountNote:'Positive = extra charge · Negative = credit to client',
+    coStatusPending:'Pending Approval', coStatusApproved:'Approved', coStatusRejected:'Rejected',
+    coApproveBtn:'✅ Approve', coRejectBtn:'✗ Reject',
+    coOriginalTotal:'Original Contract', coNewTotal:'New Total',
+    coModalTitleNew:'📋 New Change Order', coModalTitleEdit:'✏️ Edit Change Order',
+    confirmApproveCO:'Approve this change order and update the contract total?',
+    confirmRejectCO:'Reject this change order?',
+    toastCOSaved:'✅ Change Order saved', toastCOApproved:'✅ Change Order approved — contract total updated',
+    toastCORejected:'Change Order rejected', toastCODeleted:'Change Order deleted',
+    printCOBtn:'Print CO', noCOs:'No change orders yet.',
     startTimeLabel:'Start Time', endTimeLabel:'End Time',
     jobNotesLabel:'Job Notes', jobNotesPlaceholder:'Operational notes for this job…',
     calDayNotesLabel:'Day Notes', addNoteBtn:'+ Add Note',
@@ -2240,6 +2289,19 @@ const T = {
     depositFromEstimate:'Depósito del estimado',
     printNameLabel:'Nombre',
     titlePositionLabel:'Cargo / Título',
+    changeOrdersSection:'Órdenes de Cambio', addChangeOrderBtn:'Nueva Orden de Cambio',
+    coDescLabel:'Descripción del Cambio', coDescPlaceholder:'Describe el cambio de alcance, trabajo extra o crédito…',
+    coAmountLabel:'Monto ($)', coDateLabel:'Fecha',
+    coAmountNote:'Positivo = cargo extra · Negativo = crédito al cliente',
+    coStatusPending:'Pendiente de Aprobación', coStatusApproved:'Aprobada', coStatusRejected:'Rechazada',
+    coApproveBtn:'✅ Aprobar', coRejectBtn:'✗ Rechazar',
+    coOriginalTotal:'Contrato Original', coNewTotal:'Nuevo Total',
+    coModalTitleNew:'📋 Nueva Orden de Cambio', coModalTitleEdit:'✏️ Editar Orden de Cambio',
+    confirmApproveCO:'¿Aprobar esta orden de cambio y actualizar el total del contrato?',
+    confirmRejectCO:'¿Rechazar esta orden de cambio?',
+    toastCOSaved:'✅ Orden de Cambio guardada', toastCOApproved:'✅ Orden de Cambio aprobada — total del contrato actualizado',
+    toastCORejected:'Orden de Cambio rechazada', toastCODeleted:'Orden de Cambio eliminada',
+    printCOBtn:'Imprimir OC', noCOs:'No hay órdenes de cambio.',
     startTimeLabel:'Hora de Inicio', endTimeLabel:'Hora de Fin',
     jobNotesLabel:'Notas del Trabajo', jobNotesPlaceholder:'Notas operacionales del trabajo…',
     calDayNotesLabel:'Notas del Día', addNoteBtn:'+ Agregar Nota',
@@ -4345,6 +4407,8 @@ function openContractDetail(id) {
     acceptWrap.style.display = 'none';
     acceptedBadge.style.display = 'none';
   }
+  // Change Orders
+  renderCOs(c);
   // Signed contract section
   renderSignedSection(c);
   // Electronic signatures
@@ -4531,6 +4595,247 @@ function deleteCalNote(dateKey, noteId) {
 
 function closeJobDaySheet() {
   $('jobDaySheet').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+// CHANGE ORDERS
+// ═══════════════════════════════════════════════════════
+var _coEditId = null; // null = new CO, string = editing existing
+
+function openNewCO() {
+  _coEditId = null;
+  $('coModalTitle').textContent = t('coModalTitleNew');
+  $('coDesc').value   = '';
+  $('coAmount').value = '';
+  $('coDate').value   = new Date().toISOString().slice(0, 10);
+  $('coModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'coModal' }, '');
+  setTimeout(function(){ $('coDesc').focus(); }, 120);
+}
+
+function openEditCO(coId) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  var co = (c.changeOrders || []).find(function(x){ return x.id === coId; });
+  if (!co) return;
+  _coEditId = coId;
+  $('coModalTitle').textContent = t('coModalTitleEdit');
+  $('coDesc').value   = co.description || '';
+  $('coAmount').value = co.amount || '';
+  $('coDate').value   = co.date   || new Date().toISOString().slice(0, 10);
+  $('coModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'coModal' }, '');
+}
+
+function closeCOModal() {
+  $('coModalOverlay').style.display = 'none';
+}
+
+function saveCO() {
+  var desc   = ($('coDesc').value || '').trim();
+  var amount = parseFloat($('coAmount').value);
+  var date   = $('coDate').value;
+  if (!desc)          { showToast(t('coDescPlaceholder')); return; }
+  if (isNaN(amount))  { showToast(t('coAmountLabel')); return; }
+
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  if (!c.changeOrders) c.changeOrders = [];
+
+  if (_coEditId) {
+    var co = c.changeOrders.find(function(x){ return x.id === _coEditId; });
+    if (co && co.status === 'pending') {
+      co.description = desc;
+      co.amount      = amount;
+      co.date        = date;
+    }
+  } else {
+    var nextNum = (c.changeOrders.length > 0
+      ? Math.max.apply(null, c.changeOrders.map(function(x){ return x.number || 0; })) + 1
+      : 1);
+    c.changeOrders.push({
+      id: 'co_' + Date.now(),
+      number: nextNum,
+      date: date,
+      description: desc,
+      amount: amount,
+      status: 'pending'
+    });
+  }
+  saveContracts(contracts);
+  closeCOModal();
+  renderCOs(c);
+  showToast(t('toastCOSaved'));
+}
+
+function renderCOs(c) {
+  var el = $('cdChangeOrders'); if (!el) return;
+  var cos = c.changeOrders || [];
+  if (cos.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0 4px;">' + t('noCOs') + '</div>';
+    return;
+  }
+  el.innerHTML = cos.map(function(co) {
+    var statusColor = co.status === 'approved' ? '#10b981'
+                    : co.status === 'rejected' ? '#ef4444' : '#f59e0b';
+    var statusLbl = co.status === 'approved' ? t('coStatusApproved')
+                  : co.status === 'rejected' ? t('coStatusRejected') : t('coStatusPending');
+    var amtColor = co.amount >= 0 ? '#10b981' : '#ef4444';
+    var amtSign  = co.amount >= 0 ? '+' : '';
+    var isPending = co.status === 'pending';
+    return '<div style="background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:8px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
+        '<div>' +
+          '<span style="font-size:12px;font-weight:800;color:var(--text);">CO #' + co.number + '</span>' +
+          '<span style="font-size:11px;color:var(--muted);margin-left:6px;">' + (co.date || '') + '</span>' +
+        '</div>' +
+        '<span style="font-size:11px;font-weight:700;color:' + statusColor + ';background:' + statusColor + '1a;border:1px solid ' + statusColor + ';border-radius:20px;padding:2px 8px;">' + statusLbl + '</span>' +
+      '</div>' +
+      '<div style="font-size:13px;color:var(--text);margin-bottom:8px;line-height:1.4;">' + escapeHtml(co.description) + '</div>' +
+      '<div style="font-size:15px;font-weight:800;color:' + amtColor + ';margin-bottom:10px;">' + amtSign + '$' + fmtMoney(Math.abs(co.amount)) + '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+        (isPending ? '<button onclick="approveCO(\'' + co.id + '\')" style="-webkit-tap-highlight-color:transparent;background:#10b981;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">' + t('coApproveBtn') + '</button>' : '') +
+        (isPending ? '<button onclick="rejectCO(\'' + co.id + '\')" style="-webkit-tap-highlight-color:transparent;background:#ef4444;color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;">' + t('coRejectBtn') + '</button>' : '') +
+        (isPending ? '<button onclick="openEditCO(\'' + co.id + '\')" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;">✏️ ' + t('editBtn') + '</button>' : '') +
+        '<button onclick="printCO(\'' + co.id + '\')" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation;">🖨️ ' + t('printCOBtn') + '</button>' +
+        '<button onclick="deleteCO(\'' + co.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;touch-action:manipulation;">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function approveCO(coId) {
+  showConfirm(t('confirmApproveCO'), '', '📋', t('coApproveBtn'), '#10b981', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id === currentContractId; });
+    if (!c || !c.changeOrders) return;
+    var co = c.changeOrders.find(function(x){ return x.id === coId; });
+    if (!co || co.status !== 'pending') return;
+    co.status       = 'approved';
+    co.approvedDate = new Date().toISOString().slice(0, 10);
+    // Update contract total
+    c.totalAmount = Math.max(0, (c.totalAmount || 0) + co.amount);
+    // Absorb into final schedule item
+    if (c.schedule && c.schedule.length > 0) {
+      var last = c.schedule[c.schedule.length - 1];
+      last.amount = Math.max(0, (last.amount || 0) + co.amount);
+      last.pct    = c.totalAmount > 0 ? Math.round(last.amount / c.totalAmount * 1000) / 10 : 0;
+    }
+    saveContracts(contracts);
+    openContractDetail(currentContractId);
+    showToast(t('toastCOApproved'));
+  });
+}
+
+function rejectCO(coId) {
+  showConfirm(t('confirmRejectCO'), '', '📋', t('coRejectBtn'), '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id === currentContractId; });
+    if (!c || !c.changeOrders) return;
+    var co = c.changeOrders.find(function(x){ return x.id === coId; });
+    if (co) { co.status = 'rejected'; co.rejectedDate = new Date().toISOString().slice(0, 10); }
+    saveContracts(contracts);
+    renderCOs(c);
+    showToast(t('toastCORejected'));
+  });
+}
+
+function deleteCO(coId) {
+  showConfirm(t('toastCODeleted'), t('cannotUndo'), '📋', t('deleteBtn'), '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id === currentContractId; });
+    if (!c) return;
+    c.changeOrders = (c.changeOrders || []).filter(function(x){ return x.id !== coId; });
+    saveContracts(contracts);
+    renderCOs(c);
+    showToast(t('toastCODeleted'));
+  });
+}
+
+function printCO(coId) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  var co = (c.changeOrders || []).find(function(x){ return x.id === coId; });
+  if (!co) return;
+  var html = generateCODoc(c, co);
+  if (window.AndroidBridge && window.AndroidBridge.printHtml) {
+    window.AndroidBridge.printHtml(html, 'CO_' + c.estNum + '_' + co.number);
+  } else {
+    var w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.print(); }
+  }
+}
+
+function generateCODoc(c, co) {
+  var p = getProfile();
+  var amtSign  = co.amount >= 0 ? '+' : '';
+  var amtColor = co.amount >= 0 ? '#10b981' : '#ef4444';
+  var statusColor = co.status === 'approved' ? '#10b981' : co.status === 'rejected' ? '#ef4444' : '#f59e0b';
+  var statusLbl = co.status === 'approved' ? t('coStatusApproved') : co.status === 'rejected' ? t('coStatusRejected') : t('coStatusPending');
+  var origTotal = (c.totalAmount || 0) - (co.status === 'approved' ? co.amount : 0);
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
+  'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:20px;background:#fff;color:#0f172a;font-size:13px;}' +
+  '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid #e2e8f0;margin-bottom:20px;}' +
+  '.co-badge{background:#f59e0b;color:#fff;border-radius:8px;padding:4px 12px;font-weight:800;font-size:12px;}' +
+  '.title{font-size:22px;font-weight:900;margin:0 0 4px;}' +
+  '.section{margin-bottom:18px;}' +
+  '.label{font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}' +
+  '.value{font-size:13px;color:#0f172a;line-height:1.5;}' +
+  '.amount-box{background:#f8fafc;border:2px solid #e2e8f0;border-radius:12px;padding:14px 18px;margin:16px 0;}' +
+  '.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}' +
+  '.sig-box{border-top:2px solid #0f172a;padding-top:8px;}' +
+  '.sig-line{border-bottom:1px solid #cbd5e1;margin-bottom:6px;height:44px;}' +
+  '.status-badge{display:inline-block;background:' + statusColor + '1a;color:' + statusColor + ';border:1px solid ' + statusColor + ';border-radius:20px;padding:3px 12px;font-weight:700;font-size:12px;}' +
+  '.footer{margin-top:30px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;}' +
+  '</style></head><body>' +
+  '<div class="header">' +
+    '<div>' +
+      (p.logoBase64 ? '<img src="' + p.logoBase64 + '" style="height:40px;object-fit:contain;margin-bottom:8px;display:block;">' : '') +
+      '<div style="font-weight:800;font-size:14px;">' + escapeHtml(p.companyName) + '</div>' +
+      '<div style="font-size:11px;color:#64748b;">' + escapeHtml(p.companyPhone) + ' · ' + escapeHtml(p.companyEmail) + '</div>' +
+    '</div>' +
+    '<div style="text-align:right;">' +
+      '<div class="co-badge">' + pdfStr('CHANGE ORDER','ORDEN DE CAMBIO') + ' #' + co.number + '</div>' +
+      '<div style="font-size:11px;color:#64748b;margin-top:6px;">' + pdfStr('Date','Fecha') + ': ' + (co.date || '') + '</div>' +
+      '<div style="margin-top:4px;" class="status-badge">' + statusLbl + '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="section">' +
+    '<div class="label">' + pdfStr('Contract Reference','Referencia del Contrato') + '</div>' +
+    '<div class="value"><strong>' + escapeHtml(c.estNum || '') + '</strong> · ' + escapeHtml(c.clientName || '') + (c.projectName ? ' · ' + escapeHtml(c.projectName) : '') + '</div>' +
+    (c.projectAddress ? '<div class="value" style="color:#64748b;">📍 ' + escapeHtml(c.projectAddress) + '</div>' : '') +
+  '</div>' +
+  '<div class="section">' +
+    '<div class="label">' + pdfStr('Description of Change','Descripción del Cambio') + '</div>' +
+    '<div class="value" style="white-space:pre-wrap;">' + escapeHtml(co.description) + '</div>' +
+  '</div>' +
+  '<div class="amount-box">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">' +
+      '<span style="color:#64748b;">' + t('coOriginalTotal') + '</span>' +
+      '<span>$' + fmtMoney(origTotal) + '</span>' +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+      '<span style="color:#64748b;">' + pdfStr('Change Order Amount','Monto de la Orden') + '</span>' +
+      '<span style="font-weight:700;color:' + amtColor + ';">' + amtSign + '$' + fmtMoney(Math.abs(co.amount)) + '</span>' +
+    '</div>' +
+    '<div style="border-top:1px solid #e2e8f0;padding-top:8px;display:flex;justify-content:space-between;">' +
+      '<span style="font-weight:800;">' + t('coNewTotal') + '</span>' +
+      '<span style="font-weight:900;font-size:16px;">$' + fmtMoney(c.totalAmount) + '</span>' +
+    '</div>' +
+  '</div>' +
+  '<p style="font-size:12px;color:#64748b;">' + pdfStr(
+    'By signing below, both parties agree to the described change in scope and the revised contract amount.',
+    'Al firmar a continuación, ambas partes acuerdan el cambio de alcance descrito y el monto revisado del contrato.'
+  ) + '</p>' +
+  '<div class="sig-grid">' +
+    '<div class="sig-box"><div style="font-size:10px;font-weight:700;margin-bottom:6px;">' + pdfStr('CONTRACTOR','CONTRATISTA') + '</div><div class="sig-line"></div><div style="font-size:9px;color:#64748b;">' + pdfStr('Authorized Signature &amp; Date','Firma Autorizada y Fecha') + '</div><div style="font-size:10px;margin-top:4px;">' + escapeHtml(p.companyName) + '</div></div>' +
+    '<div class="sig-box"><div style="font-size:10px;font-weight:700;margin-bottom:6px;">' + pdfStr('CLIENT','CLIENTE') + '</div><div class="sig-line"></div><div style="font-size:9px;color:#64748b;">' + pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha') + '</div><div style="font-size:10px;margin-top:4px;">' + escapeHtml(c.clientName || '') + '</div></div>' +
+  '</div>' +
+  '<div class="footer">' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
+  '</body></html>';
 }
 
 function deleteContract(id) {
@@ -5506,6 +5811,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
     if ($('companyProfilePanel').style.display !== 'none')         { closeCompanyProfile(); return; }
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
+    if ($('coModalOverlay').style.display !== 'none')              { closeCOModal(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
     if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
     if ($('contractDetail').classList.contains('open'))             { closeContractDetail(); return; }
