@@ -1444,6 +1444,67 @@
   </div>
 </div>
 
+<!-- INVOICE DETAIL PAGE -->
+<div id="invoiceDetail" class="contract-detail">
+  <div class="cd-header">
+    <div class="cd-title">
+      <strong id="invdNum">INV-2026-001</strong>
+      <span id="invdClient"></span>
+    </div>
+    <button class="cd-back" onclick="closeInvoiceDetail()" data-i18n="backBtn">← Back</button>
+  </div>
+  <div class="cd-body">
+    <!-- KPI -->
+    <div class="cd-summary">
+      <div class="cd-summary-header">
+        <div class="cd-kpi"><div class="cd-kpi-val" id="invdTotal">$0</div><div class="cd-kpi-lbl" data-i18n="invTotalLabel">Total</div></div>
+        <div class="cd-kpi"><div id="invdStatusKpi" class="cd-kpi-val" style="font-size:14px;letter-spacing:0;">—</div><div class="cd-kpi-lbl" data-i18n="coDescLabel">Status</div></div>
+        <div class="cd-kpi"><div class="cd-kpi-val" id="invdDueKpi" style="font-size:16px;">—</div><div class="cd-kpi-lbl" data-i18n="invDueDateLabel">Due Date</div></div>
+      </div>
+    </div>
+
+    <!-- Invoice info -->
+    <div>
+      <div class="cd-section-title">🧾 <span data-i18n="newInvoiceBtn">Invoice</span></div>
+      <div id="invdInfo" style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;font-size:13px;line-height:1.8;"></div>
+    </div>
+
+    <!-- Client info -->
+    <div>
+      <div class="cd-section-title">👤 <span data-i18n="client">Client</span></div>
+      <div id="invdClientBlock" style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;font-size:13px;line-height:1.9;"></div>
+    </div>
+
+    <!-- Line items -->
+    <div>
+      <div class="cd-section-title">📋 <span data-i18n="invItemsLabel">Items</span></div>
+      <div id="invdItemsBlock" style="background:var(--surface);border-radius:14px;border:1px solid var(--border);overflow:hidden;"></div>
+    </div>
+
+    <!-- Note -->
+    <div id="invdNoteBlock" style="display:none;">
+      <div class="cd-section-title">📝 <span data-i18n="invNoteLabel">Note</span></div>
+      <div id="invdNoteText" style="background:var(--surface);border-radius:14px;border:1px solid var(--border);padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.5;"></div>
+    </div>
+
+    <!-- Actions -->
+    <div>
+      <div class="cd-section-title" data-i18n="contractDocSection">Actions</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;gap:10px;">
+          <button onclick="printInvoice(_currentInvId)" class="btn btn-light" style="flex:1;justify-content:center;">🖨️ <span data-i18n="invPrintBtn">Print / PDF</span></button>
+          <button onclick="shareInvoice(_currentInvId)" class="btn btn-light" style="flex:1;justify-content:center;">📨 <span data-i18n="invShareBtn">Share</span></button>
+        </div>
+        <div id="invdStatusActions" style="display:flex;gap:10px;"></div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="openEditInvoice(_currentInvId)" class="btn btn-light" style="flex:1;justify-content:center;">✏️ <span data-i18n="editBtn">Edit</span></button>
+          <button onclick="deleteInvoiceFromDetail()" class="btn btn-light" style="flex:1;justify-content:center;color:var(--red);">🗑 <span data-i18n="invDeleteBtn">Delete</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- CONTRACT DETAIL PAGE -->
 <div id="contractDetail" class="contract-detail">
   <div class="cd-header">
@@ -2164,6 +2225,7 @@ const T = {
     printNameLabel:'Print Name',
     titlePositionLabel:'Title / Position',
     tabInvoices:'Invoices', newInvoiceBtn:'New Invoice', genInvoiceBtn:'Invoice',
+    invNumLabel:'Invoice #', invLinkedContract:'Contract', invItemDesc:'Description', invItemAmt:'Amount',
     invIssueDateLabel:'Issue Date', invDueDateLabel:'Due Date',
     invItemsLabel:'Items', invAddItem:'Add Item', invTotalLabel:'Total',
     invNoteLabel:'Note (optional)', invNotePh:'Payment instructions, thank you note…',
@@ -2428,6 +2490,7 @@ const T = {
     printNameLabel:'Nombre',
     titlePositionLabel:'Cargo / Título',
     tabInvoices:'Facturas', newInvoiceBtn:'Nueva Factura', genInvoiceBtn:'Factura',
+    invNumLabel:'Factura #', invLinkedContract:'Contrato', invItemDesc:'Descripción', invItemAmt:'Monto',
     invIssueDateLabel:'Fecha de Emisión', invDueDateLabel:'Fecha de Vencimiento',
     invItemsLabel:'Conceptos', invAddItem:'Agregar Concepto', invTotalLabel:'Total',
     invNoteLabel:'Nota (opcional)', invNotePh:'Instrucciones de pago, nota de agradecimiento…',
@@ -4344,6 +4407,7 @@ function switchEpTab(tab) {
 // ═══════════════════════════════════════════════════════
 var currentContractId  = null;
 var currentEstimateId  = null;
+var _currentInvId      = null;
 var selectedPayMethod = 'cash';
 
 function getContracts() {
@@ -4909,6 +4973,113 @@ function updateInvoiceCount() {
   var el = $('invoiceCount'); if (el) el.textContent = n;
 }
 
+function openInvoiceDetail(id) {
+  var inv = getInvoices().find(function(x){return x.id===id;});
+  if (!inv) return;
+  _currentInvId = id;
+
+  var statusColors = { draft:'#64748b', sent:'#3b82f6', paid:'#10b981', overdue:'#ef4444' };
+  var sc = statusColors[inv.status] || '#64748b';
+  var stLbl = t('invStatus' + (inv.status||'draft').charAt(0).toUpperCase() + (inv.status||'draft').slice(1));
+
+  // Header
+  $('invdNum').textContent    = inv.invoiceNum;
+  $('invdClient').textContent = inv.clientName || '';
+
+  // KPI row
+  $('invdTotal').textContent     = '$' + fmtMoney(inv.total || 0);
+  $('invdStatusKpi').textContent = stLbl;
+  $('invdStatusKpi').style.color = sc;
+  $('invdDueKpi').textContent    = inv.dueDate || '—';
+
+  // Invoice info section
+  var rows = '';
+  if (inv.invoiceNum)  rows += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('invNumLabel') + '</span><strong>' + escapeHtml(inv.invoiceNum) + '</strong></div>';
+  if (inv.issueDate)   rows += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('invIssueDateLabel') + '</span><span>' + escapeHtml(inv.issueDate) + '</span></div>';
+  if (inv.dueDate)     rows += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('invDueDateLabel') + '</span><span>' + escapeHtml(inv.dueDate) + '</span></div>';
+  if (inv.contractId) {
+    var linkedC = getContracts().find(function(c){return c.id===inv.contractId;});
+    if (linkedC) rows += '<div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--muted);">' + t('invLinkedContract') + '</span><span>' + escapeHtml(linkedC.clientName||'—') + '</span></div>';
+  }
+  $('invdInfo').innerHTML = rows || '—';
+
+  // Client block
+  var cb = '';
+  if (inv.clientName)  cb += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('client') + '</span><strong>' + escapeHtml(inv.clientName) + '</strong></div>';
+  if (inv.clientPhone) cb += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('clientPhone') + '</span><a href="tel:' + escapeHtml(inv.clientPhone) + '" style="color:var(--lime);">' + escapeHtml(inv.clientPhone) + '</a></div>';
+  if (inv.clientEmail) cb += '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">' + t('clientEmail') + '</span><a href="mailto:' + escapeHtml(inv.clientEmail) + '" style="color:var(--lime);">' + escapeHtml(inv.clientEmail) + '</a></div>';
+  if (inv.projectName) cb += '<div style="display:flex;justify-content:space-between;padding:5px 0;"><span style="color:var(--muted);">' + t('project') + '</span><span>' + escapeHtml(inv.projectName) + '</span></div>';
+  $('invdClientBlock').innerHTML = cb || '—';
+
+  // Items table
+  var items = inv.items || [];
+  var itemsHtml = '<table style="width:100%;border-collapse:collapse;">' +
+    '<thead><tr>' +
+      '<th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:2px solid var(--border);padding:10px 14px;text-align:left;">' + t('invItemDesc') + '</th>' +
+      '<th style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);border-bottom:2px solid var(--border);padding:10px 14px;text-align:right;">' + t('invItemAmt') + '</th>' +
+    '</tr></thead><tbody>';
+  items.forEach(function(it) {
+    itemsHtml += '<tr><td style="padding:11px 14px;font-size:13px;border-bottom:1px solid var(--border);">' + escapeHtml(it.desc||'') + '</td>' +
+      '<td style="padding:11px 14px;font-size:13px;font-weight:700;text-align:right;border-bottom:1px solid var(--border);">$' + fmtMoney(it.amount||0) + '</td></tr>';
+  });
+  var total = inv.total || items.reduce(function(s,it){return s+(it.amount||0);},0);
+  itemsHtml += '</tbody><tfoot><tr>' +
+    '<td style="padding:12px 14px;font-size:13px;font-weight:700;border-top:2px solid var(--text);color:var(--text);">' + t('invTotalLabel') + '</td>' +
+    '<td style="padding:12px 14px;font-size:17px;font-weight:900;text-align:right;border-top:2px solid var(--text);color:var(--lime);">$' + fmtMoney(total) + '</td>' +
+  '</tr></tfoot></table>';
+  $('invdItemsBlock').innerHTML = itemsHtml;
+
+  // Note
+  if (inv.note && inv.note.trim()) {
+    $('invdNoteBlock').style.display = '';
+    $('invdNoteText').textContent = inv.note;
+  } else {
+    $('invdNoteBlock').style.display = 'none';
+  }
+
+  // Status action buttons
+  var sa = '';
+  if (inv.status === 'draft') {
+    sa += '<button onclick="invMarkSentFromDetail()" class="btn" style="flex:1;justify-content:center;background:#3b82f6;color:#fff;border-color:#3b82f6;">✉️ ' + t('invMarkSent') + '</button>';
+  }
+  if (inv.status !== 'paid') {
+    sa += '<button onclick="invMarkPaidFromDetail()" class="btn" style="flex:1;justify-content:center;background:#10b981;color:#fff;border-color:#10b981;">✅ ' + t('invMarkPaid') + '</button>';
+  }
+  if (inv.status === 'paid') {
+    sa += '<div style="text-align:center;padding:8px 0;font-size:12px;color:#10b981;font-weight:700;">✅ ' + t('invStatusPaid') + (inv.paidDate ? ' · ' + inv.paidDate : '') + '</div>';
+  }
+  $('invdStatusActions').innerHTML = sa;
+
+  $('invoiceDetail').classList.add('open');
+  history.pushState({ panel: 'invoiceDetail' }, '');
+}
+
+function closeInvoiceDetail() {
+  $('invoiceDetail').classList.remove('open');
+  _currentInvId = null;
+}
+
+function invMarkSentFromDetail() {
+  if (!_currentInvId) return;
+  invMarkSent(_currentInvId);
+  openInvoiceDetail(_currentInvId);
+}
+
+function invMarkPaidFromDetail() {
+  if (!_currentInvId) return;
+  invMarkPaid(_currentInvId);
+  openInvoiceDetail(_currentInvId);
+}
+
+function deleteInvoiceFromDetail() {
+  showConfirm(t('confirmDeleteInv'), t('cannotUndo'), '🧾', t('deleteBtn'), '#ef4444', function() {
+    var id = _currentInvId;
+    closeInvoiceDetail();
+    saveInvoices(getInvoices().filter(function(x){return x.id!==id;}));
+    renderInvoiceList(); updateInvoiceCount(); showToast(t('toastInvDeleted'));
+  });
+}
+
 function renderInvoiceList() {
   updateInvoiceCount();
   var el = $('invoiceList'); if (!el) return;
@@ -4921,26 +5092,20 @@ function renderInvoiceList() {
   el.innerHTML = invs.map(function(inv) {
     var sc = statusColors[inv.status] || '#64748b';
     var stLbl = t('invStatus' + inv.status.charAt(0).toUpperCase() + inv.status.slice(1)) || inv.status;
-    return '<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-        '<div>' +
-          '<div style="font-size:13px;font-weight:800;color:var(--text);">🧾 ' + escapeHtml(inv.invoiceNum) + '</div>' +
-          '<div style="font-size:11px;color:var(--muted);">' + escapeHtml(inv.clientName) + (inv.projectName ? ' · ' + escapeHtml(inv.projectName) : '') + '</div>' +
+    var total = inv.total || (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0);
+    return '<div onclick="openInvoiceDetail(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;cursor:pointer;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">' +
+      '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">' +
+          '<span style="font-size:13px;font-weight:800;color:var(--text);">🧾 ' + escapeHtml(inv.invoiceNum) + '</span>' +
+          '<span style="font-size:18px;font-weight:900;color:var(--text);">$' + fmtMoney(total) + '</span>' +
         '</div>' +
-        '<span style="font-size:11px;font-weight:700;color:' + sc + ';background:' + sc + '1a;border:1px solid ' + sc + ';border-radius:20px;padding:2px 8px;">' + stLbl + '</span>' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
+          '<span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;">' + escapeHtml(inv.clientName || '') + (inv.projectName ? ' · ' + escapeHtml(inv.projectName) : '') + '</span>' +
+          '<span style="font-size:10px;font-weight:700;color:' + sc + ';background:' + sc + '1a;border:1px solid ' + sc + ';border-radius:20px;padding:2px 8px;white-space:nowrap;">' + stLbl + '</span>' +
+        '</div>' +
+        (inv.dueDate ? '<div style="font-size:10px;color:var(--muted);margin-top:3px;">' + t('invDueDateLabel') + ': ' + escapeHtml(inv.dueDate) + '</div>' : '') +
       '</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
-        '<span style="font-size:12px;color:var(--muted);">' + (inv.issueDate||'') + (inv.dueDate ? ' → ' + inv.dueDate : '') + '</span>' +
-        '<span style="font-size:17px;font-weight:900;color:var(--text);">$' + fmtMoney(inv.total||0) + '</span>' +
-      '</div>' +
-      '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
-        (inv.status==='draft' ? '<button onclick="invMarkSent(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">' + t('invMarkSent') + '</button>' : '') +
-        (inv.status!=='paid'  ? '<button onclick="invMarkPaid(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:#10b981;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;">' + t('invMarkPaid') + '</button>' : '') +
-        '<button onclick="printInvoice(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;cursor:pointer;">🖨️ ' + t('invPrintBtn') + '</button>' +
-        '<button onclick="shareInvoice(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;cursor:pointer;">📨 ' + t('invShareBtn') + '</button>' +
-        '<button onclick="openEditInvoice(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 10px;font-size:11px;font-weight:600;cursor:pointer;">✏️</button>' +
-        '<button onclick="deleteInvoice(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px;">🗑</button>' +
-      '</div>' +
+      '<div style="color:var(--muted);font-size:18px;flex-shrink:0;">›</div>' +
     '</div>';
   }).join('');
 }
@@ -6414,6 +6579,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
     if ($('invModalOverlay') && $('invModalOverlay').style.display !== 'none') { closeInvModal(); return; }
     if ($('msModalOverlay') && $('msModalOverlay').style.display !== 'none') { closeMilestoneModal(); return; }
+    if ($('invoiceDetail').classList.contains('open'))               { closeInvoiceDetail(); return; }
     if ($('coModalOverlay').style.display !== 'none')              { closeCOModal(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
     if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
