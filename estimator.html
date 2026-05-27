@@ -1591,6 +1591,14 @@
       <input type="file" id="milestoneFileInput" accept="image/*" style="display:none" onchange="handleMilestoneFile(this)">
     </div>
 
+    <!-- Job Expenses -->
+    <div>
+      <div class="cd-section-title">💰 <span data-i18n="expensesSection">Job Expenses</span></div>
+      <div id="cdExpenseSummary" style="display:none;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;"></div>
+      <div id="cdExpenses"></div>
+      <button onclick="openExpenseModal()" class="btn btn-light" style="width:100%;justify-content:center;margin-top:6px;">➕ <span data-i18n="addExpenseBtn">Add Expense</span></button>
+    </div>
+
     <!-- Lien Waivers -->
     <div>
       <div class="cd-section-title">📜 <span data-i18n="lienWaiversSection">Lien Waivers</span></div>
@@ -1980,6 +1988,60 @@
   </div>
 </div>
 
+<!-- EXPENSE MODAL -->
+<div id="expenseModalOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:flex-start;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.5);margin:auto;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;" id="expenseModalTitle">💰 <span data-i18n="addExpenseBtn">Add Expense</span></div>
+
+    <!-- Category chips -->
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;" data-i18n="expCategoryLabel">Category</label>
+      <div id="expCategoryChips" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+
+    <!-- Description -->
+    <div style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="description">Description</label>
+      <input type="text" id="expDesc" placeholder="e.g. 2×4 lumber, concrete bags…"
+        style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+    </div>
+
+    <!-- Amount + Date -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="expAmountLabel">Amount ($)</label>
+        <input type="number" id="expAmount" inputmode="decimal" step="0.01" placeholder="0.00"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coDateLabel">Date</label>
+        <input type="date" id="expDate"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <!-- Receipt photo -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;" data-i18n="receiptProof">Receipt / Proof</label>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="openCamera('expense')">📷 <span data-i18n="cameraBtn">Camera</span></button>
+        <button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="$('expFileInput').click()">📁 <span data-i18n="uploadFileBtn">Upload</span></button>
+        <input type="file" id="expFileInput" accept="image/*" style="display:none" onchange="handleExpenseFile(this)">
+      </div>
+      <div id="expReceiptPreview" style="display:none;position:relative;display:none;">
+        <img id="expReceiptImg" src="" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;" onclick="viewExpenseReceiptPreview()">
+        <button onclick="clearExpenseReceipt()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.65);color:#fff;border:none;border-radius:50%;width:24px;height:24px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+    </div>
+
+    <input type="hidden" id="expEditId">
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeExpenseModal()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
+      <button onclick="saveExpense()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- LIEN WAIVER MODAL -->
 <div id="lwModalOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:flex-start;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);overflow-y:auto;">
   <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.5);margin:auto;">
@@ -2299,6 +2361,15 @@ const T = {
     toastInvSaved:'✅ Invoice saved', toastInvDeleted:'Invoice deleted',
     toastInvMarkedSent:'✅ Invoice marked as sent', toastInvMarkedPaid:'✅ Invoice marked as paid',
     confirmDeleteInv:'Delete this invoice?',
+    expensesSection:'Job Expenses', addExpenseBtn:'Add Expense',
+    expCategoryLabel:'Category', expAmountLabel:'Amount ($)',
+    expCatMaterials:'Materials', expCatLabor:'Labor', expCatEquipment:'Equipment',
+    expCatPermits:'Permits', expCatSubcontractor:'Subcontractor', expCatOther:'Other',
+    expNoExpenses:'No expenses recorded yet.',
+    expToastSaved:'✅ Expense saved', expToastDeleted:'Expense deleted',
+    expConfirmDelete:'Delete this expense?',
+    expSummarySpent:'Total Spent', expSummaryRevenue:'Contract Value',
+    expSummaryProfit:'Gross Profit', expSummaryMargin:'Margin',
     lienWaiversSection:'Lien Waivers', addLienWaiverBtn:'New Lien Waiver',
     lwTypeLabel:'Waiver Type', lwAmountLabel:'Amount ($)',
     lwThroughDateLabel:'Payment Through Date',
@@ -2575,6 +2646,15 @@ const T = {
     toastInvSaved:'✅ Factura guardada', toastInvDeleted:'Factura eliminada',
     toastInvMarkedSent:'✅ Factura marcada como enviada', toastInvMarkedPaid:'✅ Factura marcada como pagada',
     confirmDeleteInv:'¿Eliminar esta factura?',
+    expensesSection:'Gastos del Trabajo', addExpenseBtn:'Agregar Gasto',
+    expCategoryLabel:'Categoría', expAmountLabel:'Monto ($)',
+    expCatMaterials:'Materiales', expCatLabor:'Mano de Obra', expCatEquipment:'Equipo',
+    expCatPermits:'Permisos', expCatSubcontractor:'Subcontratista', expCatOther:'Otro',
+    expNoExpenses:'No hay gastos registrados.',
+    expToastSaved:'✅ Gasto guardado', expToastDeleted:'Gasto eliminado',
+    expConfirmDelete:'¿Eliminar este gasto?',
+    expSummarySpent:'Total Gastado', expSummaryRevenue:'Valor del Contrato',
+    expSummaryProfit:'Ganancia Bruta', expSummaryMargin:'Margen',
     lienWaiversSection:'Exenciones de Gravamen', addLienWaiverBtn:'Nueva Exención',
     lwTypeLabel:'Tipo de Exención', lwAmountLabel:'Monto ($)',
     lwThroughDateLabel:'Pagos Hasta la Fecha',
@@ -3547,6 +3627,7 @@ function openCamera(context) {
   } else if (context === 'payReceipt') $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
   else if (context === 'milestone') $('milestoneFileInput').click();
+  else if (context === 'expense') $('expFileInput').click();
   else $('receiptInput').click();
 }
 
@@ -3572,6 +3653,8 @@ function _applyNativePhoto(base64) {
   cameraContext = 'receipt';
   if (ctx === 'milestone') {
     _applyMilestonePhoto(base64);
+  } else if (ctx === 'expense') {
+    _applyExpensePhoto(base64);
   } else if (ctx === 'payReceipt') {
     $('payReceiptImg').src = base64;
     $('payReceiptPreview').style.display = '';
@@ -4728,6 +4811,8 @@ function openContractDetail(id) {
   renderCOs(c);
   // Milestones & Photos
   renderMilestones(c);
+  // Job Expenses
+  renderExpenses(c);
   // Lien Waivers
   renderLienWaivers(c);
   // Signed contract section
@@ -5685,6 +5770,218 @@ function generateCODoc(c, co) {
   '</div>' +
   '<div class="footer">' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
   '</body></html>';
+}
+
+// ═══════════════════════════════════════════════════════
+// JOB EXPENSES
+// ═══════════════════════════════════════════════════════
+var _expCategory   = 'materials';
+var _expReceiptB64 = null;
+
+var EXP_CATEGORIES = ['materials','labor','equipment','permits','subcontractor','other'];
+var EXP_CAT_KEYS   = { materials:'expCatMaterials', labor:'expCatLabor', equipment:'expCatEquipment',
+                       permits:'expCatPermits', subcontractor:'expCatSubcontractor', other:'expCatOther' };
+var EXP_CAT_ICONS  = { materials:'🪵', labor:'👷', equipment:'🔧', permits:'📋', subcontractor:'🏗️', other:'📦' };
+var EXP_CAT_COLORS = { materials:'#3b82f6', labor:'#10b981', equipment:'#f59e0b',
+                       permits:'#8b5cf6', subcontractor:'#ec4899', other:'#64748b' };
+
+function _renderExpCategoryChips() {
+  var lime = getComputedStyle(document.documentElement).getPropertyValue('--lime').trim();
+  var limeDark = getComputedStyle(document.documentElement).getPropertyValue('--lime-dark').trim();
+  $('expCategoryChips').innerHTML = EXP_CATEGORIES.map(function(cat) {
+    var sel = cat === _expCategory;
+    return '<button onclick="selectExpCat(\'' + cat + '\')" style="-webkit-tap-highlight-color:transparent;padding:6px 12px;border-radius:20px;border:' +
+      (sel ? '2px solid var(--lime);background:var(--lime-light);color:var(--lime-dark)' : '1.5px solid var(--border-solid);background:var(--input-bg);color:var(--muted)') +
+      ';font-size:11px;font-weight:700;cursor:pointer;">' +
+      EXP_CAT_ICONS[cat] + ' ' + t(EXP_CAT_KEYS[cat]) + '</button>';
+  }).join('');
+}
+
+function selectExpCat(cat) {
+  _expCategory = cat;
+  _renderExpCategoryChips();
+}
+
+function openExpenseModal(expId) {
+  var c = getContracts().find(function(x){return x.id===currentContractId;});
+  if (!c) return;
+  _expCategory   = 'materials';
+  _expReceiptB64 = null;
+  $('expDesc').value    = '';
+  $('expAmount').value  = '';
+  $('expDate').value    = new Date().toISOString().slice(0,10);
+  $('expEditId').value  = '';
+  $('expReceiptPreview').style.display = 'none';
+  $('expReceiptImg').src = '';
+
+  if (expId) {
+    var exp = (c.expenses||[]).find(function(x){return x.id===expId;});
+    if (exp) {
+      _expCategory   = exp.category || 'materials';
+      _expReceiptB64 = exp.receiptPhoto || null;
+      $('expDesc').value   = exp.desc   || '';
+      $('expAmount').value = exp.amount ? exp.amount.toFixed(2) : '';
+      $('expDate').value   = exp.date   || '';
+      $('expEditId').value = exp.id;
+      if (exp.receiptPhoto) {
+        $('expReceiptImg').src = exp.receiptPhoto;
+        $('expReceiptPreview').style.display = '';
+      }
+    }
+  }
+  _renderExpCategoryChips();
+  $('expenseModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'expenseModal' }, '');
+}
+
+function closeExpenseModal() {
+  $('expenseModalOverlay').style.display = 'none';
+  _expReceiptB64 = null;
+}
+
+function handleExpenseFile(input) {
+  var file = input.files && input.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) { _applyExpensePhoto(e.target.result); };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function _applyExpensePhoto(base64) {
+  _expReceiptB64 = base64;
+  $('expReceiptImg').src = base64;
+  $('expReceiptPreview').style.display = '';
+}
+
+function clearExpenseReceipt() {
+  _expReceiptB64 = null;
+  $('expReceiptImg').src = '';
+  $('expReceiptPreview').style.display = 'none';
+}
+
+function viewExpenseReceiptPreview() {
+  if (!_expReceiptB64) return;
+  $('receiptModalImg').src = _expReceiptB64;
+  $('receiptModal').classList.add('open');
+  history.pushState({ panel: 'receiptModal' }, '');
+}
+
+function saveExpense() {
+  var desc   = ($('expDesc').value || '').trim();
+  var amount = parseFloat($('expAmount').value) || 0;
+  var date   = $('expDate').value || new Date().toISOString().slice(0,10);
+  if (!desc && amount === 0) { showToast('⚠️ ' + t('expAmountLabel') + '?'); return; }
+
+  var contracts = getContracts();
+  var c = contracts.find(function(x){return x.id===currentContractId;});
+  if (!c) return;
+  if (!c.expenses) c.expenses = [];
+
+  var editId = $('expEditId').value;
+  if (editId) {
+    var existing = c.expenses.find(function(x){return x.id===editId;});
+    if (existing) {
+      existing.category    = _expCategory;
+      existing.desc        = desc;
+      existing.amount      = amount;
+      existing.date        = date;
+      existing.receiptPhoto = _expReceiptB64 || existing.receiptPhoto || null;
+    }
+  } else {
+    c.expenses.push({
+      id: 'ex_' + Date.now(),
+      category: _expCategory,
+      desc: desc,
+      amount: amount,
+      date: date,
+      receiptPhoto: _expReceiptB64 || null
+    });
+  }
+  saveContracts(contracts);
+  closeExpenseModal();
+  renderExpenses(c);
+  showToast(t('expToastSaved'));
+}
+
+function deleteExpense(expId) {
+  showConfirm(t('expConfirmDelete'), t('cannotUndo'), '💰', t('deleteBtn'), '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){return x.id===currentContractId;});
+    if (!c) return;
+    c.expenses = (c.expenses||[]).filter(function(x){return x.id!==expId;});
+    saveContracts(contracts);
+    renderExpenses(c);
+    showToast(t('expToastDeleted'));
+  });
+}
+
+function viewExpenseReceipt(contractId, expId) {
+  var contracts = getContracts();
+  var c  = contracts.find(function(x){return x.id===contractId;});
+  if (!c) return;
+  var exp = (c.expenses||[]).find(function(x){return x.id===expId;});
+  if (!exp || !exp.receiptPhoto) return;
+  $('receiptModalImg').src = exp.receiptPhoto;
+  $('receiptModal').classList.add('open');
+  history.pushState({ panel: 'receiptModal' }, '');
+}
+
+function renderExpenses(c) {
+  var el = $('cdExpenses'); if (!el) return;
+  var summaryEl = $('cdExpenseSummary');
+  var expenses  = c.expenses || [];
+
+  // Summary bar
+  if (expenses.length > 0) {
+    var totalSpent  = expenses.reduce(function(s,e){return s+(e.amount||0);},0);
+    var revenue     = c.totalAmount || 0;
+    var profit      = revenue - totalSpent;
+    var marginPct   = revenue > 0 ? Math.round(profit / revenue * 100) : 0;
+    var profitColor = profit >= 0 ? '#10b981' : '#ef4444';
+    summaryEl.style.display = '';
+    summaryEl.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">' +
+        '<div><div style="font-size:15px;font-weight:900;color:var(--text);">$' + fmtMoney(totalSpent) + '</div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:2px;">' + t('expSummarySpent') + '</div></div>' +
+        '<div><div style="font-size:15px;font-weight:900;color:var(--text);">$' + fmtMoney(revenue) + '</div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:2px;">' + t('expSummaryRevenue') + '</div></div>' +
+        '<div><div style="font-size:15px;font-weight:900;color:' + profitColor + ';">$' + fmtMoney(profit) + '</div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:2px;">' + t('expSummaryProfit') + '</div></div>' +
+        '<div><div style="font-size:15px;font-weight:900;color:' + profitColor + ';">' + marginPct + '%</div><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-top:2px;">' + t('expSummaryMargin') + '</div></div>' +
+      '</div>';
+  } else {
+    summaryEl.style.display = 'none';
+  }
+
+  if (expenses.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">' + t('expNoExpenses') + '</div>';
+    return;
+  }
+
+  // Sort newest first
+  var sorted = expenses.slice().sort(function(a,b){ return (b.date||'') > (a.date||'') ? 1 : -1; });
+  el.innerHTML = sorted.map(function(exp) {
+    var col   = EXP_CAT_COLORS[exp.category] || '#64748b';
+    var icon  = EXP_CAT_ICONS[exp.category]  || '📦';
+    var label = t(EXP_CAT_KEYS[exp.category]) || exp.category;
+    return '<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">' +
+      '<div style="display:flex;align-items:flex-start;gap:10px;">' +
+        '<div style="width:34px;height:34px;border-radius:10px;background:' + col + '22;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">' + icon + '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;">' +
+            '<span style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">' + escapeHtml(exp.desc || label) + '</span>' +
+            '<span style="font-size:15px;font-weight:900;color:var(--text);flex-shrink:0;margin-left:8px;">$' + fmtMoney(exp.amount||0) + '</span>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<span style="font-size:10px;font-weight:700;color:' + col + ';background:' + col + '1a;border:1px solid ' + col + ';border-radius:20px;padding:1px 7px;">' + label + '</span>' +
+            '<span style="font-size:10px;color:var(--muted);">' + (exp.date||'') + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      (exp.receiptPhoto ? '<img src="' + exp.receiptPhoto + '" onclick="viewExpenseReceipt(\'' + c.id + '\',\'' + exp.id + '\')" style="width:100%;max-height:120px;object-fit:cover;border-radius:10px;border:1px solid var(--border);margin-top:10px;cursor:pointer;">' : '') +
+      '<div style="display:flex;gap:6px;margin-top:8px;">' +
+        '<button onclick="openExpenseModal(\'' + exp.id + '\')" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 0;font-size:11px;font-weight:600;cursor:pointer;">✏️ ' + t('editBtn') + '</button>' +
+        '<button onclick="deleteExpense(\'' + exp.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════════════
@@ -6886,6 +7183,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
     if ($('invModalOverlay') && $('invModalOverlay').style.display !== 'none') { closeInvModal(); return; }
     if ($('msModalOverlay') && $('msModalOverlay').style.display !== 'none') { closeMilestoneModal(); return; }
+    if ($('expenseModalOverlay').style.display !== 'none')           { closeExpenseModal(); return; }
     if ($('lwModalOverlay').style.display !== 'none')               { closeLWModal(); return; }
     if ($('invoiceDetail').classList.contains('open'))               { closeInvoiceDetail(); return; }
     if ($('coModalOverlay').style.display !== 'none')              { closeCOModal(); return; }
