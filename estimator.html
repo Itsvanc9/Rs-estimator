@@ -2090,6 +2090,23 @@
   </div>
 </div>
 
+<!-- ═══════════════ NOTIFICATIONS ═══════════════ -->
+<!-- Bell button (fixed, above bottom nav) -->
+<button id="notifBell" onclick="openNotifications()" style="position:fixed;bottom:74px;right:16px;z-index:9000;width:50px;height:50px;border-radius:50%;background:var(--surface);border:1.5px solid var(--border);box-shadow:0 4px 18px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;-webkit-tap-highlight-color:transparent;">
+  🔔
+  <span id="notifBadge" style="display:none;position:absolute;top:4px;right:4px;min-width:18px;height:18px;padding:0 4px;border-radius:20px;background:#ef4444;color:#fff;font-size:10px;font-weight:900;line-height:18px;text-align:center;box-sizing:border-box;"></span>
+</button>
+
+<!-- Notification panel (slides up) -->
+<div id="notifOverlay" style="position:fixed;inset:0;z-index:19500;display:none;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);" onclick="closeNotifications()"></div>
+<div id="notifPanel" style="position:fixed;bottom:0;left:0;right:0;z-index:19600;max-height:78vh;border-radius:24px 24px 0 0;background:var(--surface);box-shadow:0 -8px 40px rgba(0,0,0,0.35);transform:translateY(100%);transition:transform .28s cubic-bezier(0.4,0,0.2,1);overflow:hidden;display:flex;flex-direction:column;">
+  <div style="padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+    <div style="font-size:15px;font-weight:800;color:var(--text);">🔔 <span data-i18n="notifTitle">Alerts & Reminders</span></div>
+    <button onclick="closeNotifications()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;">✕</button>
+  </div>
+  <div id="notifList" style="overflow-y:auto;padding:12px 16px 24px;flex:1;"></div>
+</div>
+
 <!-- ═══════════════ BOTTOM NAV ═══════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-tab active" id="navEstimate" onclick="openEstimatesPage()">
@@ -2366,6 +2383,10 @@ const T = {
     expConfirmDelete:'Delete this expense?',
     expSummarySpent:'Total Spent', expSummaryRevenue:'Contract Value',
     expSummaryProfit:'Gross Profit', expSummaryMargin:'Margin',
+    notifTitle:'Alerts & Reminders', notifNoAlerts:'All clear! No alerts right now.',
+    notifOverdue:'OVERDUE', notifDueSoon:'DUE SOON', notifJobSoon:'JOB STARTING',
+    notifApptSoon:'APPOINTMENT', notifDaysLeft:'days left', notifDaysOverdue:'days overdue',
+    notifToday:'Today', notifTomorrow:'Tomorrow',
     lienWaiversSection:'Lien Waivers', addLienWaiverBtn:'New Lien Waiver',
     lwTypeLabel:'Waiver Type', lwAmountLabel:'Amount ($)',
     lwThroughDateLabel:'Payment Through Date',
@@ -2651,6 +2672,10 @@ const T = {
     expConfirmDelete:'¿Eliminar este gasto?',
     expSummarySpent:'Total Gastado', expSummaryRevenue:'Valor del Contrato',
     expSummaryProfit:'Ganancia Bruta', expSummaryMargin:'Margen',
+    notifTitle:'Alertas y Recordatorios', notifNoAlerts:'¡Todo bien! Sin alertas por ahora.',
+    notifOverdue:'VENCIDO', notifDueSoon:'PRÓXIMO A VENCER', notifJobSoon:'TRABAJO PRÓXIMO',
+    notifApptSoon:'CITA', notifDaysLeft:'días restantes', notifDaysOverdue:'días vencido',
+    notifToday:'Hoy', notifTomorrow:'Mañana',
     lienWaiversSection:'Exenciones de Gravamen', addLienWaiverBtn:'Nueva Exención',
     lwTypeLabel:'Tipo de Exención', lwAmountLabel:'Monto ($)',
     lwThroughDateLabel:'Pagos Hasta la Fecha',
@@ -4584,6 +4609,7 @@ function getContracts() {
 function saveContracts(arr) {
   try {
     localStorage.setItem('RS_CONTRACTS', JSON.stringify(arr));
+    if (typeof updateNotifBadge === 'function') updateNotifBadge();
   } catch(e) {
     showToast(t('toastStorageFullContracts'));
   }
@@ -4847,7 +4873,7 @@ function acceptContract() {
 // ── JOB DAY SHEET ────────────────────────────────────────────────────────────
 
 function getCalNotes() { return JSON.parse(localStorage.getItem('RS_CAL_NOTES') || '{}'); }
-function saveCalNotes(notes) { localStorage.setItem('RS_CAL_NOTES', JSON.stringify(notes)); }
+function saveCalNotes(notes) { localStorage.setItem('RS_CAL_NOTES', JSON.stringify(notes)); if (typeof updateNotifBadge === 'function') updateNotifBadge(); }
 
 function formatTime12(t24) {
   if (!t24) return '';
@@ -5766,6 +5792,126 @@ function generateCODoc(c, co) {
   '</div>' +
   '<div class="footer">' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
   '</body></html>';
+}
+
+// ═══════════════════════════════════════════════════════
+// NOTIFICATIONS & ALERTS
+// ═══════════════════════════════════════════════════════
+
+function _daysBetween(dateStr) {
+  var today = new Date(); today.setHours(0,0,0,0);
+  var d = new Date(dateStr + 'T00:00:00'); d.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+
+function _buildAlerts() {
+  var alerts = [];
+  var today  = new Date().toISOString().slice(0,10);
+
+  getContracts().forEach(function(c) {
+    if (c.status === 'completed' || c.status === 'cancelled') return;
+    var paid = (c.payments||[]).reduce(function(s,p){return s+(p.amount||0);},0);
+
+    // Payment schedule alerts
+    (c.schedule||[]).forEach(function(s) {
+      var isPaid = (c.payments||[]).some(function(p){return p.scheduleId===s.sid;});
+      if (isPaid || !s.due) return;
+      var days = _daysBetween(s.due);
+      var lbl  = s.labelKey ? t(s.labelKey) : (s.label||'');
+      if (days < 0) {
+        alerts.push({ level:'red', tag:t('notifOverdue'), title:c.clientName, sub:lbl + ' · $' + fmtMoney(s.amount) + ' · ' + Math.abs(days) + ' ' + t('notifDaysOverdue'), contractId:c.id, date:s.due });
+      } else if (days <= 7) {
+        var dayLbl = days === 0 ? t('notifToday') : days === 1 ? t('notifTomorrow') : days + ' ' + t('notifDaysLeft');
+        alerts.push({ level:'yellow', tag:t('notifDueSoon'), title:c.clientName, sub:lbl + ' · $' + fmtMoney(s.amount) + ' · ' + dayLbl, contractId:c.id, date:s.due });
+      }
+    });
+
+    // Job start date alerts
+    if (c.jobStart) {
+      var days = _daysBetween(c.jobStart);
+      if (days >= 0 && days <= 3) {
+        var dayLbl = days === 0 ? t('notifToday') : days === 1 ? t('notifTomorrow') : days + ' ' + t('notifDaysLeft');
+        alerts.push({ level:'blue', tag:t('notifJobSoon'), title:c.clientName, sub:(c.projectName||'') + (c.jobStartTime ? ' · ' + formatTime12(c.jobStartTime) : '') + ' · ' + dayLbl, contractId:c.id, date:c.jobStart });
+      }
+    }
+  });
+
+  // Calendar notes / appointments
+  var calNotes = getCalNotes();
+  Object.keys(calNotes).forEach(function(dateStr) {
+    var days = _daysBetween(dateStr);
+    if (days >= 0 && days <= 3) {
+      var dayLbl = days === 0 ? t('notifToday') : days === 1 ? t('notifTomorrow') : days + ' ' + t('notifDaysLeft');
+      var notes = calNotes[dateStr];
+      notes.forEach(function(n) {
+        if (!n.text) return;
+        alerts.push({ level:'purple', tag:t('notifApptSoon'), title:n.text, sub:(n.time ? formatTime12(n.time) + ' · ' : '') + dayLbl, calDate:dateStr, date:dateStr });
+      });
+    }
+  });
+
+  // Sort: red first, then by date
+  var order = { red:0, yellow:1, blue:2, purple:3 };
+  alerts.sort(function(a,b) {
+    var lo = (order[a.level]||9) - (order[b.level]||9);
+    if (lo !== 0) return lo;
+    return (a.date||'') < (b.date||'') ? -1 : 1;
+  });
+  return alerts;
+}
+
+function updateNotifBadge() {
+  var alerts = _buildAlerts();
+  var badge  = $('notifBadge');
+  var reds   = alerts.filter(function(a){return a.level==='red';}).length;
+  var total  = alerts.length;
+  if (!badge) return;
+  if (total === 0) {
+    badge.style.display = 'none';
+  } else {
+    badge.style.display = '';
+    badge.textContent = total > 9 ? '9+' : total;
+    badge.style.background = reds > 0 ? '#ef4444' : '#f59e0b';
+  }
+}
+
+function openNotifications() {
+  var alerts = _buildAlerts();
+  var colors = { red:'#ef4444', yellow:'#f59e0b', blue:'#3b82f6', purple:'#8b5cf6' };
+  var list = $('notifList');
+
+  if (alerts.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:30px 0;color:var(--muted);font-size:13px;">✅ ' + t('notifNoAlerts') + '</div>';
+  } else {
+    list.innerHTML = alerts.map(function(a) {
+      var col = colors[a.level] || '#64748b';
+      var onclick = a.contractId
+        ? 'closeNotifications();openContractDetail(\'' + a.contractId + '\')'
+        : a.calDate
+          ? 'closeNotifications();openCalendarPage()'
+          : '';
+      return '<div onclick="' + onclick + '" style="-webkit-tap-highlight-color:transparent;' + (onclick?'cursor:pointer;':'') + 'display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);">' +
+        '<div style="width:8px;height:8px;border-radius:50%;background:' + col + ';flex-shrink:0;margin-top:5px;"></div>' +
+        '<div style="flex:1;min-width:0;">' +
+          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">' +
+            '<span style="font-size:9px;font-weight:800;color:' + col + ';background:' + col + '1a;border:1px solid ' + col + ';border-radius:20px;padding:1px 7px;letter-spacing:.4px;">' + a.tag + '</span>' +
+          '</div>' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text);">' + escapeHtml(a.title) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);">' + escapeHtml(a.sub) + '</div>' +
+        '</div>' +
+        (onclick ? '<div style="color:var(--muted);font-size:18px;align-self:center;">›</div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  $('notifOverlay').style.display = '';
+  $('notifPanel').style.transform  = 'translateY(0)';
+  history.pushState({ panel: 'notifPanel' }, '');
+}
+
+function closeNotifications() {
+  $('notifOverlay').style.display = 'none';
+  $('notifPanel').style.transform  = 'translateY(100%)';
 }
 
 // ═══════════════════════════════════════════════════════
@@ -7147,6 +7293,7 @@ function _upsertClient(name, phone, email, address, type) {
   renderTemplates();
   updateTotal();
   updateContractCount();
+  updateNotifBadge();
 
   // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
   setTimeout(dismissSplash, 2500);
@@ -7163,6 +7310,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
     if ($('invModalOverlay') && $('invModalOverlay').style.display !== 'none') { closeInvModal(); return; }
     if ($('msModalOverlay') && $('msModalOverlay').style.display !== 'none') { closeMilestoneModal(); return; }
+    if ($('notifPanel').style.transform === 'translateY(0px)' || $('notifPanel').style.transform === 'translateY(0)') { closeNotifications(); return; }
     if ($('expenseModalOverlay').style.display !== 'none')           { closeExpenseModal(); return; }
     if ($('lwModalOverlay').style.display !== 'none')               { closeLWModal(); return; }
     if ($('invoiceDetail').classList.contains('open'))               { closeInvoiceDetail(); return; }
