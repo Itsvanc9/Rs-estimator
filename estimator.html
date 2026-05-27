@@ -1358,6 +1358,7 @@
       <button class="jds-close" onclick="closeJobDaySheet()">✕</button>
     </div>
     <div id="jdsCards"></div>
+    <div id="jdsNotesWrap"></div>
   </div>
 </div>
 
@@ -1481,6 +1482,22 @@
           <label data-i18n="endLabel">End</label>
           <input type="date" id="cdJobEnd" onchange="saveContractDates()">
         </div>
+      </div>
+      <div class="cd-dates-row" style="margin-top:8px;">
+        <div class="cd-date-field">
+          <label data-i18n="startTimeLabel">Start Time</label>
+          <input type="time" id="cdJobStartTime" onchange="saveContractDates()">
+        </div>
+        <div class="cd-date-field">
+          <label data-i18n="endTimeLabel">End Time</label>
+          <input type="time" id="cdJobEndTime" onchange="saveContractDates()">
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;display:block;margin-bottom:4px;" data-i18n="jobNotesLabel">Job Notes</label>
+        <textarea id="cdJobNotes" rows="3" data-i18n-ph="jobNotesPlaceholder" placeholder="Operational notes for this job…"
+          style="width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"
+          oninput="saveContractDates()"></textarea>
       </div>
       <div id="cdConflictWarn" style="display:none;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:10px 12px;font-size:12px;color:#b91c1c;margin-top:6px;"></div>
     </div>
@@ -1991,6 +2008,10 @@ const T = {
     depositFromEstimate:'Deposit from estimate',
     printNameLabel:'Print Name',
     titlePositionLabel:'Title / Position',
+    startTimeLabel:'Start Time', endTimeLabel:'End Time',
+    jobNotesLabel:'Job Notes', jobNotesPlaceholder:'Operational notes for this job…',
+    calDayNotesLabel:'Day Notes', addNoteBtn:'+ Add Note',
+    noteTextPlaceholder:'Note…', noNotesYet:'No notes for this day.',
     shareTitle:'What do you want to send?',
     shareSubtitle:'Choose a document — it will be sent as PDF',
     shareSending:'Sending',
@@ -2211,6 +2232,10 @@ const T = {
     depositFromEstimate:'Depósito del estimado',
     printNameLabel:'Nombre',
     titlePositionLabel:'Cargo / Título',
+    startTimeLabel:'Hora de Inicio', endTimeLabel:'Hora de Fin',
+    jobNotesLabel:'Notas del Trabajo', jobNotesPlaceholder:'Notas operacionales del trabajo…',
+    calDayNotesLabel:'Notas del Día', addNoteBtn:'+ Agregar Nota',
+    noteTextPlaceholder:'Nota…', noNotesYet:'No hay notas para este día.',
     shareTitle:'¿Qué quieres enviar?',
     shareSubtitle:'Elige el documento — se enviará como PDF',
     shareSending:'Enviando',
@@ -2361,9 +2386,12 @@ function saveContractDates() {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id === currentContractId; });
   if (!c) return;
-  c.jobStart = $('cdJobStart').value;
-  c.jobEnd   = $('cdJobEnd').value;
-  c.team     = ($('cdTeam').value||'').trim();
+  c.jobStart     = $('cdJobStart').value;
+  c.jobEnd       = $('cdJobEnd').value;
+  c.team         = ($('cdTeam').value||'').trim();
+  c.jobStartTime = $('cdJobStartTime') ? $('cdJobStartTime').value : '';
+  c.jobEndTime   = $('cdJobEndTime')   ? $('cdJobEndTime').value   : '';
+  c.jobNotes     = $('cdJobNotes')     ? ($('cdJobNotes').value||'').trim() : '';
   saveContracts(contracts);
   checkScheduleConflict(c, contracts);
   // Refresh suggestions
@@ -2462,6 +2490,7 @@ function renderScheduleCalendar() {
     });
   });
 
+  var calNotesAll = getCalNotes();
   var grid = $('calGrid'); if (!grid) return;
   var html = DAYS.map(function(d){return '<div class="cal-dow">'+d+'</div>';}).join('');
 
@@ -2473,13 +2502,17 @@ function renderScheduleCalendar() {
     var isToday = dateObj.getTime()===today.getTime();
     var jobs = dayMap[day] || [];
     var hasConflict = !!conflictTeamDays[day];
+    var dateKey = calYear + '-' + String(calMonth+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    var hasNotes = (calNotesAll[dateKey] || []).length > 0;
     var cls = 'cal-day' + (isToday?' today':'') + (jobs.length?' has-job':'') + (hasConflict?' cal-conflict':'');
+    var timeLabel = (jobs.length && jobs[0].jobStartTime) ? formatTime12(jobs[0].jobStartTime) + (jobs[0].jobEndTime ? '–' + formatTime12(jobs[0].jobEndTime) : '') : '';
     html += '<div class="'+cls+'" onclick="calDayClick('+day+')" title="'+day+'">' +
       '<div class="cal-day-num" style="'+(hasConflict?'color:#b91c1c;font-weight:900;':'')+'">'+day+(hasConflict?'⚠':'')+'</div>' +
-      (jobs.length ? '<div class="cal-dots">'+jobs.slice(0,5).map(function(c){
+      (jobs.length ? '<div class="cal-dots">'+jobs.slice(0,4).map(function(c){
         var col = teamColor(c.team);
         return '<div class="cal-dot" style="background:'+col+';" title="'+(c.team||c.clientName)+'"></div>';
-      }).join('')+'</div>' : '') +
+      }).join('')+(hasNotes?'<div class="cal-dot" style="background:#f59e0b;" title="notes"></div>':'')+'</div>' : (hasNotes?'<div class="cal-dots"><div class="cal-dot" style="background:#f59e0b;" title="notes"></div></div>':'')) +
+      (timeLabel ? '<div style="font-size:7px;color:var(--muted);text-align:center;line-height:1;margin-top:1px;overflow:hidden;">'+timeLabel+'</div>' : '') +
     '</div>';
   }
   grid.innerHTML = html;
@@ -2503,6 +2536,7 @@ function renderScheduleCalendar() {
           '<div class="cal-job-meta">' +
             (c.team?'<strong style="color:'+col+';">'+escapeHtml(c.team)+'</strong> · ':'') +
             c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'') +
+            (c.jobStartTime?' · ⏰ '+formatTime12(c.jobStartTime)+(c.jobEndTime?'–'+formatTime12(c.jobEndTime):''):'') +
             (c.projectName?' · '+escapeHtml(c.projectName):'') +
           '</div>' +
         '</div>' +
@@ -4206,9 +4240,12 @@ function openContractDetail(id) {
   $('cdClientName').textContent = c.clientName;
   $('cdProjectName').textContent = c.estNum + (c.projectName ? ' · ' + c.projectName : '');
   $('cdTotal').textContent   = '$' + fmtMoney(c.totalAmount);
-  $('cdJobStart').value = c.jobStart || '';
-  $('cdJobEnd').value   = c.jobEnd   || '';
-  $('cdTeam').value     = c.team     || '';
+  $('cdJobStart').value     = c.jobStart     || '';
+  $('cdJobEnd').value       = c.jobEnd       || '';
+  $('cdTeam').value         = c.team         || '';
+  $('cdJobStartTime').value = c.jobStartTime || '';
+  $('cdJobEndTime').value   = c.jobEndTime   || '';
+  $('cdJobNotes').value     = c.jobNotes     || '';
   var allContracts = getContracts();
   populateTeamSuggestions(allContracts);
   checkScheduleConflict(c, allContracts);
@@ -4335,6 +4372,22 @@ function acceptContract() {
 
 // ── JOB DAY SHEET ────────────────────────────────────────────────────────────
 
+function getCalNotes() { return JSON.parse(localStorage.getItem('RS_CAL_NOTES') || '{}'); }
+function saveCalNotes(notes) { localStorage.setItem('RS_CAL_NOTES', JSON.stringify(notes)); }
+
+function formatTime12(t24) {
+  if (!t24) return '';
+  var parts = t24.split(':');
+  var h = parseInt(parts[0]), m = parts[1] || '00';
+  var ampm = h >= 12 ? 'pm' : 'am';
+  h = h % 12 || 12;
+  return h + (m !== '00' ? ':' + m : '') + ampm;
+}
+
+function _jdsDateKey(day) {
+  return calYear + '-' + String(calMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+}
+
 function openJobDaySheet(day) {
   var jobs = getContracts().filter(function(c) {
     if (!c.jobStart) return false;
@@ -4343,17 +4396,19 @@ function openJobDaySheet(day) {
     var d = new Date(calYear, calMonth, day);
     return d >= s && d <= e;
   });
-  if (jobs.length === 0) return;
 
-  var MONTHS = currentLang === 'es'
+  var dateKey = _jdsDateKey(day);
+  var dayNotes = getCalNotes()[dateKey] || [];
+
+  var MONTHS_S = currentLang === 'es'
     ? ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
     : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DAYS_FULL = currentLang === 'es'
     ? ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
     : ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var dateObj = new Date(calYear, calMonth, day);
-  $('jdsDate').textContent = DAYS_FULL[dateObj.getDay()] + ', ' + MONTHS[calMonth] + ' ' + day + ', ' + calYear;
-  $('jdsCount').textContent = jobs.length + ' ' + (jobs.length === 1 ? t('jobScheduled') : t('jobsScheduled'));
+  $('jdsDate').textContent = DAYS_FULL[dateObj.getDay()] + ', ' + MONTHS_S[calMonth] + ' ' + day + ', ' + calYear;
+  $('jdsCount').textContent = jobs.length > 0 ? (jobs.length + ' ' + (jobs.length === 1 ? t('jobScheduled') : t('jobsScheduled'))) : '';
 
   $('jdsCards').innerHTML = jobs.map(function(c) {
     var col = teamColor(c.team);
@@ -4366,6 +4421,7 @@ function openJobDaySheet(day) {
     var statusLbl = c.status === 'completed' ? t('completedLabel')
                   : c.status === 'accepted'  ? t('acceptedLabel') : t('activeLabel');
     var phone = (c.estimateData && c.estimateData.clientPhone) ? c.estimateData.clientPhone : '';
+    var timeStr = c.jobStartTime ? '⏰ ' + formatTime12(c.jobStartTime) + (c.jobEndTime ? ' – ' + formatTime12(c.jobEndTime) : '') : '';
     return '<div class="jds-card" style="border-left:5px solid ' + col + ';">' +
       '<div class="jds-card-top">' +
         '<div class="jds-client">' + escapeHtml(c.clientName) + '</div>' +
@@ -4373,11 +4429,13 @@ function openJobDaySheet(day) {
         '<div class="jds-tags">' +
           (c.team ? '<span class="jds-tag" style="color:' + col + ';border-color:' + col + ';background:' + col + '1a;">👥 ' + escapeHtml(c.team) + '</span>' : '') +
           '<span class="jds-tag" style="color:' + statusColor + ';border-color:' + statusColor + ';background:' + statusColor + '1a;">' + statusLbl + '</span>' +
+          (timeStr ? '<span class="jds-tag" style="color:var(--lime-dark);border-color:var(--lime);background:rgba(132,204,22,.1);">' + timeStr + '</span>' : '') +
           '<span class="jds-tag" style="color:var(--muted);border-color:var(--border);">📅 ' + c.jobStart + (c.jobEnd && c.jobEnd !== c.jobStart ? ' → ' + c.jobEnd : '') + '</span>' +
           '<span class="jds-tag" style="color:var(--muted);border-color:var(--border);">💰 $' + fmtMoney(c.totalAmount) + '</span>' +
         '</div>' +
       '</div>' +
       (scopeShort ? '<div class="jds-scope">📋 ' + escapeHtml(scopeShort) + '</div>' : '') +
+      (c.jobNotes ? '<div class="jds-scope" style="color:var(--lime-dark);margin-top:4px;">📝 ' + escapeHtml(c.jobNotes) + '</div>' : '') +
       '<div class="jds-bar-row">' +
         '<span style="font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;">' + t('kpiPaid') + '</span>' +
         '<div class="jds-bar-wrap"><div class="jds-bar-fill" style="width:' + pct + '%;"></div></div>' +
@@ -4388,10 +4446,79 @@ function openJobDaySheet(day) {
         (phone ? '<a href="tel:' + encodeURIComponent(phone) + '" class="btn btn-light" style="justify-content:center;font-size:15px;padding:10px 16px;">📞</a>' : '') +
       '</div>' +
     '</div>';
-  }).join('') + '<div style="height:14px;"></div>';
+  }).join('');
+
+  renderJdsNotes(dateKey, dayNotes);
 
   history.pushState({ panel: 'jobDaySheet' }, '');
   $('jobDaySheet').style.display = 'flex';
+}
+
+function renderJdsNotes(dateKey, notes) {
+  var wrap = $('jdsNotesWrap'); if (!wrap) return;
+  var notesBtnStyle = '-webkit-tap-highlight-color:transparent;background:var(--lime);color:#0f172a;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;';
+  var html = '<div style="padding:4px 16px 20px;">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">' +
+      '<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">📝 ' + t('calDayNotesLabel') + '</div>' +
+      '<button onclick="openCalNoteEditor(\'' + dateKey + '\')" style="' + notesBtnStyle + '">' + t('addNoteBtn') + '</button>' +
+    '</div>';
+  if (notes.length === 0) {
+    html += '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">' + t('noNotesYet') + '</div>';
+  } else {
+    notes.forEach(function(n) {
+      html += '<div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;gap:8px;align-items:flex-start;">' +
+        '<div style="flex:1;">' +
+          (n.time ? '<div style="font-size:11px;color:var(--lime-dark);font-weight:700;margin-bottom:3px;">⏰ ' + formatTime12(n.time) + '</div>' : '') +
+          '<div style="font-size:13px;color:var(--text);">' + escapeHtml(n.text) + '</div>' +
+        '</div>' +
+        '<button onclick="deleteCalNote(\'' + dateKey + '\',\'' + n.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>' +
+      '</div>';
+    });
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+function openCalNoteEditor(dateKey) {
+  var wrap = $('jdsNotesWrap'); if (!wrap) return;
+  var inputStyle = 'width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;';
+  wrap.innerHTML = '<div style="padding:4px 16px 20px;">' +
+    '<div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">📝 ' + t('calDayNotesLabel') + '</div>' +
+    '<input id="calNoteTime" type="time" style="' + inputStyle + 'margin-bottom:8px;">' +
+    '<textarea id="calNoteText" rows="3" placeholder="' + t('noteTextPlaceholder') + '" style="' + inputStyle + 'resize:vertical;margin-bottom:8px;"></textarea>' +
+    '<div style="display:flex;gap:8px;">' +
+      '<button onclick="saveCalNote(\'' + dateKey + '\')" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--lime);color:#0f172a;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">' + t('saveBtn') + '</button>' +
+      '<button onclick="cancelCalNote(\'' + dateKey + '\')" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--border);border:none;color:var(--muted);border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">' + t('cancelBtn') + '</button>' +
+    '</div>' +
+  '</div>';
+  setTimeout(function(){ var ta = $('calNoteText'); if (ta) ta.focus(); }, 100);
+}
+
+function saveCalNote(dateKey) {
+  var text = ($('calNoteText') ? $('calNoteText').value : '').trim();
+  if (!text) { showToast(t('noteTextPlaceholder')); return; }
+  var time = $('calNoteTime') ? $('calNoteTime').value : '';
+  var all = getCalNotes();
+  if (!all[dateKey]) all[dateKey] = [];
+  all[dateKey].push({ id: 'n_' + Date.now(), time: time, text: text });
+  saveCalNotes(all);
+  renderJdsNotes(dateKey, all[dateKey]);
+  renderScheduleCalendar();
+}
+
+function cancelCalNote(dateKey) {
+  renderJdsNotes(dateKey, getCalNotes()[dateKey] || []);
+}
+
+function deleteCalNote(dateKey, noteId) {
+  var all = getCalNotes();
+  if (all[dateKey]) {
+    all[dateKey] = all[dateKey].filter(function(n){ return n.id !== noteId; });
+    if (all[dateKey].length === 0) delete all[dateKey];
+  }
+  saveCalNotes(all);
+  renderJdsNotes(dateKey, all[dateKey] || []);
+  renderScheduleCalendar();
 }
 
 function closeJobDaySheet() {
