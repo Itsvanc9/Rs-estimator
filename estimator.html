@@ -1861,7 +1861,8 @@ const T = {
     contractDocSection:'Contract Document', viewContractBtn:'View Contract', printPDFBtn:'Print / PDF',
     originalEstimateSection:'Original Estimate', viewEstimateBtn:'View Estimate',
     depositReceipts:'Deposit Receipts',
-    signedContractLabel:'Signed Contract', notYetUploaded:'Not yet uploaded',
+    signedContractLabel:'Signed Contract', notYetUploaded:'Not yet uploaded', signedLabel:'Signed',
+    removeSignedTitle:'Remove signed contract?', removeSignedMsg:'The uploaded file will be deleted.',
     uploadFileBtn:'Upload File', takePhotoBtn:'Take Photo',
     recordPaymentBtn:'Record Payment Received',
     paymentHistorySection:'Payment History', photosLabel:'Photos',
@@ -1872,6 +1873,9 @@ const T = {
     paymentNote:'Note (optional)', receiptProof:'Receipt / Proof of Payment',
     uploadBtn:'Upload', cameraBtn:'Camera', removePhotoBtn:'✕ Remove photo',
     cancelBtn:'Cancel', savePaymentBtn:'Save Payment',
+    balanceDue:'Balance due', deletePaymentConfirm:'Delete this payment?',
+    sigEstAuth:'✍️ Contractor Signature — Estimate', sigEstClient:'✍️ Client Signature — Estimate',
+    sigConAuth:'✍️ Contractor Signature — Contract', sigConClient:'✍️ Client Signature — Contract',
     methodCash:'Cash', methodCheck:'Check', methodZelle:'Zelle', methodCard:'Card',
     // Owner dashboard
     currentEstimateSection:'Current Estimate', grossMarginLabel:'Gross Margin',
@@ -2085,7 +2089,8 @@ const T = {
     contractDocSection:'Documento del Contrato', viewContractBtn:'Ver Contrato', printPDFBtn:'Imprimir / PDF',
     originalEstimateSection:'Estimado Original', viewEstimateBtn:'Ver Estimado',
     depositReceipts:'Comprobantes de Depósito',
-    signedContractLabel:'Contrato Firmado', notYetUploaded:'Aún no subido',
+    signedContractLabel:'Contrato Firmado', notYetUploaded:'Aún no subido', signedLabel:'Firmado',
+    removeSignedTitle:'¿Eliminar contrato firmado?', removeSignedMsg:'El archivo subido será eliminado.',
     uploadFileBtn:'Subir Archivo', takePhotoBtn:'Tomar Foto',
     recordPaymentBtn:'Registrar Pago Recibido',
     paymentHistorySection:'Historial de Pagos', photosLabel:'Fotos',
@@ -2096,6 +2101,9 @@ const T = {
     paymentNote:'Nota (opcional)', receiptProof:'Comprobante / Recibo de Pago',
     uploadBtn:'Subir', cameraBtn:'Cámara', removePhotoBtn:'✕ Quitar foto',
     cancelBtn:'Cancelar', savePaymentBtn:'Guardar Pago',
+    balanceDue:'Saldo pendiente', deletePaymentConfirm:'¿Eliminar este pago?',
+    sigEstAuth:'✍️ Firma Contratista — Estimado', sigEstClient:'✍️ Firma Cliente — Estimado',
+    sigConAuth:'✍️ Firma Contratista — Contrato', sigConClient:'✍️ Firma Cliente — Contrato',
     methodCash:'Efectivo', methodCheck:'Cheque', methodZelle:'Zelle', methodCard:'Tarjeta',
     // Owner dashboard
     currentEstimateSection:'Estimado Actual', grossMarginLabel:'Margen Bruto',
@@ -2412,7 +2420,7 @@ function checkScheduleConflict(current, contracts) {
   });
   if (conflicts.length === 0) { warn.style.display='none'; return; }
   warn.style.display = '';
-  warn.innerHTML = '⚠️ <strong>'+escapeHtml(current.team)+'</strong> already has '+conflicts.length+' job(s) on those dates:<br>' +
+  warn.innerHTML = '⚠️ <strong>'+escapeHtml(current.team)+'</strong>'+t('conflictHas')+conflicts.length+t('conflictJobsSuffix')+'<br>' +
     conflicts.map(function(c){
       return '• '+escapeHtml(c.clientName)+' ('+c.jobStart+(c.jobEnd&&c.jobEnd!==c.jobStart?' → '+c.jobEnd:'')+')';
     }).join('<br>');
@@ -2525,7 +2533,7 @@ function renderScheduleCalendar() {
 
   var list = $('calJobList'); if (!list) return;
   if (monthJobs.length===0) {
-    list.innerHTML = '<div class="cal-empty">No jobs scheduled this month.<br><span style="font-size:11px;">Open a contract → set Team & dates.</span></div>';
+    list.innerHTML = '<div class="cal-empty">'+t('noJobsMonth')+'<br><span style="font-size:11px;">'+t('setTeamDates')+'</span></div>';
   } else {
     list.innerHTML = monthJobs.map(function(c){
       var col = teamColor(c.team);
@@ -3789,7 +3797,7 @@ function doShareSend(method) {
     // 3. Text fallback — called synchronously to keep user-gesture context
     _doTextShare(method);
   } catch(e) {
-    showToast('Error: ' + (e.message || 'No se pudo compartir'));
+    showToast(t('toastErrShare') + ': ' + (e.message || ''));
   }
 }
 
@@ -3910,10 +3918,10 @@ var _sigCtx = null, _sigDrawing = false, _sigContext = '';
 function openSigPad(context) {
   _sigContext = context;
   var titles = {
-    'est-auth':'✍️ Firma Contratista — Estimado', 'est-client':'✍️ Firma Cliente — Estimado',
-    'con-auth':'✍️ Firma Contratista — Contrato',  'con-client':'✍️ Firma Cliente — Contrato'
+    'est-auth': t('sigEstAuth'), 'est-client': t('sigEstClient'),
+    'con-auth': t('sigConAuth'), 'con-client': t('sigConClient')
   };
-  $('sigPadTitle').textContent = titles[context] || '✍️ Firma';
+  $('sigPadTitle').textContent = titles[context] || '✍️';
   var canvas = $('sigPadCanvas');
   var overlay = $('sigPadOverlay');
   overlay.style.display = 'flex';
@@ -4540,7 +4548,7 @@ function openPaymentModal() {
   if (!c) return;
   var paid = c.payments.reduce(function(s,p){ return s+(p.amount||0); }, 0);
   var balance = Math.max(0, c.totalAmount - paid);
-  $('payModalSub').textContent = 'Balance due: $' + fmtMoney(balance);
+  $('payModalSub').textContent = t('balanceDue') + ': $' + fmtMoney(balance);
   $('payAmount').value = '';
   $('payDate').value = new Date().toISOString().slice(0,10);
   $('payNote').value = '';
@@ -4588,18 +4596,18 @@ function savePayment() {
   saveContracts(contracts);
   closePaymentModal();
   openContractDetail(currentContractId);
-  showToast('✅ Payment recorded: $' + fmtMoney(amount));
+  showToast('✅ ' + t('toastPaymentRecorded') + fmtMoney(amount));
 }
 
 function deletePayment(contractId, pid) {
-  showConfirm('Delete this payment?', 'This action cannot be undone.', '💵', 'Delete', '#ef4444', function() {
+  showConfirm(t('deletePaymentConfirm'), t('cannotUndo'), '💵', t('deleteBtn'), '#ef4444', function() {
     var contracts = getContracts();
     var c = contracts.find(function(x){ return x.id===contractId; });
     if (!c) return;
     c.payments = c.payments.filter(function(p){ return p.pid!==pid; });
     saveContracts(contracts);
     openContractDetail(contractId);
-    showToast('Payment deleted');
+    showToast(t('toastPaymentDeleted'));
   });
 }
 
@@ -4735,20 +4743,20 @@ function renderSignedSection(c) {
   if (c.signedPhoto) {
     indicator.textContent = '✅';
     indicator.className   = 'psi-indicator paid';
-    meta.textContent      = 'Signed · ' + (c.signedDate || '');
+    meta.textContent      = t('signedLabel') + ' · ' + (c.signedDate || '');
     preview.style.display = '';
     preview.innerHTML     = '<img src="' + c.signedPhoto + '" style="width:100%;border-radius:10px;border:1px solid var(--border);margin-top:4px;" onclick="openSignedPreview()">' +
-      '<button onclick="removeSignedContract()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ Remove</button>';
+      '<button onclick="removeSignedContract()" style="background:none;border:none;color:var(--red);font-size:12px;margin-top:4px;cursor:pointer;">✕ ' + t('removeSignedTitle').replace('?','') + '</button>';
   } else {
     indicator.textContent = '✍️';
     indicator.className   = 'psi-indicator pending';
-    meta.textContent      = 'Not yet uploaded';
+    meta.textContent      = t('notYetUploaded');
     preview.style.display = 'none';
     preview.innerHTML     = '';
   }
 }
 function removeSignedContract() {
-  showConfirm('Remove signed contract?', 'The uploaded file will be deleted.', '✍️', 'Remove', '#ef4444', function() {
+  showConfirm(t('removeSignedTitle'), t('removeSignedMsg'), '✍️', t('deleteBtn'), '#ef4444', function() {
     var contracts = getContracts();
     var c = contracts.find(function(x){ return x.id===currentContractId; });
     if (!c) return;
