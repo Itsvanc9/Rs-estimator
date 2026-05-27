@@ -1515,6 +1515,14 @@
       <button onclick="openNewCO()" class="btn btn-light" style="width:100%;justify-content:center;margin-top:6px;">➕ <span data-i18n="addChangeOrderBtn">New Change Order</span></button>
     </div>
 
+    <!-- Milestones & Photos -->
+    <div>
+      <div class="cd-section-title">🏗️ <span data-i18n="milestonesSection">Milestones &amp; Photos</span></div>
+      <div id="cdMilestones"></div>
+      <button onclick="openNewMilestone()" class="btn btn-light" style="width:100%;justify-content:center;margin-top:6px;">➕ <span data-i18n="addMilestoneBtn">New Milestone</span></button>
+      <input type="file" id="milestoneFileInput" accept="image/*" style="display:none" onchange="handleMilestoneFile(this)">
+    </div>
+
     <!-- Contract document buttons -->
     <div>
       <div class="cd-section-title" data-i18n="contractDocSection">Contract Document</div>
@@ -1764,6 +1772,34 @@
     <div style="display:flex;gap:10px;">
       <button onclick="closeSchedEdit()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
       <button onclick="saveSchedEdit()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MILESTONE MODAL -->
+<div id="msModalOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);">
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:360px;box-shadow:0 24px 60px rgba(0,0,0,0.5);">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;">🏗️ <span data-i18n="addMilestoneBtn">New Milestone</span></div>
+    <div style="margin-bottom:12px;">
+      <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="msNameLabel">Phase / Stage</label>
+      <input id="msName" list="msPresets" data-i18n-ph="msNamePlaceholder" placeholder="e.g. Demolition, Framing…"
+        style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      <datalist id="msPresets"></datalist>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coDateLabel">Date</label>
+        <input type="date" id="msDate" style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="msNoteLabel">Note</label>
+        <input id="msNote" data-i18n-ph="msNotePlaceholder" placeholder="Optional…"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeMilestoneModal()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
+      <button onclick="saveMilestone()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save</button>
     </div>
   </div>
 </div>
@@ -2048,6 +2084,14 @@ const T = {
     depositFromEstimate:'Deposit from estimate',
     printNameLabel:'Print Name',
     titlePositionLabel:'Title / Position',
+    milestonesSection:'Milestones & Photos', addMilestoneBtn:'New Milestone',
+    msNameLabel:'Phase / Stage', msNamePlaceholder:'e.g. Demolition, Framing…',
+    msNoteLabel:'Note', msNotePlaceholder:'Optional…',
+    msBeforeLabel:'Before', msProgressLabel:'Progress', msAfterLabel:'After',
+    msAddPhoto:'+ Photo', msDeleteMs:'Delete Milestone',
+    msPresets:'Demolition,Foundation,Framing,Rough-In,Inspection,Drywall,Insulation,Paint,Flooring,Finish Work,Final',
+    toastMsSaved:'✅ Milestone saved', toastMsDeleted:'Milestone deleted',
+    toastMsPhotoAdded:'📷 Photo added', confirmDeleteMs:'Delete this milestone and all its photos?',
     changeOrdersSection:'Change Orders', addChangeOrderBtn:'New Change Order',
     coDescLabel:'Description of Change', coDescPlaceholder:'Describe the scope change, extra work, or credit…',
     coAmountLabel:'Amount ($)', coDateLabel:'Date',
@@ -2289,6 +2333,14 @@ const T = {
     depositFromEstimate:'Depósito del estimado',
     printNameLabel:'Nombre',
     titlePositionLabel:'Cargo / Título',
+    milestonesSection:'Etapas y Fotos', addMilestoneBtn:'Nueva Etapa',
+    msNameLabel:'Fase / Etapa', msNamePlaceholder:'ej. Demolición, Estructura…',
+    msNoteLabel:'Nota', msNotePlaceholder:'Opcional…',
+    msBeforeLabel:'Antes', msProgressLabel:'Progreso', msAfterLabel:'Después',
+    msAddPhoto:'+ Foto', msDeleteMs:'Eliminar Etapa',
+    msPresets:'Demolición,Cimentación,Estructura,Instalaciones,Inspección,Tablaroca,Aislamiento,Pintura,Pisos,Acabados,Final',
+    toastMsSaved:'✅ Etapa guardada', toastMsDeleted:'Etapa eliminada',
+    toastMsPhotoAdded:'📷 Foto agregada', confirmDeleteMs:'¿Eliminar esta etapa y todas sus fotos?',
     changeOrdersSection:'Órdenes de Cambio', addChangeOrderBtn:'Nueva Orden de Cambio',
     coDescLabel:'Descripción del Cambio', coDescPlaceholder:'Describe el cambio de alcance, trabajo extra o crédito…',
     coAmountLabel:'Monto ($)', coDateLabel:'Fecha',
@@ -3240,6 +3292,7 @@ function openCamera(context) {
     window.AndroidBridge.takePhoto();
   } else if (context === 'payReceipt') $('payReceiptCamera').click();
   else if (context === 'signed') $('signedCameraInput').click();
+  else if (context === 'milestone') $('milestoneFileInput').click();
   else $('receiptInput').click();
 }
 
@@ -3263,7 +3316,9 @@ function receiveNativePhoto(base64) {
 function _applyNativePhoto(base64) {
   var ctx = cameraContext;
   cameraContext = 'receipt';
-  if (ctx === 'payReceipt') {
+  if (ctx === 'milestone') {
+    _applyMilestonePhoto(base64);
+  } else if (ctx === 'payReceipt') {
     $('payReceiptImg').src = base64;
     $('payReceiptPreview').style.display = '';
   } else if (ctx === 'signed') {
@@ -4409,6 +4464,8 @@ function openContractDetail(id) {
   }
   // Change Orders
   renderCOs(c);
+  // Milestones & Photos
+  renderMilestones(c);
   // Signed contract section
   renderSignedSection(c);
   // Electronic signatures
@@ -4595,6 +4652,156 @@ function deleteCalNote(dateKey, noteId) {
 
 function closeJobDaySheet() {
   $('jobDaySheet').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════
+// MILESTONES & PHOTOS
+// ═══════════════════════════════════════════════════════
+var _milestoneTarget = null; // { milestoneId, photoType }
+
+function openNewMilestone() {
+  // Populate preset datalist from translation
+  var dl = $('msPresets');
+  if (dl) {
+    dl.innerHTML = t('msPresets').split(',').map(function(s){
+      return '<option value="' + escapeHtml(s.trim()) + '">';
+    }).join('');
+  }
+  $('msName').value = '';
+  $('msDate').value = new Date().toISOString().slice(0, 10);
+  $('msNote').value = '';
+  $('msModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'msModal' }, '');
+  setTimeout(function(){ $('msName').focus(); }, 120);
+}
+
+function closeMilestoneModal() {
+  $('msModalOverlay').style.display = 'none';
+}
+
+function saveMilestone() {
+  var name = ($('msName').value || '').trim();
+  if (!name) { showToast(t('msNamePlaceholder')); return; }
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  if (!c.milestones) c.milestones = [];
+  c.milestones.push({
+    id: 'ms_' + Date.now(),
+    name: name,
+    date: $('msDate').value || new Date().toISOString().slice(0, 10),
+    note: ($('msNote').value || '').trim(),
+    photos: []
+  });
+  saveContracts(contracts);
+  closeMilestoneModal();
+  renderMilestones(c);
+  showToast(t('toastMsSaved'));
+}
+
+function renderMilestones(c) {
+  var el = $('cdMilestones'); if (!el) return;
+  var mss = c.milestones || [];
+  if (mss.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 0 4px;">' + t('addMilestoneBtn') + ' →</div>';
+    return;
+  }
+  var types = [
+    { key: 'before',   label: t('msBeforeLabel'),   color: '#f59e0b' },
+    { key: 'progress', label: t('msProgressLabel'), color: '#3b82f6' },
+    { key: 'after',    label: t('msAfterLabel'),    color: '#10b981' }
+  ];
+  el.innerHTML = mss.map(function(ms) {
+    var photosByType = {};
+    types.forEach(function(tp){ photosByType[tp.key] = []; });
+    (ms.photos || []).forEach(function(ph){ if (photosByType[ph.type]) photosByType[ph.type].push(ph); });
+    var cols = types.map(function(tp) {
+      var thumbs = photosByType[tp.key].map(function(ph) {
+        return '<div style="position:relative;display:inline-block;">' +
+          '<img src="' + ph.data + '" onclick="viewPhoto(\'' + ph.data + '\')" style="width:56px;height:56px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid ' + tp.color + ';">' +
+          '<button onclick="deleteMilestonePhoto(\'' + ms.id + '\',\'' + ph.id + '\')" style="-webkit-tap-highlight-color:transparent;position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;">✕</button>' +
+        '</div>';
+      }).join('');
+      return '<div style="flex:1;min-width:0;">' +
+        '<div style="font-size:9px;font-weight:800;color:' + tp.color + ';text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">' + tp.label + '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px;">' + thumbs + '</div>' +
+        '<button onclick="openMilestonePhoto(\'' + ms.id + '\',\'' + tp.key + '\')" style="-webkit-tap-highlight-color:transparent;background:' + tp.color + '1a;border:1.5px dashed ' + tp.color + ';color:' + tp.color + ';border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;">' + t('msAddPhoto') + '</button>' +
+      '</div>';
+    }).join('');
+    return '<div style="background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
+        '<div>' +
+          '<div style="font-size:13px;font-weight:800;color:var(--text);">🏗️ ' + escapeHtml(ms.name) + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);">' + (ms.date || '') + (ms.note ? ' · ' + escapeHtml(ms.note) : '') + '</div>' +
+        '</div>' +
+        '<button onclick="deleteMilestone(\'' + ms.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 2px;">🗑</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' + cols + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openMilestonePhoto(milestoneId, photoType) {
+  _milestoneTarget = { milestoneId: milestoneId, photoType: photoType };
+  openCamera('milestone');
+}
+
+function handleMilestoneFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var maxDim = 900;
+      var scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      _applyMilestonePhoto(canvas.toDataURL('image/jpeg', 0.72));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function _applyMilestonePhoto(data) {
+  if (!_milestoneTarget) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  var ms = (c.milestones || []).find(function(x){ return x.id === _milestoneTarget.milestoneId; });
+  if (!ms) return;
+  if (!ms.photos) ms.photos = [];
+  ms.photos.push({ id: 'ph_' + Date.now(), type: _milestoneTarget.photoType, data: data, date: new Date().toISOString().slice(0, 10) });
+  _milestoneTarget = null;
+  saveContracts(contracts);
+  renderMilestones(c);
+  showToast(t('toastMsPhotoAdded'));
+}
+
+function deleteMilestonePhoto(milestoneId, photoId) {
+  var contracts = getContracts();
+  var c = contracts.find(function(x){ return x.id === currentContractId; });
+  if (!c) return;
+  var ms = (c.milestones || []).find(function(x){ return x.id === milestoneId; });
+  if (ms) { ms.photos = (ms.photos || []).filter(function(p){ return p.id !== photoId; }); }
+  saveContracts(contracts);
+  renderMilestones(c);
+}
+
+function deleteMilestone(milestoneId) {
+  showConfirm(t('confirmDeleteMs'), t('cannotUndo'), '🏗️', t('deleteBtn'), '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){ return x.id === currentContractId; });
+    if (!c) return;
+    c.milestones = (c.milestones || []).filter(function(x){ return x.id !== milestoneId; });
+    saveContracts(contracts);
+    renderMilestones(c);
+    showToast(t('toastMsDeleted'));
+  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -5811,6 +6018,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('receiptModal') && $('receiptModal').classList.contains('open')) { $('receiptModal').classList.remove('open'); return; }
     if ($('companyProfilePanel').style.display !== 'none')         { closeCompanyProfile(); return; }
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
+    if ($('msModalOverlay') && $('msModalOverlay').style.display !== 'none') { closeMilestoneModal(); return; }
     if ($('coModalOverlay').style.display !== 'none')              { closeCOModal(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
     if ($('payModalOverlay').classList.contains('open'))            { closePaymentModal(); return; }
