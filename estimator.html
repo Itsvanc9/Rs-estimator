@@ -5873,6 +5873,78 @@ function updateNotifBadge() {
     badge.textContent = total > 9 ? '9+' : total;
     badge.style.background = reds > 0 ? '#ef4444' : '#f59e0b';
   }
+  syncNativeNotifications();
+}
+
+function syncNativeNotifications() {
+  if (!(window.AndroidBridge && window.AndroidBridge.scheduleNotification)) return;
+  var now = Date.now();
+
+  // Payment schedule notifications
+  getContracts().forEach(function(c) {
+    (c.schedule || []).forEach(function(s) {
+      var idDue = 'pay_due_' + c.id + '_' + s.sid;
+      var idPre = 'pay_pre_' + c.id + '_' + s.sid;
+      var isPaid = (c.payments || []).some(function(p) { return p.scheduleId === s.sid; });
+      if (isPaid || !s.due) {
+        window.AndroidBridge.cancelNotification(idDue);
+        window.AndroidBridge.cancelNotification(idPre);
+        return;
+      }
+      var lbl = s.labelKey ? t(s.labelKey) : (s.label || '');
+      var titlePay = '💵 ' + c.clientName;
+      var bodyPay  = lbl + ' · $' + fmtMoney(s.amount);
+      var tsDue = new Date(s.due + 'T09:00:00').getTime();
+      if (tsDue > now) {
+        window.AndroidBridge.scheduleNotification(idDue, titlePay, bodyPay, tsDue);
+      } else {
+        window.AndroidBridge.cancelNotification(idDue);
+      }
+      var tsPre = tsDue - 86400000;
+      if (tsPre > now) {
+        window.AndroidBridge.scheduleNotification(idPre, titlePay, bodyPay, tsPre);
+      } else {
+        window.AndroidBridge.cancelNotification(idPre);
+      }
+    });
+
+    // Job start 1-day-before reminder
+    if (c.jobStart) {
+      var idJob = 'job_pre_' + c.id;
+      var tsJob = new Date(c.jobStart + 'T07:00:00').getTime() - 86400000;
+      var jobTitle = '🔨 ' + c.clientName;
+      var jobBody  = (c.projectName || '') + ' ' + (currentLang === 'es' ? 'mañana' : 'starts tomorrow');
+      if (tsJob > now) {
+        window.AndroidBridge.scheduleNotification(idJob, jobTitle, jobBody, tsJob);
+      } else {
+        window.AndroidBridge.cancelNotification(idJob);
+      }
+    }
+  });
+
+  // Calendar note notifications
+  var calNotes = getCalNotes();
+  Object.keys(calNotes).forEach(function(dateStr) {
+    var notes = calNotes[dateStr];
+    notes.forEach(function(n) {
+      if (!n.text) return;
+      var idCal = 'cal_' + dateStr + '_' + (n.id || n.text);
+      var tsBase = new Date(dateStr + 'T09:00:00').getTime();
+      var tsCal;
+      if (n.time) {
+        tsCal = new Date(dateStr + 'T' + n.time).getTime();
+      } else {
+        tsCal = tsBase;
+      }
+      var calTitle = '📅 ' + n.text;
+      var calBody  = dateStr;
+      if (tsCal > now) {
+        window.AndroidBridge.scheduleNotification(idCal, calTitle, calBody, tsCal);
+      } else {
+        window.AndroidBridge.cancelNotification(idCal);
+      }
+    });
+  });
 }
 
 function openNotifications() {
@@ -7294,6 +7366,7 @@ function _upsertClient(name, phone, email, address, type) {
   updateTotal();
   updateContractCount();
   updateNotifBadge();
+  syncNativeNotifications();
 
   // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
   setTimeout(dismissSplash, 2500);

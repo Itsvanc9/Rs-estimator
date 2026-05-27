@@ -1,6 +1,9 @@
 package com.blackracoon.estimator;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.Context;
@@ -658,5 +661,47 @@ public class AndroidBridge {
                     "typeof showToast==='function'&&showToast((typeof t==='function'?t('" + key + "'):'" + key + "')+'"+safeParam+"')", null);
             }
         });
+    }
+
+    // ── LOCAL NOTIFICATIONS ───────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void scheduleNotification(final String notifId, final String title,
+                                     final String body, final long timestampMs) {
+        // Only schedule if in the future
+        if (timestampMs <= System.currentTimeMillis()) return;
+
+        Intent intent = new Intent(context, NotifReceiver.class);
+        intent.putExtra("title",   title);
+        intent.putExtra("body",    body);
+        intent.putExtra("notifId", notifId.hashCode());
+
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context, notifId.hashCode(), intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am == null) return;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pi);
+        } else {
+            am.setExact(AlarmManager.RTC_WAKEUP, timestampMs, pi);
+        }
+    }
+
+    @JavascriptInterface
+    public void cancelNotification(final String notifId) {
+        Intent intent = new Intent(context, NotifReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(
+                context, notifId.hashCode(), intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (am != null) am.cancel(pi);
+
+        NotificationManager nm = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nm != null) nm.cancel(notifId.hashCode());
     }
 }
