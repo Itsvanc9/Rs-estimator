@@ -1591,6 +1591,13 @@
       <input type="file" id="milestoneFileInput" accept="image/*" style="display:none" onchange="handleMilestoneFile(this)">
     </div>
 
+    <!-- Lien Waivers -->
+    <div>
+      <div class="cd-section-title">📜 <span data-i18n="lienWaiversSection">Lien Waivers</span></div>
+      <div id="cdLienWaivers"></div>
+      <button onclick="openLienWaiverModal()" class="btn btn-light" style="width:100%;justify-content:center;margin-top:6px;">➕ <span data-i18n="addLienWaiverBtn">New Lien Waiver</span></button>
+    </div>
+
     <!-- Contract document buttons -->
     <div>
       <div class="cd-section-title" data-i18n="contractDocSection">Contract Document</div>
@@ -1973,6 +1980,58 @@
   </div>
 </div>
 
+<!-- LIEN WAIVER MODAL -->
+<div id="lwModalOverlay" style="position:fixed;inset:0;z-index:20000;display:none;align-items:flex-start;justify-content:center;padding:20px;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);overflow-y:auto;">
+  <div style="background:var(--surface);border-radius:24px;padding:24px 20px 20px;width:100%;max-width:380px;box-shadow:0 24px 60px rgba(0,0,0,0.5);margin:auto;">
+    <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px;">📜 <span data-i18n="lienWaiversSection">Lien Waiver</span></div>
+
+    <!-- Type -->
+    <div style="margin-bottom:14px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;" data-i18n="lwTypeLabel">Waiver Type</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button id="lwTypeCPBtn" onclick="selectLWType('conditional-progress')" class="lw-type-btn lw-type-sel" style="padding:10px 6px;border-radius:12px;border:2px solid var(--lime);background:var(--lime-light);color:var(--lime-dark);font-size:11px;font-weight:700;cursor:pointer;line-height:1.3;">Conditional<br>Progress</button>
+        <button id="lwTypeUPBtn" onclick="selectLWType('unconditional-progress')" class="lw-type-btn" style="padding:10px 6px;border-radius:12px;border:2px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;line-height:1.3;">Unconditional<br>Progress</button>
+        <button id="lwTypeCFBtn" onclick="selectLWType('conditional-final')" class="lw-type-btn" style="padding:10px 6px;border-radius:12px;border:2px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;line-height:1.3;">Conditional<br>Final</button>
+        <button id="lwTypeUFBtn" onclick="selectLWType('unconditional-final')" class="lw-type-btn" style="padding:10px 6px;border-radius:12px;border:2px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;line-height:1.3;">Unconditional<br>Final</button>
+      </div>
+      <div id="lwTypeDesc" style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;padding:8px 10px;background:var(--bg);border-radius:10px;"></div>
+    </div>
+
+    <!-- Amount + Date -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="lwAmountLabel">Amount ($)</label>
+        <input type="number" id="lwAmount" inputmode="decimal" step="0.01" placeholder="0.00"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="coDateLabel">Date</label>
+        <input type="date" id="lwDate"
+          style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+      </div>
+    </div>
+
+    <!-- Through Date (progress types) -->
+    <div id="lwThroughDateWrap" style="margin-bottom:12px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="lwThroughDateLabel">Payment Through Date</label>
+      <input type="date" id="lwThroughDate"
+        style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;box-sizing:border-box;">
+    </div>
+
+    <!-- Note -->
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;" data-i18n="invNoteLabel">Note (optional)</label>
+      <input type="text" id="lwNote" placeholder="Additional terms or exceptions…"
+        style="width:100%;padding:10px 12px;border-radius:12px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;box-sizing:border-box;">
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeLWModal()" style="flex:1;padding:13px;border-radius:14px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;" data-i18n="cancelBtn">Cancel</button>
+      <button onclick="saveLienWaiver()" style="flex:2;padding:13px;border-radius:14px;border:none;background:var(--lime);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer;" data-i18n="saveBtn">💾 Save & Print</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ BOTTOM NAV ═══════════════ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="nav-tab active" id="navEstimate" onclick="openEstimatesPage()">
@@ -2240,6 +2299,17 @@ const T = {
     toastInvSaved:'✅ Invoice saved', toastInvDeleted:'Invoice deleted',
     toastInvMarkedSent:'✅ Invoice marked as sent', toastInvMarkedPaid:'✅ Invoice marked as paid',
     confirmDeleteInv:'Delete this invoice?',
+    lienWaiversSection:'Lien Waivers', addLienWaiverBtn:'New Lien Waiver',
+    lwTypeLabel:'Waiver Type', lwAmountLabel:'Amount ($)',
+    lwThroughDateLabel:'Payment Through Date',
+    lwTypeCP:'Conditional Progress', lwTypeUP:'Unconditional Progress',
+    lwTypeCF:'Conditional Final', lwTypeUF:'Unconditional Final',
+    lwDescCP:'Waives lien rights for this payment amount, effective when payment clears.',
+    lwDescUP:'Waives lien rights for work through the stated date, effective upon signing.',
+    lwDescCF:'Waives ALL lien rights upon receipt of the final payment amount.',
+    lwDescUF:'Waives ALL lien rights immediately upon signing.',
+    lwToastSaved:'✅ Lien waiver saved', lwToastDeleted:'Lien waiver deleted',
+    lwConfirmDelete:'Delete this lien waiver?', lwNoWaivers:'No lien waivers yet.',
     milestonesSection:'Milestones & Photos', addMilestoneBtn:'New Milestone',
     msNameLabel:'Phase / Stage', msNamePlaceholder:'e.g. Demolition, Framing…',
     msNoteLabel:'Note', msNotePlaceholder:'Optional…',
@@ -2505,6 +2575,17 @@ const T = {
     toastInvSaved:'✅ Factura guardada', toastInvDeleted:'Factura eliminada',
     toastInvMarkedSent:'✅ Factura marcada como enviada', toastInvMarkedPaid:'✅ Factura marcada como pagada',
     confirmDeleteInv:'¿Eliminar esta factura?',
+    lienWaiversSection:'Exenciones de Gravamen', addLienWaiverBtn:'Nueva Exención',
+    lwTypeLabel:'Tipo de Exención', lwAmountLabel:'Monto ($)',
+    lwThroughDateLabel:'Pagos Hasta la Fecha',
+    lwTypeCP:'Condicional de Avance', lwTypeUP:'Incondicional de Avance',
+    lwTypeCF:'Condicional Final', lwTypeUF:'Incondicional Final',
+    lwDescCP:'Exime derechos de gravamen por este monto, efectivo cuando se liquide el pago.',
+    lwDescUP:'Exime derechos de gravamen por trabajos hasta la fecha indicada, efectivo al firmar.',
+    lwDescCF:'Exime TODOS los derechos de gravamen al recibir el pago final.',
+    lwDescUF:'Exime TODOS los derechos de gravamen inmediatamente al firmar.',
+    lwToastSaved:'✅ Exención guardada', lwToastDeleted:'Exención eliminada',
+    lwConfirmDelete:'¿Eliminar esta exención?', lwNoWaivers:'No hay exenciones aún.',
     milestonesSection:'Etapas y Fotos', addMilestoneBtn:'Nueva Etapa',
     msNameLabel:'Fase / Etapa', msNamePlaceholder:'ej. Demolición, Estructura…',
     msNoteLabel:'Nota', msNotePlaceholder:'Opcional…',
@@ -4647,6 +4728,8 @@ function openContractDetail(id) {
   renderCOs(c);
   // Milestones & Photos
   renderMilestones(c);
+  // Lien Waivers
+  renderLienWaivers(c);
   // Signed contract section
   renderSignedSection(c);
   // Electronic signatures
@@ -5601,6 +5684,230 @@ function generateCODoc(c, co) {
     '<div class="sig-box"><div style="font-size:10px;font-weight:700;margin-bottom:6px;">' + pdfStr('CLIENT','CLIENTE') + '</div><div class="sig-line"></div><div style="font-size:9px;color:#64748b;">' + pdfStr('Client Signature &amp; Date','Firma del Cliente y Fecha') + '</div><div style="font-size:10px;margin-top:4px;">' + escapeHtml(c.clientName || '') + '</div></div>' +
   '</div>' +
   '<div class="footer">' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
+  '</body></html>';
+}
+
+// ═══════════════════════════════════════════════════════
+// LIEN WAIVERS
+// ═══════════════════════════════════════════════════════
+var _lwType = 'conditional-progress';
+
+function selectLWType(type) {
+  _lwType = type;
+  var ids = { 'conditional-progress':'lwTypeCPBtn', 'unconditional-progress':'lwTypeUPBtn',
+               'conditional-final':'lwTypeCFBtn',    'unconditional-final':'lwTypeUFBtn' };
+  var lime = getComputedStyle(document.documentElement).getPropertyValue('--lime').trim();
+  var limeLight = getComputedStyle(document.documentElement).getPropertyValue('--lime-light').trim();
+  var limeDark  = getComputedStyle(document.documentElement).getPropertyValue('--lime-dark').trim();
+  Object.keys(ids).forEach(function(k) {
+    var btn = $(ids[k]); if (!btn) return;
+    if (k === type) {
+      btn.style.border = '2px solid ' + lime;
+      btn.style.background = limeLight;
+      btn.style.color = limeDark;
+    } else {
+      btn.style.border = '2px solid var(--border-solid)';
+      btn.style.background = 'var(--input-bg)';
+      btn.style.color = 'var(--text)';
+    }
+  });
+  var descKeys = {
+    'conditional-progress':'lwDescCP', 'unconditional-progress':'lwDescUP',
+    'conditional-final':'lwDescCF',    'unconditional-final':'lwDescUF'
+  };
+  $('lwTypeDesc').textContent = t(descKeys[type]) || '';
+  var isProgress = type === 'conditional-progress' || type === 'unconditional-progress';
+  $('lwThroughDateWrap').style.display = isProgress ? '' : 'none';
+}
+
+function openLienWaiverModal() {
+  var c = getContracts().find(function(x){return x.id===currentContractId;});
+  if (!c) return;
+  _lwType = 'conditional-progress';
+  var today = new Date().toISOString().slice(0,10);
+  $('lwDate').value        = today;
+  $('lwThroughDate').value = today;
+  $('lwAmount').value      = '';
+  $('lwNote').value        = '';
+  // Pre-fill amount from balance due
+  var paid = (c.payments||[]).reduce(function(s,p){return s+(p.amount||0);},0);
+  var bal  = (c.totalAmount||0) - paid;
+  $('lwAmount').value = bal > 0 ? bal.toFixed(2) : '';
+  selectLWType('conditional-progress');
+  $('lwModalOverlay').style.display = 'flex';
+  history.pushState({ panel: 'lwModal' }, '');
+}
+
+function closeLWModal() {
+  $('lwModalOverlay').style.display = 'none';
+}
+
+function saveLienWaiver() {
+  var c = getContracts().find(function(x){return x.id===currentContractId;});
+  if (!c) return;
+  var amount      = parseFloat($('lwAmount').value) || 0;
+  var date        = $('lwDate').value || new Date().toISOString().slice(0,10);
+  var throughDate = $('lwThroughDate').value || '';
+  var note        = $('lwNote').value.trim();
+  var lw = {
+    id: 'lw_' + Date.now(),
+    type: _lwType,
+    amount: amount,
+    date: date,
+    throughDate: throughDate,
+    note: note,
+    createdDate: new Date().toISOString().slice(0,10)
+  };
+  if (!c.lienWaivers) c.lienWaivers = [];
+  c.lienWaivers.push(lw);
+  var contracts = getContracts();
+  var idx = contracts.findIndex(function(x){return x.id===currentContractId;});
+  if (idx >= 0) { contracts[idx].lienWaivers = c.lienWaivers; saveContracts(contracts); }
+  closeLWModal();
+  renderLienWaivers(c);
+  showToast(t('lwToastSaved'));
+  printLienWaiver(currentContractId, lw.id);
+}
+
+function deleteLienWaiver(lwId) {
+  showConfirm(t('lwConfirmDelete'), t('cannotUndo'), '📜', t('deleteBtn'), '#ef4444', function() {
+    var contracts = getContracts();
+    var c = contracts.find(function(x){return x.id===currentContractId;});
+    if (!c || !c.lienWaivers) return;
+    c.lienWaivers = c.lienWaivers.filter(function(x){return x.id!==lwId;});
+    saveContracts(contracts);
+    renderLienWaivers(c);
+    showToast(t('lwToastDeleted'));
+  });
+}
+
+function printLienWaiver(contractId, lwId) {
+  var contracts = getContracts();
+  var c  = contracts.find(function(x){return x.id===contractId;});
+  if (!c) return;
+  var lw = (c.lienWaivers||[]).find(function(x){return x.id===lwId;});
+  if (!lw) return;
+  var html = generateLienWaiverDoc(c, lw);
+  if (window.AndroidBridge && window.AndroidBridge.printHtml) {
+    window.AndroidBridge.printHtml(html, 'LienWaiver_' + c.clientName.replace(/\s/g,'_') + '_' + lw.date);
+  } else {
+    var w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); w.print(); }
+  }
+}
+
+function renderLienWaivers(c) {
+  var el = $('cdLienWaivers'); if (!el) return;
+  var waivers = c.lienWaivers || [];
+  if (waivers.length === 0) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">' + t('lwNoWaivers') + '</div>';
+    return;
+  }
+  var typeLabels = {
+    'conditional-progress':   t('lwTypeCP'),
+    'unconditional-progress': t('lwTypeUP'),
+    'conditional-final':      t('lwTypeCF'),
+    'unconditional-final':    t('lwTypeUF')
+  };
+  var typeColors = {
+    'conditional-progress':   '#3b82f6',
+    'unconditional-progress': '#8b5cf6',
+    'conditional-final':      '#10b981',
+    'unconditional-final':    '#f59e0b'
+  };
+  el.innerHTML = waivers.map(function(lw) {
+    var col   = typeColors[lw.type]  || '#64748b';
+    var label = typeLabels[lw.type]  || lw.type;
+    return '<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
+        '<span style="font-size:11px;font-weight:700;color:' + col + ';background:' + col + '1a;border:1px solid ' + col + ';border-radius:20px;padding:2px 8px;">' + label + '</span>' +
+        '<span style="font-size:14px;font-weight:900;color:var(--text);">$' + fmtMoney(lw.amount||0) + '</span>' +
+      '</div>' +
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">' + lw.date + (lw.throughDate ? ' · ' + t('lwThroughDateLabel') + ': ' + lw.throughDate : '') + '</div>' +
+      '<div style="display:flex;gap:6px;">' +
+        '<button onclick="printLienWaiver(\'' + c.id + '\',\'' + lw.id + '\')" style="-webkit-tap-highlight-color:transparent;flex:1;background:var(--border);border:none;color:var(--text);border-radius:8px;padding:7px 0;font-size:11px;font-weight:600;cursor:pointer;">🖨️ ' + t('printPDFBtn') + '</button>' +
+        '<button onclick="deleteLienWaiver(\'' + lw.id + '\')" style="-webkit-tap-highlight-color:transparent;background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;">🗑</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function generateLienWaiverDoc(c, lw) {
+  var p = getProfile();
+  var typeMap = {
+    'conditional-progress':   pdfStr('Conditional Waiver on Progress Payment','Exención Condicional de Pago Parcial'),
+    'unconditional-progress': pdfStr('Unconditional Waiver on Progress Payment','Exención Incondicional de Pago Parcial'),
+    'conditional-final':      pdfStr('Conditional Waiver on Final Payment','Exención Condicional de Pago Final'),
+    'unconditional-final':    pdfStr('Unconditional Waiver on Final Payment','Exención Incondicional de Pago Final')
+  };
+  var typeName = typeMap[lw.type] || lw.type;
+  var isFinal = lw.type === 'conditional-final' || lw.type === 'unconditional-final';
+  var isConditional = lw.type === 'conditional-progress' || lw.type === 'conditional-final';
+
+  var bodyText = '';
+  if (lw.type === 'conditional-progress') {
+    bodyText = pdfStr(
+      'The undersigned has been employed by <strong>' + escapeHtml(c.clientName) + '</strong> to furnish labor, services, equipment, or materials for the work of improvement known as <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. The undersigned conditionally waives and releases any and all lien, stop payment notice, and payment bond rights the undersigned has for labor, services, equipment, or materials furnished through the date of <strong>' + escapeHtml(lw.throughDate || lw.date) + '</strong>, upon receipt of payment in the amount of <strong>$' + fmtMoney(lw.amount) + '</strong>. This waiver and release is conditioned upon receipt of said payment.',
+      'El suscrito ha sido contratado por <strong>' + escapeHtml(c.clientName) + '</strong> para suministrar mano de obra, servicios, equipo o materiales para la obra conocida como <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. El suscrito renuncia condicionalmente a cualquier derecho de gravamen por trabajos hasta el <strong>' + escapeHtml(lw.throughDate || lw.date) + '</strong>, previa recepción del pago de <strong>$' + fmtMoney(lw.amount) + '</strong>. Esta exención está condicionada a la recepción de dicho pago.'
+    );
+  } else if (lw.type === 'unconditional-progress') {
+    bodyText = pdfStr(
+      'The undersigned has been employed by <strong>' + escapeHtml(c.clientName) + '</strong> to furnish labor, services, equipment, or materials for the work of improvement known as <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. The undersigned unconditionally waives and releases any and all lien, stop payment notice, and payment bond rights for work performed through <strong>' + escapeHtml(lw.throughDate || lw.date) + '</strong>, in the amount of <strong>$' + fmtMoney(lw.amount) + '</strong>. This waiver is effective immediately upon signing.',
+      'El suscrito ha sido contratado por <strong>' + escapeHtml(c.clientName) + '</strong> para suministrar mano de obra, servicios, equipo o materiales para la obra conocida como <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. El suscrito renuncia incondicionalmente a derechos de gravamen por trabajos hasta el <strong>' + escapeHtml(lw.throughDate || lw.date) + '</strong>, por el monto de <strong>$' + fmtMoney(lw.amount) + '</strong>. Esta exención es efectiva inmediatamente al firmar.'
+    );
+  } else if (lw.type === 'conditional-final') {
+    bodyText = pdfStr(
+      'The undersigned has been employed by <strong>' + escapeHtml(c.clientName) + '</strong> to furnish labor, services, equipment, or materials for the work of improvement known as <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. Upon receipt of the final payment of <strong>$' + fmtMoney(lw.amount) + '</strong>, the undersigned conditionally waives and releases any and all lien, stop payment notice, and payment bond rights, and releases and discharges the claimant\'s claim. This waiver and release is conditioned upon receipt of said final payment.',
+      'El suscrito ha sido contratado por <strong>' + escapeHtml(c.clientName) + '</strong> para suministrar mano de obra, servicios, equipo o materiales para la obra conocida como <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. Previa recepción del pago final de <strong>$' + fmtMoney(lw.amount) + '</strong>, el suscrito renuncia condicionalmente a todos los derechos de gravamen y libera cualquier reclamación. Esta exención está condicionada a la recepción de dicho pago final.'
+    );
+  } else {
+    bodyText = pdfStr(
+      'The undersigned has been employed by <strong>' + escapeHtml(c.clientName) + '</strong> to furnish labor, services, equipment, or materials for the work of improvement known as <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. The undersigned unconditionally waives and releases any and all lien, stop payment notice, and payment bond rights and releases and discharges any claims for final payment in the amount of <strong>$' + fmtMoney(lw.amount) + '</strong>. This release is effective immediately upon signing.',
+      'El suscrito ha sido contratado por <strong>' + escapeHtml(c.clientName) + '</strong> para suministrar mano de obra, servicios, equipo o materiales para la obra conocida como <strong>' + escapeHtml(c.projectName || c.clientName) + '</strong>. El suscrito renuncia incondicionalmente a todos los derechos de gravamen y libera cualquier reclamación por el pago final de <strong>$' + fmtMoney(lw.amount) + '</strong>. Esta exención es efectiva inmediatamente al firmar.'
+    );
+  }
+
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
+  'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:28px 30px;background:#fff;color:#0f172a;font-size:13px;}' +
+  '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:3px solid #0f172a;margin-bottom:20px;}' +
+  '.doc-title{font-size:20px;font-weight:900;color:#0f172a;margin:0 0 4px;}' +
+  '.doc-sub{font-size:12px;color:#64748b;}' +
+  '.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;background:#f8fafc;border-radius:12px;padding:14px 16px;}' +
+  '.info-item label{display:block;font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}' +
+  '.info-item span{font-size:13px;font-weight:700;color:#0f172a;}' +
+  '.body-text{font-size:13px;line-height:1.8;color:#1e293b;margin-bottom:22px;padding:14px 16px;background:#f8fafc;border-left:4px solid #0f172a;border-radius:0 10px 10px 0;}' +
+  '.note-box{background:#fef9c3;border:1px solid #fde047;border-radius:10px;padding:10px 14px;margin-bottom:20px;font-size:12px;color:#713f12;}' +
+  '.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px;}' +
+  '.sig-block{border-top:2px solid #0f172a;padding-top:10px;}' +
+  '.sig-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;margin-bottom:24px;}' +
+  '.sig-name{font-size:11px;color:#94a3b8;}' +
+  '.footer{margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;}' +
+  '</style></head><body>' +
+  '<div class="header">' +
+    '<div>' +
+      (p.logoBase64 ? '<img src="' + p.logoBase64 + '" style="height:44px;object-fit:contain;margin-bottom:8px;display:block;">' : '') +
+      '<div style="font-weight:800;font-size:14px;">' + escapeHtml(p.companyName) + '</div>' +
+      '<div style="font-size:11px;color:#64748b;">' + escapeHtml(p.companyPhone) + (p.companyEmail ? ' · ' + escapeHtml(p.companyEmail) : '') + '</div>' +
+      (p.licenseNum ? '<div style="font-size:10px;color:#94a3b8;">Lic. ' + escapeHtml(p.licenseNum) + '</div>' : '') +
+    '</div>' +
+    '<div style="text-align:right;">' +
+      '<div class="doc-title">📜 ' + typeName + '</div>' +
+      '<div class="doc-sub">' + pdfStr('Date:','Fecha:') + ' ' + escapeHtml(lw.date) + '</div>' +
+    '</div>' +
+  '</div>' +
+  '<div class="info-grid">' +
+    '<div class="info-item"><label>' + pdfStr('Client / Owner','Cliente / Propietario') + '</label><span>' + escapeHtml(c.clientName) + '</span></div>' +
+    '<div class="info-item"><label>' + pdfStr('Project','Proyecto') + '</label><span>' + escapeHtml(c.projectName || c.clientName) + '</span></div>' +
+    '<div class="info-item"><label>' + pdfStr('Amount','Monto') + '</label><span>$' + fmtMoney(lw.amount) + '</span></div>' +
+    (lw.throughDate && !isFinal ? '<div class="info-item"><label>' + pdfStr('Through Date','Hasta la Fecha') + '</label><span>' + escapeHtml(lw.throughDate) + '</span></div>' : '<div class="info-item"></div>') +
+  '</div>' +
+  '<div class="body-text">' + bodyText + '</div>' +
+  (lw.note ? '<div class="note-box"><strong>' + pdfStr('Note:','Nota:') + '</strong> ' + escapeHtml(lw.note) + '</div>' : '') +
+  '<div class="sig-grid">' +
+    '<div class="sig-block"><div class="sig-label">' + pdfStr('Contractor Signature','Firma del Contratista') + '</div><div class="sig-name">' + escapeHtml(p.companyName) + '</div><div style="font-size:10px;color:#94a3b8;">' + pdfStr('Date','Fecha') + ': _______________</div></div>' +
+    '<div class="sig-block"><div class="sig-label">' + pdfStr('Client / Owner Signature','Firma del Cliente / Propietario') + '</div><div class="sig-name">' + escapeHtml(c.clientName) + '</div><div style="font-size:10px;color:#94a3b8;">' + pdfStr('Date','Fecha') + ': _______________</div></div>' +
+  '</div>' +
+  '<div class="footer">' + pdfStr('This document was generated by','Documento generado por') + ' ' + escapeHtml(p.companyName) + ' · ' + lw.date + '</div>' +
   '</body></html>';
 }
 
@@ -6579,6 +6886,7 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('jobDaySheet') && $('jobDaySheet').style.display !== 'none') { closeJobDaySheet(); return; }
     if ($('invModalOverlay') && $('invModalOverlay').style.display !== 'none') { closeInvModal(); return; }
     if ($('msModalOverlay') && $('msModalOverlay').style.display !== 'none') { closeMilestoneModal(); return; }
+    if ($('lwModalOverlay').style.display !== 'none')               { closeLWModal(); return; }
     if ($('invoiceDetail').classList.contains('open'))               { closeInvoiceDetail(); return; }
     if ($('coModalOverlay').style.display !== 'none')              { closeCOModal(); return; }
     if ($('schedEditOverlay').style.display !== 'none')            { closeSchedEdit(); return; }
