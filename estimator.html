@@ -1078,7 +1078,7 @@
 
 <!-- ═══════════ SPLASH SCREEN ═══════════ -->
 <!-- ═══════════ LOGIN SCREEN ═══════════ -->
-<div id="loginScreen" style="display:none;">
+<div id="loginScreen" style="display:flex;">
   <div class="ls-overlay"></div>
   <div class="ls-body">
     <div id="lsErrorMsg" class="ls-error-msg"></div>
@@ -2870,8 +2870,16 @@ var _fbApp, _fbAuth;
         lsShowLoginScreen();
       }
     });
+  } else {
+    // Firebase SDK failed to load — show login with offline notice
+    lsShowLoginScreen();
   }
 })();
+
+// Fallback: if Firebase takes too long, allow bypass
+setTimeout(function() {
+  if (!_fbAuth) lsShowLoginScreen();
+}, 3000);
 
 function lsShowLoginScreen() {
   var ls = document.getElementById('loginScreen');
