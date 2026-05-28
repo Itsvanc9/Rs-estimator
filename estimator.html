@@ -990,6 +990,12 @@
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="closeSettings();openTerms()">📄 <span data-i18n="termsConditions">Terms &amp; Conditions</span></button>
     </div>
 
+    <div class="setting-section" id="accountSection" style="display:none;">
+      <div class="setting-section-title">👤 <span data-i18n="accountSection">Account</span></div>
+      <div id="accountEmail" style="font-size:12px;color:var(--muted);margin-bottom:10px;text-align:center;word-break:break-all;"></div>
+      <button class="btn btn-sm" style="width:100%;justify-content:center;background:rgba(239,68,68,0.12);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px;" onclick="appLogout()">🚪 <span data-i18n="logoutBtn">Cerrar Sesión</span></button>
+    </div>
+
   </div>
 </div>
 
@@ -1072,6 +1078,17 @@
   </div>
 </div>
 
+<!-- ═══════════ BIOMETRIC LOCK ═══════════ -->
+<div id="bioLock" style="display:none;position:fixed;inset:0;z-index:99994;background:#070d04 url('file:///android_asset/banner_splash.png') center/cover no-repeat;flex-direction:column;align-items:center;justify-content:flex-end;">
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(5,10,2,0.85) 60%,#050a02 100%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;width:100%;padding:0 28px 52px;display:flex;flex-direction:column;align-items:center;gap:14px;">
+    <div style="font-size:44px;margin-bottom:4px;">👆</div>
+    <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:0.3px;">Verificar identidad</div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">Usa tu huella digital o contraseña para entrar</div>
+    <button id="bioRetryBtn" onclick="bioTrigger()" style="display:none;width:100%;padding:16px;background:linear-gradient(135deg,#84cc16,#5a8c0a);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;margin-top:6px;">🔓 Reintentar</button>
+    <button onclick="appLogout()" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:12px;cursor:pointer;margin-top:4px;">Cerrar sesión</button>
+  </div>
+</div>
 
 <!-- ═══════════ TERMS & CONDITIONS ═══════════ -->
 <div id="termsScreen" class="terms-screen" style="display:none;">
@@ -2258,6 +2275,7 @@ const T = {
     companyProfileSection:'Company Profile', editCompanyInfo:'Edit Company Info & Images',
     ownerSection:'Owner', ownerDashboard:'👑 Owner Dashboard', changePIN:'🔒 Change PIN',
     legalSection:'Legal', termsConditions:'Terms & Conditions', appColors:'App Colors',
+    accountSection:'Account', logoutBtn:'Sign Out',
     // PIN modal
     ownerAccess:'Owner Access', enterPIN:'Enter your PIN to continue',
     setPINTitle:'Set New PIN', defaultPINMsg:'Default PIN is 1234. Enter a new PIN:',
@@ -2547,6 +2565,7 @@ const T = {
     companyProfileSection:'Perfil de Empresa', editCompanyInfo:'Editar Empresa e Imágenes',
     ownerSection:'Propietario', ownerDashboard:'👑 Panel del Dueño', changePIN:'🔒 Cambiar PIN',
     legalSection:'Legal', termsConditions:'Términos y Condiciones', appColors:'Colores de la App',
+    accountSection:'Cuenta', logoutBtn:'Cerrar Sesión',
     // PIN modal
     ownerAccess:'Acceso de Propietario', enterPIN:'Ingresa tu PIN para continuar',
     setPINTitle:'Establecer Nuevo PIN', defaultPINMsg:'PIN predeterminado es 1234. Ingresa un nuevo PIN:',
@@ -2817,8 +2836,17 @@ var _fbApp, _fbAuth;
     _fbAuth = firebase.auth();
     _fbAuth.onAuthStateChanged(function(user) {
       if (user) {
+        var email = document.getElementById('accountEmail');
+        if (email) email.textContent = user.email || user.displayName || '';
+        var sec = document.getElementById('accountSection');
+        if (sec) sec.style.display = '';
         lsHideLoginScreen();
+        if (!window._bioVerified) { bioLockShow(); }
       } else {
+        window._bioVerified = false;
+        var sec = document.getElementById('accountSection');
+        if (sec) sec.style.display = 'none';
+        bioLockHide();
         lsShowLoginScreen();
       }
     });
@@ -2832,6 +2860,46 @@ var _fbApp, _fbAuth;
 setTimeout(function() {
   if (!_fbAuth) lsShowLoginScreen();
 }, 3000);
+
+function bioLockShow() {
+  var el = document.getElementById('bioLock');
+  if (!el) return;
+  el.style.display = 'flex';
+  document.getElementById('bioRetryBtn').style.display = 'none';
+  bioTrigger();
+}
+
+function bioLockHide() {
+  var el = document.getElementById('bioLock');
+  if (el) el.style.display = 'none';
+}
+
+function bioTrigger() {
+  if (window.AndroidBridge && window.AndroidBridge.showBiometricPrompt) {
+    window.AndroidBridge.showBiometricPrompt();
+  } else {
+    biometricSuccess(); // browser / no biometric hardware
+  }
+}
+
+function biometricSuccess() {
+  window._bioVerified = true;
+  bioLockHide();
+}
+
+function biometricDenied() {
+  document.getElementById('bioRetryBtn').style.display = '';
+}
+
+function appLogout() {
+  if (_fbAuth) {
+    _fbAuth.signOut();
+  } else {
+    lsShowLoginScreen();
+  }
+  bioLockHide();
+  closeSettings();
+}
 
 function lsShowLoginScreen() {
   var ls = document.getElementById('loginScreen');

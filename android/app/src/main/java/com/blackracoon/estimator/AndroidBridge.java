@@ -42,6 +42,7 @@ public class AndroidBridge {
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
     static final int REQUEST_GOOGLE_SIGN_IN   = 1005;
+    static final int REQUEST_BIOMETRIC        = 1006;
 
     private Context context;
     private WebView webView;
@@ -169,6 +170,16 @@ public class AndroidBridge {
             } catch (Exception e) {
                 showToastByKey("toastErrReadFile");
             }
+        }
+
+        if (requestCode == REQUEST_BIOMETRIC) {
+            final boolean ok = (resultCode == Activity.RESULT_OK);
+            webView.post(new Runnable() {
+                @Override public void run() {
+                    webView.evaluateJavascript(ok ? "biometricSuccess()" : "biometricDenied()", null);
+                }
+            });
+            return;
         }
 
         if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
@@ -730,6 +741,83 @@ public class AndroidBridge {
         NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.cancel(notifId.hashCode());
+    }
+
+    @JavascriptInterface
+    public void showBiometricPrompt() {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    try {
+                        android.hardware.biometrics.BiometricPrompt.Builder builder =
+                            new android.hardware.biometrics.BiometricPrompt.Builder(context)
+                                .setTitle("BlackRacoon Estimator")
+                                .setDescription("Usa tu huella o contraseña para entrar");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            builder.setConfirmationRequired(false);
+                        }
+                        builder.setDeviceCredentialAllowed(true);
+                        builder.build().authenticate(
+                            new android.os.CancellationSignal(),
+                            activity.getMainExecutor(),
+                            new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                                @Override
+                                public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) {
+                                    webView.post(new Runnable() {
+                                        @Override public void run() {
+                                            webView.evaluateJavascript("biometricSuccess()", null);
+                                        }
+                                    });
+                                }
+                                @Override
+                                public void onAuthenticationError(int code, CharSequence msg) {
+                                    // code 10 = user cancelled; allow if no lock screen set up (code 14)
+                                    final boolean allow = (code != 10 && code != 13);
+                                    webView.post(new Runnable() {
+                                        @Override public void run() {
+                                            webView.evaluateJavascript(allow ? "biometricSuccess()" : "biometricDenied()", null);
+                                        }
+                                    });
+                                }
+                                @Override public void onAuthenticationFailed() {}
+                            });
+                    } catch (Exception e) {
+                        webView.post(new Runnable() {
+                            @Override public void run() {
+                                webView.evaluateJavascript("biometricSuccess()", null);
+                            }
+                        });
+                    }
+                } else {
+                    // API 23-27: use KeyguardManager
+                    android.app.KeyguardManager km = (android.app.KeyguardManager)
+                        context.getSystemService(Context.KEYGUARD_SERVICE);
+                    if (km != null) {
+                        Intent intent = km.createConfirmDeviceCredentialIntent(
+                            "BlackRacoon Estimator", "Verifica tu identidad para continuar");
+                        if (intent != null) {
+                            try { activity.startActivityForResult(intent, REQUEST_BIOMETRIC); }
+                            catch (Exception e) {
+                                webView.post(new Runnable() {
+                                    @Override public void run() {
+                                        webView.evaluateJavascript("biometricSuccess()", null);
+                                    }
+                                });
+                            }
+                            return;
+                        }
+                    }
+                    // No lock screen configured — allow
+                    webView.post(new Runnable() {
+                        @Override public void run() {
+                            webView.evaluateJavascript("biometricSuccess()", null);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @JavascriptInterface
