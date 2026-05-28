@@ -1108,6 +1108,9 @@
     </button>
     <div class="ls-register"><a href="#" onclick="lsToggleRegister(event)">¿No tienes cuenta? <span id="lsRegisterLink">Regístrate aquí</span></a></div>
     <button id="lsBtnBack" onclick="lsBackToLogin()">← Volver al login</button>
+    <div id="lsSha1Row" style="text-align:center;margin-top:4px;">
+      <a href="#" onclick="lsShowSHA1(event)" style="font-size:10px;color:rgba(255,255,255,0.15);text-decoration:none;">🔧 dev</a>
+    </div>
   </div>
 </div>
 
@@ -2954,6 +2957,14 @@ function lsBackToLogin() {
   document.getElementById('lsMainBtn').textContent = 'INICIAR SESIÓN';
   document.getElementById('lsBtnBack').style.display = 'none';
   document.getElementById('lsForgotBtn').style.display = '';
+}
+
+function lsShowSHA1(e) {
+  e.preventDefault();
+  var sha1 = (window.AndroidBridge && window.AndroidBridge.getSHA1)
+    ? window.AndroidBridge.getSHA1()
+    : 'Solo disponible en la app Android';
+  alert('SHA-1:\n' + sha1);
 }
 
 function lsFirebaseError(code) {
