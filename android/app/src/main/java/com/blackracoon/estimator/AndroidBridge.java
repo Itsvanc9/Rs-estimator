@@ -30,6 +30,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -176,43 +182,21 @@ public class AndroidBridge {
             }
         }
 
-        if (requestCode == REQUEST_GOOGLE_SIGN_IN && resultCode == Activity.RESULT_OK && data != null) {
-            final String accountName = data.getStringExtra(android.accounts.AccountManager.KEY_ACCOUNT_NAME);
-            if (accountName == null) {
+        if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
+            try {
+                GoogleSignInAccount account = GoogleSignIn
+                        .getSignedInAccountFromIntent(data)
+                        .getResult(ApiException.class);
+                final String idToken = account.getIdToken();
                 webView.post(new Runnable() { @Override public void run() {
-                    webView.evaluateJavascript("lsGoogleSignInError('No se seleccionó cuenta')", null);
+                    webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
                 }});
-                return;
+            } catch (ApiException e) {
+                final String msg = "Error " + e.getStatusCode();
+                webView.post(new Runnable() { @Override public void run() {
+                    webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
+                }});
             }
-            final android.accounts.Account account = new android.accounts.Account(accountName, "com.google");
-            final android.accounts.AccountManager am = android.accounts.AccountManager.get(context);
-            am.getAuthToken(account,
-                "audience:server:client_id:" + GOOGLE_WEB_CLIENT_ID,
-                null, (Activity) context,
-                new android.accounts.AccountManagerCallback<android.os.Bundle>() {
-                    @Override public void run(android.accounts.AccountManagerFuture<android.os.Bundle> future) {
-                        try {
-                            android.os.Bundle b = future.getResult();
-                            Intent authIntent = b.getParcelable(android.accounts.AccountManager.KEY_INTENT);
-                            if (authIntent != null) {
-                                ((Activity) context).startActivityForResult(authIntent, REQUEST_GOOGLE_TOKEN);
-                                return;
-                            }
-                            final String idToken = b.getString(android.accounts.AccountManager.KEY_AUTHTOKEN);
-                            webView.post(new Runnable() { @Override public void run() {
-                                if (idToken != null)
-                                    webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
-                                else
-                                    webView.evaluateJavascript("lsGoogleSignInError('Token nulo')", null);
-                            }});
-                        } catch (Exception e) {
-                            final String msg = (e.getMessage() != null ? e.getMessage() : "Error").replace("'", "\\'");
-                            webView.post(new Runnable() { @Override public void run() {
-                                webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
-                            }});
-                        }
-                    }
-                }, null);
             return;
         }
 
@@ -771,10 +755,13 @@ public class AndroidBridge {
             @Override
             public void run() {
                 try {
-                    Intent intent = android.accounts.AccountManager.newChooseAccountIntent(
-                        null, null, new String[]{"com.google"},
-                        null, null, null, null);
-                    activity.startActivityForResult(intent, REQUEST_GOOGLE_SIGN_IN);
+                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(
+                            GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(GOOGLE_WEB_CLIENT_ID)
+                            .requestEmail()
+                            .build();
+                    GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
+                    activity.startActivityForResult(client.getSignInIntent(), REQUEST_GOOGLE_SIGN_IN);
                 } catch (Exception e) {
                     final String msg = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Error";
                     webView.post(new Runnable() {
