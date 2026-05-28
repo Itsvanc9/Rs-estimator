@@ -2878,10 +2878,24 @@ function lsSignIn() {
 }
 
 function lsGoogleSignIn() {
+  if (window.AndroidBridge && window.AndroidBridge.googleSignIn) {
+    window.AndroidBridge.googleSignIn();
+  } else if (_fbAuth) {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    _fbAuth.signInWithPopup(provider)
+      .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+  }
+}
+
+function lsGoogleIdToken(idToken) {
   if (!_fbAuth) return;
-  var provider = new firebase.auth.GoogleAuthProvider();
-  _fbAuth.signInWithPopup(provider)
+  var credential = firebase.auth.GoogleAuthProvider.credential(idToken);
+  _fbAuth.signInWithCredential(credential)
     .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+}
+
+function lsGoogleSignInError(msg) {
+  lsShowError(msg);
 }
 
 function lsForgotPassword() {

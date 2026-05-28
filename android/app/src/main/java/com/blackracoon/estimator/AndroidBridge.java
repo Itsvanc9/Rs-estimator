@@ -41,6 +41,7 @@ public class AndroidBridge {
     static final int REQUEST_BACKUP           = 1001;
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
+    static final int REQUEST_GOOGLE_SIGN_IN   = 1005;
 
     private Context context;
     private WebView webView;
@@ -168,6 +169,29 @@ public class AndroidBridge {
             } catch (Exception e) {
                 showToastByKey("toastErrReadFile");
             }
+        }
+
+        if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
+            try {
+                com.google.android.gms.auth.api.signin.GoogleSignInAccount account =
+                    com.google.android.gms.auth.api.signin.GoogleSignIn
+                        .getSignedInAccountFromIntent(data)
+                        .getResult(com.google.android.gms.common.api.ApiException.class);
+                final String idToken = account.getIdToken();
+                webView.post(new Runnable() {
+                    @Override public void run() {
+                        webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
+                    }
+                });
+            } catch (com.google.android.gms.common.api.ApiException e) {
+                final String msg = "Error código: " + e.getStatusCode();
+                webView.post(new Runnable() {
+                    @Override public void run() {
+                        webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
+                    }
+                });
+            }
+            return;
         }
 
         if (requestCode == REQUEST_CAMERA
@@ -706,6 +730,34 @@ public class AndroidBridge {
         NotificationManager nm = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.cancel(notifId.hashCode());
+    }
+
+    @JavascriptInterface
+    public void googleSignIn() {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    com.google.android.gms.auth.api.signin.GoogleSignInOptions gso =
+                        new com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+                            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(context.getString(R.string.default_web_client_id))
+                            .requestEmail()
+                            .build();
+                    com.google.android.gms.auth.api.signin.GoogleSignInClient client =
+                        com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(activity, gso);
+                    activity.startActivityForResult(client.getSignInIntent(), REQUEST_GOOGLE_SIGN_IN);
+                } catch (Exception e) {
+                    final String msg = "Error: " + e.getMessage();
+                    webView.post(new Runnable() {
+                        @Override public void run() {
+                            webView.evaluateJavascript("lsGoogleSignInError('" + msg.replace("'", "\\'") + "')", null);
+                        }
+                    });
+                }
+            }
+        });
     }
 
     @JavascriptInterface
