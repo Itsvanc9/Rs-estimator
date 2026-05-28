@@ -1069,7 +1069,7 @@
       <div class="ls-sep-dot"></div>
       <div class="ls-sep-line"></div>
     </div>
-    <button class="ls-btn-social" onclick="lsGoogleSignIn()">
+    <button id="lsGoogleBtn" class="ls-btn-social" onclick="lsGoogleSignIn()">
       <div class="ls-google-ico"></div>
       Continuar con Google
     </button>
@@ -2904,6 +2904,9 @@ function appLogout() {
 function lsShowLoginScreen() {
   var ls = document.getElementById('loginScreen');
   if (ls) ls.style.display = 'flex';
+  // Hide Google button on Android WebView (popup not supported)
+  var gb = document.getElementById('lsGoogleBtn');
+  if (gb && window.AndroidBridge) gb.style.display = 'none';
 }
 
 function lsHideLoginScreen() {
@@ -2943,24 +2946,10 @@ function lsSignIn() {
 }
 
 function lsGoogleSignIn() {
-  if (window.AndroidBridge && window.AndroidBridge.googleSignIn) {
-    window.AndroidBridge.googleSignIn();
-  } else if (_fbAuth) {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    _fbAuth.signInWithPopup(provider)
-      .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
-  }
-}
-
-function lsGoogleIdToken(idToken) {
   if (!_fbAuth) return;
-  var credential = firebase.auth.GoogleAuthProvider.credential(idToken);
-  _fbAuth.signInWithCredential(credential)
+  var provider = new firebase.auth.GoogleAuthProvider();
+  _fbAuth.signInWithPopup(provider)
     .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
-}
-
-function lsGoogleSignInError(msg) {
-  lsShowError(msg);
 }
 
 function lsForgotPassword() {
