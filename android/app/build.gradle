@@ -1,0 +1,34 @@
+plugins {
+    id 'com.android.application'
+    id 'com.google.gms.google-services'
+}
+
+android {
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.blackracoon.estimator"
+        minSdk 23
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'com.google.firebase:firebase-firestore:24.10.0'
+    implementation 'com.google.firebase:firebase-auth:22.3.0'
+    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+}
