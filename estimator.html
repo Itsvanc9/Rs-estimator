@@ -4,9 +4,97 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>Blackracoon Construction Estimator</title>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ══════════════════════════════════════════
+     LOGIN SCREEN
+  ══════════════════════════════════════════ */
+  #loginScreen {
+    position: fixed; inset: 0; z-index: 99995;
+    background: #070d04 url('file:///android_asset/login_bg.png') center/cover no-repeat;
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+  }
+  .ls-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, transparent 30%, rgba(5,10,2,0.75) 55%, rgba(5,10,2,0.97) 75%, #050a02 100%);
+    pointer-events: none;
+  }
+  .ls-body {
+    position: relative; z-index: 1;
+    padding: 0 28px 44px;
+    display: flex; flex-direction: column; gap: 11px;
+  }
+  .ls-input-wrap {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(132,204,22,0.25);
+    border-radius: 13px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .ls-input-wrap.error { border-color: rgba(239,68,68,0.6); }
+  .ls-input-ico { font-size: 15px; opacity: 0.45; flex-shrink: 0; }
+  .ls-input-wrap input {
+    flex: 1; background: none; border: none; outline: none;
+    color: #fff; font-size: 14px; font-family: inherit;
+  }
+  .ls-input-wrap input::placeholder { color: rgba(255,255,255,0.35); }
+  .ls-eye { font-size: 15px; opacity: 0.35; cursor: pointer; flex-shrink: 0; }
+  .ls-forgot {
+    text-align: right; font-size: 12px;
+    color: rgba(132,204,22,0.7); cursor: pointer;
+    margin-top: -4px;
+  }
+  .ls-btn-main {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #84cc16, #5a8c0a);
+    border: none; border-radius: 14px;
+    color: #fff; font-size: 16px; font-weight: 900;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    box-shadow: 0 4px 20px rgba(132,204,22,0.35);
+    cursor: pointer;
+  }
+  .ls-btn-main:active { opacity: 0.85; }
+  .ls-sep {
+    display: flex; align-items: center; gap: 10px;
+    margin: 2px 0;
+  }
+  .ls-sep-line { flex: 1; height: 1px; background: rgba(255,255,255,0.1); }
+  .ls-sep-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+  .ls-btn-social {
+    width: 100%; padding: 14px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 14px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    cursor: pointer;
+  }
+  .ls-btn-social:active { opacity: 0.8; }
+  .ls-google-ico {
+    width: 20px; height: 20px; flex-shrink: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z'/%3E%3Cpath fill='%23FBBC05' d='M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z'/%3E%3C/svg%3E") center/contain no-repeat;
+  }
+  .ls-register {
+    text-align: center; font-size: 12px;
+    color: rgba(255,255,255,0.3); margin-top: 2px;
+  }
+  .ls-register a { color: #84cc16; text-decoration: none; font-weight: 600; }
+  .ls-error-msg {
+    background: rgba(239,68,68,0.12);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: #fca5a5;
+    display: none; text-align: center;
+  }
+  /* Register mode */
+  #lsRegisterRow { display: none; }
+  #lsBtnBack { display: none; font-size:13px; color:rgba(255,255,255,0.4); background:none; border:none; cursor:pointer; text-align:center; width:100%; }
 
   /* ── DESIGN TOKENS ── */
   :root {
@@ -989,6 +1077,40 @@
 </div>
 
 <!-- ═══════════ SPLASH SCREEN ═══════════ -->
+<!-- ═══════════ LOGIN SCREEN ═══════════ -->
+<div id="loginScreen" style="display:none;">
+  <div class="ls-overlay"></div>
+  <div class="ls-body">
+    <div id="lsErrorMsg" class="ls-error-msg"></div>
+    <div class="ls-input-wrap" id="lsEmailWrap">
+      <span class="ls-input-ico">👤</span>
+      <input type="email" id="lsEmail" placeholder="Correo electrónico" autocomplete="email">
+    </div>
+    <div class="ls-input-wrap" id="lsPassWrap">
+      <span class="ls-input-ico">🔒</span>
+      <input type="password" id="lsPass" placeholder="Contraseña" autocomplete="current-password">
+      <span class="ls-eye" onclick="lsTogglePass()">👁</span>
+    </div>
+    <div class="ls-input-wrap" id="lsRegisterRow" style="display:none;">
+      <span class="ls-input-ico">🔒</span>
+      <input type="password" id="lsPass2" placeholder="Confirmar contraseña">
+    </div>
+    <div class="ls-forgot" id="lsForgotBtn" onclick="lsForgotPassword()">¿Olvidaste tu contraseña?</div>
+    <button class="ls-btn-main" id="lsMainBtn" onclick="lsSignIn()">INICIAR SESIÓN</button>
+    <div class="ls-sep">
+      <div class="ls-sep-line"></div>
+      <div class="ls-sep-dot"></div>
+      <div class="ls-sep-line"></div>
+    </div>
+    <button class="ls-btn-social" onclick="lsGoogleSignIn()">
+      <div class="ls-google-ico"></div>
+      Continuar con Google
+    </button>
+    <div class="ls-register"><a href="#" onclick="lsToggleRegister(event)">¿No tienes cuenta? <span id="lsRegisterLink">Regístrate aquí</span></a></div>
+    <button id="lsBtnBack" onclick="lsBackToLogin()">← Volver al login</button>
+  </div>
+</div>
+
 <div id="splash" class="splash-screen" onclick="dismissSplash()">
   <div class="splash-overlay"></div>
   <div class="splash-body">
@@ -2726,6 +2848,121 @@ const T = {
 
 let currentLang = (function(){ var l = localStorage.getItem('RS_LANG'); return (l==='en'||l==='es') ? l : 'en'; })();
 var TERMS_VERSION = '2026.07';
+
+// ── FIREBASE AUTH ─────────────────────────────────────────────────────────────
+var _fbApp, _fbAuth;
+(function() {
+  var cfg = {
+    apiKey:            "AIzaSyD3cQ7OQhqTlvyC3JuYsWcrVFfuHmY6rPE",
+    authDomain:        "buildracoon-app.firebaseapp.com",
+    projectId:         "buildracoon-app",
+    storageBucket:     "buildracoon-app.firebasestorage.app",
+    messagingSenderId: "545910015982",
+    appId:             "1:545910015982:web:7e4c08a564ce8281f3b0ff"
+  };
+  if (typeof firebase !== 'undefined') {
+    _fbApp  = firebase.initializeApp(cfg);
+    _fbAuth = firebase.auth();
+    _fbAuth.onAuthStateChanged(function(user) {
+      if (user) {
+        lsHideLoginScreen();
+      } else {
+        lsShowLoginScreen();
+      }
+    });
+  }
+})();
+
+function lsShowLoginScreen() {
+  var ls = document.getElementById('loginScreen');
+  if (ls) ls.style.display = 'flex';
+}
+
+function lsHideLoginScreen() {
+  var ls = document.getElementById('loginScreen');
+  if (ls) ls.style.display = 'none';
+}
+
+function lsTogglePass() {
+  var inp = document.getElementById('lsPass');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function lsShowError(msg) {
+  var el = document.getElementById('lsErrorMsg');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(function() { el.style.display = 'none'; }, 4000);
+}
+
+function lsSignIn() {
+  var email = (document.getElementById('lsEmail').value || '').trim();
+  var pass  = (document.getElementById('lsPass').value  || '');
+  var isReg = document.getElementById('lsRegisterRow').style.display !== 'none';
+
+  if (!email || !pass) { lsShowError('Ingresa tu correo y contraseña'); return; }
+
+  if (isReg) {
+    var pass2 = (document.getElementById('lsPass2').value || '');
+    if (pass !== pass2) { lsShowError('Las contraseñas no coinciden'); return; }
+    if (!_fbAuth) return;
+    _fbAuth.createUserWithEmailAndPassword(email, pass)
+      .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+  } else {
+    if (!_fbAuth) return;
+    _fbAuth.signInWithEmailAndPassword(email, pass)
+      .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+  }
+}
+
+function lsGoogleSignIn() {
+  if (!_fbAuth) return;
+  var provider = new firebase.auth.GoogleAuthProvider();
+  _fbAuth.signInWithPopup(provider)
+    .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+}
+
+function lsForgotPassword() {
+  var email = (document.getElementById('lsEmail').value || '').trim();
+  if (!email) { lsShowError('Ingresa tu correo primero'); return; }
+  if (!_fbAuth) return;
+  _fbAuth.sendPasswordResetEmail(email)
+    .then(function() { lsShowError('✅ Correo de recuperación enviado'); })
+    .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
+}
+
+function lsToggleRegister(e) {
+  e.preventDefault();
+  var isReg = document.getElementById('lsRegisterRow').style.display !== 'none';
+  document.getElementById('lsRegisterRow').style.display = isReg ? 'none' : 'flex';
+  document.getElementById('lsMainBtn').textContent = isReg ? 'INICIAR SESIÓN' : 'CREAR CUENTA';
+  document.getElementById('lsRegisterLink').textContent = isReg ? 'Regístrate aquí' : 'Ya tengo cuenta';
+  document.getElementById('lsForgotBtn').style.display = isReg ? '' : 'none';
+  document.getElementById('lsBtnBack').style.display = 'none';
+  document.getElementById('lsErrorMsg').style.display = 'none';
+}
+
+function lsBackToLogin() {
+  document.getElementById('lsRegisterRow').style.display = 'none';
+  document.getElementById('lsMainBtn').textContent = 'INICIAR SESIÓN';
+  document.getElementById('lsBtnBack').style.display = 'none';
+  document.getElementById('lsForgotBtn').style.display = '';
+}
+
+function lsFirebaseError(code) {
+  var msgs = {
+    'auth/invalid-email':          'Correo inválido',
+    'auth/user-not-found':         'Usuario no encontrado',
+    'auth/wrong-password':         'Contraseña incorrecta',
+    'auth/invalid-credential':     'Correo o contraseña incorrectos',
+    'auth/email-already-in-use':   'Este correo ya está registrado',
+    'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres',
+    'auth/too-many-requests':      'Demasiados intentos, espera unos minutos',
+    'auth/network-request-failed': 'Sin conexión a internet',
+    'auth/popup-closed-by-user':   'Ventana de Google cerrada',
+    'auth/popup-blocked':          'Popup bloqueado — usa correo/contraseña'
+  };
+  return msgs[code] || 'Error: ' + code;
+}
 function t(key) { return (T[currentLang]&&T[currentLang][key]) || (T.en&&T.en[key]) || key; }
 
 function setLanguage(lang) {
