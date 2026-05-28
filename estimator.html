@@ -19,6 +19,7 @@
     background: #070d04 url('file:///android_asset/banner_splash.png') center/cover no-repeat;
     display: flex; flex-direction: column;
     justify-content: flex-end;
+    overflow: hidden;
   }
   .ls-overlay {
     position: absolute; inset: 0;
@@ -2904,9 +2905,6 @@ function appLogout() {
 function lsShowLoginScreen() {
   var ls = document.getElementById('loginScreen');
   if (ls) ls.style.display = 'flex';
-  // Hide Google button on Android WebView (popup not supported)
-  var gb = document.getElementById('lsGoogleBtn');
-  if (gb && window.AndroidBridge) gb.style.display = 'none';
 }
 
 function lsHideLoginScreen() {
@@ -2946,6 +2944,10 @@ function lsSignIn() {
 }
 
 function lsGoogleSignIn() {
+  if (window.AndroidBridge) {
+    lsShowError('Usa correo y contraseña en la app Android. Google Sign-In disponible en la versión web.');
+    return;
+  }
   if (!_fbAuth) return;
   var provider = new firebase.auth.GoogleAuthProvider();
   _fbAuth.signInWithPopup(provider)
