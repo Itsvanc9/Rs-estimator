@@ -19,8 +19,11 @@
     background: #070d04 url('file:///android_asset/banner_splash.png') center/cover no-repeat;
     display: flex; flex-direction: column;
     justify-content: flex-end;
-    overflow: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
   }
+  #loginScreen::-webkit-scrollbar { display: none; }
   .ls-overlay {
     position: absolute; inset: 0;
     background: linear-gradient(180deg, transparent 30%, rgba(5,10,2,0.75) 55%, rgba(5,10,2,0.97) 75%, #050a02 100%);
