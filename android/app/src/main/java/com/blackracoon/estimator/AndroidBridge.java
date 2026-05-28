@@ -30,12 +30,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,12 +41,7 @@ public class AndroidBridge {
     static final int REQUEST_BACKUP           = 1001;
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
-    static final int REQUEST_GOOGLE_SIGN_IN   = 1005;
     static final int REQUEST_BIOMETRIC        = 1006;
-    static final int REQUEST_GOOGLE_TOKEN     = 1007;
-
-    private static final String GOOGLE_WEB_CLIENT_ID =
-        "545910015982-oeosqqntdqjidq54ln6tooocn2mlnj31.apps.googleusercontent.com";
 
     private Context context;
     private WebView webView;
@@ -102,7 +91,6 @@ public class AndroidBridge {
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Check CAMERA runtime permission (required on API 23+)
                 if (activity.checkSelfPermission("android.permission.CAMERA")
                         != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     activity.requestPermissions(
@@ -182,24 +170,6 @@ public class AndroidBridge {
             }
         }
 
-        if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
-            try {
-                GoogleSignInAccount account = GoogleSignIn
-                        .getSignedInAccountFromIntent(data)
-                        .getResult(ApiException.class);
-                final String idToken = account.getIdToken();
-                webView.post(new Runnable() { @Override public void run() {
-                    webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
-                }});
-            } catch (ApiException e) {
-                final String msg = "Error " + e.getStatusCode();
-                webView.post(new Runnable() { @Override public void run() {
-                    webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
-                }});
-            }
-            return;
-        }
-
         if (requestCode == REQUEST_BIOMETRIC) {
             final boolean ok = (resultCode == Activity.RESULT_OK);
             webView.post(new Runnable() {
@@ -218,7 +188,6 @@ public class AndroidBridge {
                 InputStream is = context.getContentResolver().openInputStream(pendingPhotoUri);
                 if (is == null) { showToastByKey("toastErrReadPhoto"); return; }
 
-                // Decode and scale down to ~1200px max dimension
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inSampleSize = 2;
                 Bitmap bitmap = BitmapFactory.decodeStream(is, null, opts);
@@ -226,7 +195,6 @@ public class AndroidBridge {
 
                 if (bitmap == null) { showToastByKey("toastErrProcessPhoto"); return; }
 
-                // Scale to max 1200px
                 int maxDim = 1200;
                 int w = bitmap.getWidth(), h = bitmap.getHeight();
                 if (w > maxDim || h > maxDim) {
@@ -497,7 +465,6 @@ public class AndroidBridge {
                                 try {
                                     final int totalH = Math.min((int)(Math.max(pv.getContentHeight(), 200) * density), maxH);
                                     pv.layout(0, 0, physW, totalH);
-                                    // Draw WebView ONCE to bitmap — single render pass
                                     final Bitmap bmp = Bitmap.createBitmap(physW, totalH, Bitmap.Config.ARGB_8888);
                                     Canvas bmpCanvas = new Canvas(bmp);
                                     bmpCanvas.drawColor(Color.WHITE);
@@ -505,7 +472,6 @@ public class AndroidBridge {
                                     if (pv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) pv.getParent()).removeView(pv);
                                     pv.destroy();
-                                    // Slice bitmap into PDF pages + file write on background thread
                                     new Thread(new Runnable() {
                                         @Override public void run() {
                                             try {
@@ -531,10 +497,6 @@ public class AndroidBridge {
                                                 String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
                                                 final Uri shareUri;
                                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                                    // API 29+: save to MediaStore Downloads.
-                                                    // This gives a content://media URI that Gmail,
-                                                    // WhatsApp and every other app can read without
-                                                    // custom permission grants.
                                                     ContentValues cv = new ContentValues();
                                                     cv.put(MediaStore.Downloads.DISPLAY_NAME, safeName + ".pdf");
                                                     cv.put(MediaStore.Downloads.MIME_TYPE, "application/pdf");
@@ -548,7 +510,6 @@ public class AndroidBridge {
                                                     dlOs.close();
                                                     shareUri = dlUri;
                                                 } else {
-                                                    // API < 29: write to cache and use custom provider
                                                     File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
                                                     FileOutputStream fos = new FileOutputStream(pdfFile);
                                                     document.writeTo(fos);
@@ -612,7 +573,6 @@ public class AndroidBridge {
         return tag + html;
     }
 
-
     // ── SAVE BASE64 FILE ──────────────────────────────────────────────────────
 
     @JavascriptInterface
@@ -675,6 +635,82 @@ public class AndroidBridge {
         });
     }
 
+    // ── BIOMETRIC PROMPT ──────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void showBiometricPrompt() {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    try {
+                        android.hardware.biometrics.BiometricPrompt.Builder builder =
+                            new android.hardware.biometrics.BiometricPrompt.Builder(context)
+                                .setTitle("BlackRacoon Estimator")
+                                .setDescription("Usa tu huella o contraseña para entrar");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            builder.setConfirmationRequired(false);
+                        }
+                        builder.setDeviceCredentialAllowed(true);
+                        builder.build().authenticate(
+                            new android.os.CancellationSignal(),
+                            activity.getMainExecutor(),
+                            new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
+                                @Override
+                                public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) {
+                                    webView.post(new Runnable() {
+                                        @Override public void run() {
+                                            webView.evaluateJavascript("biometricSuccess()", null);
+                                        }
+                                    });
+                                }
+                                @Override
+                                public void onAuthenticationError(int code, CharSequence msg) {
+                                    final boolean allow = (code != 10 && code != 13);
+                                    webView.post(new Runnable() {
+                                        @Override public void run() {
+                                            webView.evaluateJavascript(allow ? "biometricSuccess()" : "biometricDenied()", null);
+                                        }
+                                    });
+                                }
+                                @Override public void onAuthenticationFailed() {}
+                            });
+                    } catch (Exception e) {
+                        webView.post(new Runnable() {
+                            @Override public void run() {
+                                webView.evaluateJavascript("biometricSuccess()", null);
+                            }
+                        });
+                    }
+                } else {
+                    android.app.KeyguardManager km = (android.app.KeyguardManager)
+                        context.getSystemService(Context.KEYGUARD_SERVICE);
+                    if (km != null) {
+                        Intent intent = km.createConfirmDeviceCredentialIntent(
+                            "BlackRacoon Estimator", "Verifica tu identidad para continuar");
+                        if (intent != null) {
+                            try { activity.startActivityForResult(intent, REQUEST_BIOMETRIC); }
+                            catch (Exception e) {
+                                webView.post(new Runnable() {
+                                    @Override public void run() {
+                                        webView.evaluateJavascript("biometricSuccess()", null);
+                                    }
+                                });
+                            }
+                            return;
+                        }
+                    }
+                    webView.post(new Runnable() {
+                        @Override public void run() {
+                            webView.evaluateJavascript("biometricSuccess()", null);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     // ── TOAST ─────────────────────────────────────────────────────────────────
 
     @JavascriptInterface
@@ -701,7 +737,7 @@ public class AndroidBridge {
             @Override public void run() {
                 String safeParam = param.replace("'", "\\'");
                 webView.evaluateJavascript(
-                    "typeof showToast==='function'&&showToast((typeof t==='function'?t('" + key + "'):'" + key + "')+'"+safeParam+"')", null);
+                    "typeof showToast==='function'&&showToast((typeof t==='function'?t('" + key + "'):'" + key + "')+'" + safeParam + "')", null);
             }
         });
     }
@@ -711,7 +747,6 @@ public class AndroidBridge {
     @JavascriptInterface
     public void scheduleNotification(final String notifId, final String title,
                                      final String body, final long timestampMs) {
-        // Only schedule if in the future
         if (timestampMs <= System.currentTimeMillis()) return;
 
         Intent intent = new Intent(context, NotifReceiver.class);
@@ -748,111 +783,7 @@ public class AndroidBridge {
         if (nm != null) nm.cancel(notifId.hashCode());
     }
 
-    @JavascriptInterface
-    public void googleSignIn() {
-        final Activity activity = (Activity) context;
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(
-                            GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(GOOGLE_WEB_CLIENT_ID)
-                            .requestEmail()
-                            .build();
-                    GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
-                    activity.startActivityForResult(client.getSignInIntent(), REQUEST_GOOGLE_SIGN_IN);
-                } catch (Exception e) {
-                    final String msg = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Error";
-                    webView.post(new Runnable() {
-                        @Override public void run() {
-                            webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
-    @JavascriptInterface
-    public void showBiometricPrompt() {
-        final Activity activity = (Activity) context;
-        activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    try {
-                        android.hardware.biometrics.BiometricPrompt.Builder builder =
-                            new android.hardware.biometrics.BiometricPrompt.Builder(context)
-                                .setTitle("BlackRacoon Estimator")
-                                .setDescription("Usa tu huella o contraseña para entrar");
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            builder.setConfirmationRequired(false);
-                        }
-                        builder.setDeviceCredentialAllowed(true);
-                        builder.build().authenticate(
-                            new android.os.CancellationSignal(),
-                            activity.getMainExecutor(),
-                            new android.hardware.biometrics.BiometricPrompt.AuthenticationCallback() {
-                                @Override
-                                public void onAuthenticationSucceeded(android.hardware.biometrics.BiometricPrompt.AuthenticationResult r) {
-                                    webView.post(new Runnable() {
-                                        @Override public void run() {
-                                            webView.evaluateJavascript("biometricSuccess()", null);
-                                        }
-                                    });
-                                }
-                                @Override
-                                public void onAuthenticationError(int code, CharSequence msg) {
-                                    // code 10 = user cancelled; allow if no lock screen set up (code 14)
-                                    final boolean allow = (code != 10 && code != 13);
-                                    webView.post(new Runnable() {
-                                        @Override public void run() {
-                                            webView.evaluateJavascript(allow ? "biometricSuccess()" : "biometricDenied()", null);
-                                        }
-                                    });
-                                }
-                                @Override public void onAuthenticationFailed() {}
-                            });
-                    } catch (Exception e) {
-                        webView.post(new Runnable() {
-                            @Override public void run() {
-                                webView.evaluateJavascript("biometricSuccess()", null);
-                            }
-                        });
-                    }
-                } else {
-                    // API 23-27: use KeyguardManager
-                    android.app.KeyguardManager km = (android.app.KeyguardManager)
-                        context.getSystemService(Context.KEYGUARD_SERVICE);
-                    if (km != null) {
-                        Intent intent = km.createConfirmDeviceCredentialIntent(
-                            "BlackRacoon Estimator", "Verifica tu identidad para continuar");
-                        if (intent != null) {
-                            try { activity.startActivityForResult(intent, REQUEST_BIOMETRIC); }
-                            catch (Exception e) {
-                                webView.post(new Runnable() {
-                                    @Override public void run() {
-                                        webView.evaluateJavascript("biometricSuccess()", null);
-                                    }
-                                });
-                            }
-                            return;
-                        }
-                    }
-                    // No lock screen configured — allow
-                    webView.post(new Runnable() {
-                        @Override public void run() {
-                            webView.evaluateJavascript("biometricSuccess()", null);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     // ── NOTIFICATION RECEIVER ─────────────────────────────────────────────────
-    // Defined as inner class so there is no separate file for the IDE to overwrite.
 
     public static class NotifReceiver extends BroadcastReceiver {
         static final String CHANNEL_ID = "rs_alerts";
