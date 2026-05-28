@@ -760,25 +760,6 @@ public class AndroidBridge {
         });
     }
 
-    @JavascriptInterface
-    public String getSHA1() {
-        try {
-            android.content.pm.PackageInfo info = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(),
-                            android.content.pm.PackageManager.GET_SIGNATURES);
-            byte[] cert = info.signatures[0].toByteArray();
-            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA1");
-            byte[] sha1 = md.digest(cert);
-            StringBuilder sb = new StringBuilder();
-            for (byte b : sha1) {
-                sb.append(String.format("%02X:", b));
-            }
-            return sb.substring(0, sb.length() - 1);
-        } catch (Exception e) {
-            return "Error: " + e.getMessage();
-        }
-    }
-
     // ── NOTIFICATION RECEIVER ─────────────────────────────────────────────────
     // Defined as inner class so there is no separate file for the IDE to overwrite.
 
