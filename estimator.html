@@ -1458,7 +1458,7 @@
     <div class="cd-summary">
       <div class="cd-summary-header">
         <div class="cd-kpi"><div class="cd-kpi-val" id="invdTotal">$0</div><div class="cd-kpi-lbl" data-i18n="invTotalLabel">Total</div></div>
-        <div class="cd-kpi"><div id="invdStatusKpi" class="cd-kpi-val" style="font-size:14px;letter-spacing:0;">—</div><div class="cd-kpi-lbl" data-i18n="coDescLabel">Status</div></div>
+        <div class="cd-kpi"><div id="invdStatusKpi" class="cd-kpi-val" style="font-size:14px;letter-spacing:0;">—</div><div class="cd-kpi-lbl" data-i18n="invStatusLabel">Status</div></div>
         <div class="cd-kpi"><div class="cd-kpi-val" id="invdDueKpi" style="font-size:16px;">—</div><div class="cd-kpi-lbl" data-i18n="invDueDateLabel">Due Date</div></div>
       </div>
     </div>
@@ -2364,7 +2364,7 @@ const T = {
     invItemsLabel:'Items', invAddItem:'Add Item', invTotalLabel:'Total',
     invNoteLabel:'Note (optional)', invNotePh:'Payment instructions, thank you note…',
     invClientPh:'Client name', invProjectPh:'Project description',
-    invStatusDraft:'Draft', invStatusSent:'Sent', invStatusPaid:'Paid', invStatusOverdue:'Overdue',
+    invStatusLabel:'Status', invStatusDraft:'Draft', invStatusSent:'Sent', invStatusPaid:'Paid', invStatusOverdue:'Overdue',
     invMarkSent:'Mark Sent', invMarkPaid:'Mark Paid',
     invPrintBtn:'Print / PDF', invShareBtn:'Share',
     invEditBtn:'Edit', invDeleteBtn:'Delete',
@@ -2653,7 +2653,7 @@ const T = {
     invItemsLabel:'Conceptos', invAddItem:'Agregar Concepto', invTotalLabel:'Total',
     invNoteLabel:'Nota (opcional)', invNotePh:'Instrucciones de pago, nota de agradecimiento…',
     invClientPh:'Nombre del cliente', invProjectPh:'Descripción del proyecto',
-    invStatusDraft:'Borrador', invStatusSent:'Enviada', invStatusPaid:'Pagada', invStatusOverdue:'Vencida',
+    invStatusLabel:'Estado', invStatusDraft:'Borrador', invStatusSent:'Enviada', invStatusPaid:'Pagada', invStatusOverdue:'Vencida',
     invMarkSent:'Marcar Enviada', invMarkPaid:'Marcar Pagada',
     invPrintBtn:'Imprimir / PDF', invShareBtn:'Compartir',
     invEditBtn:'Editar', invDeleteBtn:'Eliminar',
@@ -4730,7 +4730,7 @@ function openContractDetail(id) {
   var balance = c.totalAmount - paid;
   var pct = c.totalAmount > 0 ? Math.min(100, Math.round(paid/c.totalAmount*100)) : 0;
   $('cdClientName').textContent = c.clientName;
-  $('cdProjectName').textContent = c.estNum + (c.projectName ? ' · ' + c.projectName : '');
+  $('cdProjectName').textContent = (c.estNum || '') + (c.projectName ? (c.estNum ? ' · ' : '') + c.projectName : '');
   $('cdTotal').textContent   = '$' + fmtMoney(c.totalAmount);
   $('cdJobStart').value     = c.jobStart     || '';
   $('cdJobEnd').value       = c.jobEnd       || '';
@@ -5177,7 +5177,8 @@ function openInvoiceDetail(id) {
   $('invdClient').textContent = inv.clientName || '';
 
   // KPI row
-  $('invdTotal').textContent     = '$' + fmtMoney(inv.total || 0);
+  var _invTotal = inv.total != null ? inv.total : (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0);
+  $('invdTotal').textContent     = '$' + fmtMoney(_invTotal);
   $('invdStatusKpi').textContent = stLbl;
   $('invdStatusKpi').style.color = sc;
   $('invdDueKpi').textContent    = inv.dueDate || '—';
