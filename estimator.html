@@ -16,7 +16,7 @@
   ══════════════════════════════════════════ */
   #loginScreen {
     position: fixed; inset: 0; z-index: 99995;
-    background: #070d04 url('file:///android_asset/login_bg.png') center/cover no-repeat;
+    background: #070d04 url('file:///android_asset/banner_splash.png') center/cover no-repeat;
     display: flex; flex-direction: column;
     justify-content: flex-end;
   }
@@ -758,45 +758,6 @@
   .cd-date-field label { font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px; }
   .cd-date-field input[type=date] { width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit; }
 
-  /* ══════════════════════════════════════════
-     SPLASH SCREEN
-  ══════════════════════════════════════════ */
-  .splash-screen {
-    position: fixed; inset: 0; z-index: 99990; cursor: pointer;
-    background: url('file:///android_asset/banner_splash.png') center/cover no-repeat;
-    display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
-  }
-  .splash-overlay {
-    position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.5) 55%, rgba(0,0,0,0.92) 100%);
-  }
-  .splash-body {
-    position: relative; z-index: 1; width: 100%; padding: 0 28px 52px;
-  }
-  .splash-badge {
-    display: inline-block;
-    background: var(--lime); color: #fff;
-    font-size: 9px; font-weight: 700; letter-spacing: 2.5px;
-    padding: 5px 12px; border-radius: 20px; margin-bottom: 16px;
-  }
-  .splash-version {
-    font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 500;
-    letter-spacing: 1px; margin-bottom: 40px;
-  }
-  .splash-tap {
-    font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500;
-    letter-spacing: 0.3px; margin-bottom: 14px;
-    animation: blink 2s ease-in-out infinite;
-  }
-  @keyframes blink { 0%,100%{opacity:.4} 50%{opacity:1} }
-  .splash-dots { display: flex; gap: 6px; }
-  .splash-dots span {
-    width: 6px; height: 6px; border-radius: 50%; background: var(--lime); opacity: 0.4;
-    animation: dot-pulse 1.4s infinite;
-  }
-  .splash-dots span:nth-child(2) { animation-delay: .2s; }
-  .splash-dots span:nth-child(3) { animation-delay: .4s; }
-  @keyframes dot-pulse { 0%,80%,100%{opacity:.2; transform:scale(0.8)} 40%{opacity:1; transform:scale(1)} }
 
   /* ══════════════════════════════════════════
      TERMS & CONDITIONS
@@ -1114,15 +1075,6 @@
   </div>
 </div>
 
-<div id="splash" class="splash-screen" onclick="dismissSplash()">
-  <div class="splash-overlay"></div>
-  <div class="splash-body">
-    <div class="splash-tap">Tap anywhere to continue</div>
-    <div class="splash-dots">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-</div>
 
 <!-- ═══════════ TERMS & CONDITIONS ═══════════ -->
 <div id="termsScreen" class="terms-screen" style="display:none;">
@@ -7304,19 +7256,12 @@ function getEstimateDoc(est) {
 }
 
 // ═══════════════════════════════════════════════════════
-// SPLASH & TERMS
+// TERMS
 // ═══════════════════════════════════════════════════════
-function dismissSplash() {
-  var splash = $('splash');
-  if (!splash) return;
-  splash.style.transition = 'opacity 0.4s ease';
-  splash.style.opacity = '0';
-  setTimeout(function() {
-    splash.style.display = 'none';
-    if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
-      $('termsScreen').style.display = 'flex';
-    }
-  }, 400);
+function checkTerms() {
+  if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
+    $('termsScreen').style.display = 'flex';
+  }
 }
 
 function acceptTerms() {
@@ -7625,8 +7570,7 @@ function _upsertClient(name, phone, email, address, type) {
   updateNotifBadge();
   syncNativeNotifications();
 
-  // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
-  setTimeout(dismissSplash, 2500);
+  checkTerms();
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
