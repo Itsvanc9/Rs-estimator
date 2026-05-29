@@ -2515,6 +2515,7 @@ const T = {
     invRefContract:'Contract Ref.', invBalanceDue:'Balance Due',
     invPaymentDue:'Payment due by', invThankYou:'Thank you for your business!',
     invNoInvoices:'No invoices yet.',
+    invNoClient:'No Client', invNoProject:'General',
     toastInvSaved:'✅ Invoice saved', toastInvDeleted:'Invoice deleted',
     toastInvMarkedSent:'✅ Invoice marked as sent', toastInvMarkedPaid:'✅ Invoice marked as paid',
     confirmDeleteInv:'Delete this invoice?',
@@ -2850,6 +2851,7 @@ const T = {
     invRefContract:'Ref. Contrato', invBalanceDue:'Saldo a Pagar',
     invPaymentDue:'Fecha límite de pago', invThankYou:'¡Gracias por su confianza!',
     invNoInvoices:'No hay facturas todavía.',
+    invNoClient:'Sin Cliente', invNoProject:'General',
     toastInvSaved:'✅ Factura guardada', toastInvDeleted:'Factura eliminada',
     toastInvMarkedSent:'✅ Factura marcada como enviada', toastInvMarkedPaid:'✅ Factura marcada como pagada',
     confirmDeleteInv:'¿Eliminar esta factura?',
@@ -5766,25 +5768,72 @@ function renderInvoiceList() {
     return;
   }
   var statusColors = { draft:'#64748b', sent:'#3b82f6', paid:'#10b981', overdue:'#ef4444' };
-  el.innerHTML = invs.map(function(inv) {
+
+  // Group by client, then by project within each client
+  var clientMap = {};
+  var clientOrder = [];
+  invs.forEach(function(inv) {
+    var client = (inv.clientName || '').trim() || t('invNoClient') || 'No Client';
+    if (!clientMap[client]) { clientMap[client] = {}; clientOrder.push(client); }
+    var project = (inv.projectName || '').trim() || t('invNoProject') || 'General';
+    if (!clientMap[client][project]) clientMap[client][project] = [];
+    clientMap[client][project].push(inv);
+  });
+
+  function invCard(inv) {
     var sc = statusColors[inv.status] || '#64748b';
-    var stLbl = t('invStatus' + inv.status.charAt(0).toUpperCase() + inv.status.slice(1)) || inv.status;
+    var stLbl = t('invStatus' + (inv.status||'draft').charAt(0).toUpperCase() + (inv.status||'draft').slice(1)) || inv.status;
     var total = inv.total || (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0);
-    return '<div onclick="openInvoiceDetail(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;cursor:pointer;background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">' +
-      '<div style="flex:1;min-width:0;">' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">' +
-          '<span style="font-size:13px;font-weight:800;color:var(--text);">🧾 ' + escapeHtml(inv.invoiceNum) + '</span>' +
-          '<span style="font-size:18px;font-weight:900;color:var(--text);">$' + fmtMoney(total) + '</span>' +
-        '</div>' +
-        '<div style="display:flex;justify-content:space-between;align-items:center;">' +
-          '<span style="font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:170px;">' + escapeHtml(inv.clientName || '') + (inv.projectName ? ' · ' + escapeHtml(inv.projectName) : '') + '</span>' +
-          '<span style="font-size:10px;font-weight:700;color:' + sc + ';background:' + sc + '1a;border:1px solid ' + sc + ';border-radius:20px;padding:2px 8px;white-space:nowrap;">' + stLbl + '</span>' +
-        '</div>' +
-        (inv.dueDate ? '<div style="font-size:10px;color:var(--muted);margin-top:3px;">' + t('invDueDateLabel') + ': ' + escapeHtml(inv.dueDate) + '</div>' : '') +
-      '</div>' +
-      '<div style="color:var(--muted);font-size:18px;flex-shrink:0;">›</div>' +
-    '</div>';
-  }).join('');
+    return '<div onclick="openInvoiceDetail(\'' + inv.id + '\')" style="-webkit-tap-highlight-color:transparent;cursor:pointer;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">'
+      +'<div style="flex:1;min-width:0;">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">'
+          +'<span style="font-size:13px;font-weight:800;color:var(--text);">🧾 ' + escapeHtml(inv.invoiceNum) + '</span>'
+          +'<span style="font-size:17px;font-weight:900;color:var(--text);">$' + fmtMoney(total) + '</span>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+          +(inv.dueDate ? '<span style="font-size:10px;color:var(--muted);">' + t('invDueDateLabel') + ': ' + escapeHtml(inv.dueDate) + '</span>' : '<span></span>')
+          +'<span style="font-size:10px;font-weight:700;color:'+sc+';background:'+sc+'1a;border:1px solid '+sc+';border-radius:20px;padding:2px 8px;white-space:nowrap;">'+stLbl+'</span>'
+        +'</div>'
+      +'</div>'
+      +'<div style="color:var(--muted);font-size:18px;flex-shrink:0;">›</div>'
+    +'</div>';
+  }
+
+  var html = '';
+  clientOrder.forEach(function(client) {
+    var projectMap = clientMap[client];
+    var projectNames = Object.keys(projectMap);
+    // Client total across all projects
+    var clientTotal = 0;
+    Object.keys(projectMap).forEach(function(proj){
+      projectMap[proj].forEach(function(i){
+        clientTotal += i.total || (i.items||[]).reduce(function(s,x){return s+(x.amount||0);},0);
+      });
+    });
+    // Client header
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
+        +'<div style="width:32px;height:32px;border-radius:50%;background:var(--lime);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#0f172a;">'
+          +escapeHtml(client.charAt(0).toUpperCase())
+        +'</div>'
+        +'<span style="font-size:14px;font-weight:800;color:var(--text);">'+escapeHtml(client)+'</span>'
+      +'</div>'
+      +'<span style="font-size:12px;font-weight:700;color:var(--lime);">$'+fmtMoney(clientTotal)+'</span>'
+    +'</div>';
+
+    projectNames.forEach(function(project) {
+      var projInvs = projectMap[project];
+      var isGeneral = project === (t('invNoProject')||'General');
+      if (!isGeneral) {
+        html += '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:6px 0 4px 4px;">🏗 '+escapeHtml(project)+'</div>';
+      }
+      projInvs.forEach(function(inv){ html += invCard(inv); });
+    });
+
+    html += '<div style="height:1px;background:var(--border);margin:10px 0 4px;"></div>';
+  });
+
+  el.innerHTML = html;
 }
 
 function invMarkSent(id) {
