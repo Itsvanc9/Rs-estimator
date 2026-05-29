@@ -5831,63 +5831,68 @@ function shareInvoice(id) {
 
 function generateInvoiceDoc(inv) {
   var p = getProfile();
-  var total = inv.total || inv.items.reduce(function(s,it){return s+(it.amount||0);},0);
+  var total = inv.total || (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0);
   var statusColors = { draft:'#64748b', sent:'#3b82f6', paid:'#10b981', overdue:'#ef4444' };
   var sc = statusColors[inv.status] || '#64748b';
   var stLbl = t('invStatus' + (inv.status||'draft').charAt(0).toUpperCase() + (inv.status||'draft').slice(1));
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
-  'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:24px;background:#fff;color:#0f172a;font-size:13px;}' +
-  '.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid #0f172a;margin-bottom:22px;}' +
-  '.inv-num{font-size:28px;font-weight:900;color:#0f172a;margin:0 0 4px;}' +
-  '.status{display:inline-block;background:' + sc + '1a;color:' + sc + ';border:1.5px solid ' + sc + ';border-radius:20px;padding:3px 12px;font-weight:700;font-size:12px;}' +
-  '.section{margin-bottom:18px;}' +
-  '.label{font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}' +
-  '.items-table{width:100%;border-collapse:collapse;margin:14px 0;}' +
-  '.items-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;border-bottom:2px solid #e2e8f0;padding:6px 4px;text-align:left;}' +
-  '.items-table th:last-child,.items-table td:last-child{text-align:right;}' +
-  '.items-table td{padding:10px 4px;border-bottom:1px solid #f1f5f9;font-size:13px;}' +
-  '.total-row{display:flex;justify-content:flex-end;padding:14px 0 0;border-top:2px solid #0f172a;margin-top:4px;}' +
-  '.total-amt{font-size:24px;font-weight:900;}' +
-  '.note-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:12px;color:#475569;}' +
-  '.footer{margin-top:28px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center;}' +
-  '</style></head><body>' +
-  '<div class="header">' +
-    '<div>' +
-      (p.logoBase64 ? '<img src="' + p.logoBase64 + '" style="height:44px;object-fit:contain;margin-bottom:8px;display:block;">' : '') +
-      '<div style="font-weight:800;font-size:15px;">' + escapeHtml(p.companyName) + '</div>' +
-      '<div style="font-size:11px;color:#64748b;">' + escapeHtml(p.companyPhone) + '</div>' +
-      '<div style="font-size:11px;color:#64748b;">' + escapeHtml(p.companyEmail) + '</div>' +
-      (p.companyLocation ? '<div style="font-size:11px;color:#64748b;">📍 ' + escapeHtml(p.companyLocation) + '</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right;">' +
-      '<div class="inv-num">' + pdfStr('INVOICE','FACTURA') + '</div>' +
-      '<div style="font-size:13px;font-weight:700;color:#64748b;margin-bottom:6px;">#' + escapeHtml(inv.invoiceNum) + '</div>' +
-      '<div class="status">' + stLbl + '</div>' +
-    '</div>' +
-  '</div>' +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">' +
-    '<div>' +
-      '<div class="label">' + pdfStr('Bill To','Facturar a') + '</div>' +
-      '<div style="font-weight:700;font-size:14px;">' + escapeHtml(inv.clientName) + '</div>' +
-      (inv.clientPhone ? '<div style="font-size:12px;color:#475569;">📞 ' + escapeHtml(inv.clientPhone) + '</div>' : '') +
-      (inv.clientEmail ? '<div style="font-size:12px;color:#475569;">✉ ' + escapeHtml(inv.clientEmail) + '</div>' : '') +
-      (inv.projectName ? '<div style="font-size:12px;color:#475569;margin-top:4px;">🏗️ ' + escapeHtml(inv.projectName) + '</div>' : '') +
-    '</div>' +
-    '<div style="text-align:right;">' +
-      '<div class="label">' + t('invIssueDateLabel') + '</div>' +
-      '<div style="font-size:13px;">' + (inv.issueDate||'') + '</div>' +
-      (inv.dueDate ? '<div class="label" style="margin-top:8px;">' + t('invPaymentDue') + '</div><div style="font-size:13px;font-weight:700;color:#ef4444;">' + inv.dueDate + '</div>' : '') +
-    '</div>' +
-  '</div>' +
-  '<table class="items-table"><thead><tr><th>' + t('scope') + '</th><th>' + t('invTotalLabel') + '</th></tr></thead><tbody>' +
-  (inv.items||[]).map(function(it){
-    return '<tr><td>' + escapeHtml(it.desc||'') + '</td><td>$' + fmtMoney(it.amount||0) + '</td></tr>';
-  }).join('') +
-  '</tbody></table>' +
-  '<div class="total-row"><span class="total-amt">' + t('invTotalLabel') + ': $' + fmtMoney(total) + '</span></div>' +
-  (inv.note ? '<div class="note-box">' + escapeHtml(inv.note) + '</div>' : '') +
-  '<div class="footer">' + escapeHtml(p.companyName) + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + ' · ' + escapeHtml(p.companyPhone) + '</div>' +
-  '</body></html>';
+  var fm = function(n){ return '$'+(n||0).toFixed(2); };
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'
+  +'@page{size:letter portrait;margin:8mm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background:white;font-size:13px;}'
+  +'.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}'
+  +'.brand{display:flex;gap:12px;align-items:flex-start;}.logo{width:72px;height:72px;object-fit:cover;border-radius:10px;}'
+  +'.company h1{margin:0;font-size:22px;font-weight:900;color:#0f172a;}.green{color:#84cc16;display:block;}'
+  +'.company p{margin:3px 0;font-size:11px;}'
+  +'.inv-box{text-align:right;min-width:180px;}.inv-box h2{margin:0 0 8px;font-size:28px;font-weight:900;color:#0f172a;}'
+  +'.er{display:flex;justify-content:space-between;gap:16px;font-size:12px;margin:4px 0;}.er strong{color:#0f172a;}.er span{color:#65a30d;font-weight:800;}'
+  +'.status-badge{display:inline-block;background:'+sc+'1a;color:'+sc+';border:1.5px solid '+sc+';border-radius:20px;padding:3px 12px;font-weight:700;font-size:11px;margin-top:6px;}'
+  +'.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}'
+  +'.info-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;}'
+  +'.ct{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:11px;}'
+  +'.ct span{color:#84cc16;margin-right:6px;}.cb{padding:10px 12px;font-size:11.5px;line-height:1.5;}'
+  +'.il{display:grid;grid-template-columns:110px 1fr;margin-bottom:4px;}.il strong{color:#111827;}'
+  +'.cost-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;margin-bottom:10px;}'
+  +'table{width:100%;border-collapse:collapse;}th{padding:7px 12px;color:#65a30d;text-align:left;font-size:11px;border-bottom:1px solid #d1d5db;}'
+  +'th:last-child,td:last-child{text-align:right;}td{padding:7px 12px;border-bottom:1px solid #e5e7eb;font-size:11.5px;}'
+  +'.bal{background:#84cc16;}.bal td{font-size:16px;font-weight:900;color:#0f172a;border-bottom:none;}'
+  +'.note-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;margin-bottom:10px;}'
+  +'.footer{margin-top:10px;border-top:2px solid #0f172a;padding-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:10.5px;}'
+  +'@media print{body{padding:0}}'
+  +'</style></head><body>'
+  +'<div class="top"><div class="brand"><img src="'+logoSrc()+'" class="logo"><div class="company"><h1>'+escapeHtml(p.companyName)+'</h1>'
+  +'<p>'+(p.companyLocation?escapeHtml(p.companyLocation)+' · ':'')+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</p>'
+  +'<p>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</p></div></div>'
+  +'<div class="inv-box"><h2>'+pdfStr('INVOICE','FACTURA')+'</h2>'
+  +'<div class="er"><strong>'+pdfStr('Invoice #:','Factura #:')+'</strong><span>#'+escapeHtml(inv.invoiceNum||'')+'</span></div>'
+  +(inv.issueDate?'<div class="er"><strong>'+pdfStr('Date:','Fecha:')+'</strong><span>'+escapeHtml(inv.issueDate)+'</span></div>':'')
+  +(inv.dueDate?'<div class="er"><strong>'+pdfStr('Due:','Vence:')+'</strong><span style="color:#ef4444;">'+escapeHtml(inv.dueDate)+'</span></div>':'')
+  +'<div><span class="status-badge">'+stLbl+'</span></div>'
+  +'</div></div>'
+  +'<div class="cards">'
+  +'<div class="info-card"><div class="ct"><span>●</span>'+pdfStr('BILL TO','FACTURAR A')+'</div><div class="cb">'
+  +'<div class="il"><strong>'+pdfStr('Client:','Cliente:')+'</strong><div>'+escapeHtml(inv.clientName||'-')+'</div></div>'
+  +(inv.clientPhone?'<div class="il"><strong>'+pdfStr('Phone:','Teléfono:')+'</strong><div>'+escapeHtml(inv.clientPhone)+'</div></div>':'')
+  +(inv.clientEmail?'<div class="il"><strong>'+pdfStr('Email:','Correo:')+'</strong><div>'+escapeHtml(inv.clientEmail)+'</div></div>':'')
+  +'</div></div>'
+  +'<div class="info-card"><div class="ct"><span>▣</span>'+pdfStr('PROJECT DETAILS','DETALLES DEL PROYECTO')+'</div><div class="cb">'
+  +(inv.projectName?'<div class="il"><strong>'+pdfStr('Project:','Proyecto:')+'</strong><div>'+escapeHtml(inv.projectName)+'</div></div>':'')
+  +'<div class="il"><strong>'+pdfStr('Invoice #:','Factura #:')+'</strong><div>#'+escapeHtml(inv.invoiceNum||'')+'</div></div>'
+  +(inv.issueDate?'<div class="il"><strong>'+pdfStr('Issued:','Emitida:')+'</strong><div>'+escapeHtml(inv.issueDate)+'</div></div>':'')
+  +(inv.dueDate?'<div class="il"><strong>'+pdfStr('Due Date:','Fecha Límite:')+'</strong><div style="color:#ef4444;font-weight:800;">'+escapeHtml(inv.dueDate)+'</div></div>':'')
+  +'</div></div>'
+  +'</div>'
+  +'<div class="cost-card"><div class="ct"><span>$</span>'+pdfStr('INVOICE ITEMS','ARTÍCULOS DE FACTURA')+'</div>'
+  +'<table><tr><th>'+pdfStr('Description','Descripción')+'</th><th>'+pdfStr('Amount','Monto')+'</th></tr>'
+  +(inv.items||[]).map(function(it){
+    return '<tr><td>'+escapeHtml(it.desc||'')+'</td><td>'+fm(it.amount||0)+'</td></tr>';
+  }).join('')
+  +'<tr class="bal"><td>'+pdfStr('TOTAL DUE','TOTAL A PAGAR')+'</td><td>'+fm(total)+'</td></tr>'
+  +'</table></div>'
+  +(inv.note?'<div class="note-card"><div class="ct"><span>✎</span>'+pdfStr('NOTES','NOTAS')+'</div><div class="cb" style="font-size:12px;color:#475569;">'+escapeHtml(inv.note)+'</div></div>':'')
+  +'<div class="footer"><div>📍 '+escapeHtml(p.companyName)+(p.companyLocation?' · '+escapeHtml(p.companyLocation):'')+' · '+pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')+'</div>'
+  +'<div>☎ '+escapeHtml(p.companyPhone)+' · ✉ '+escapeHtml(p.companyEmail)+'</div></div>'
+  +'<div style="text-align:center;font-size:10px;color:#64748b;margin-top:6px;">© 2026 '+escapeHtml(p.companyName)+' · '+pdfStr('All rights reserved','Todos los derechos reservados')+'</div>'
+  +'</body></html>';
+  return injectAccentColors(html);
 }
 
 // ═══════════════════════════════════════════════════════
