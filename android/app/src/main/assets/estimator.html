@@ -4556,19 +4556,27 @@ function shareEstimate() {
   var html = '';
   var btnStyle = '-webkit-tap-highlight-color:transparent;display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation;width:100%;text-align:left;';
 
-  // Current open estimate (even if unsaved)
+  // Current open estimate — only show if a client name has been entered
   var curNum    = ($('estNum')    ? $('estNum').value    : '') || '';
   var curClient = ($('clientName')? $('clientName').value: '') || '';
-  if (curNum || curClient) {
+  if (curClient) {
     html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:2px 0 4px;">✏️ ' + t('shareOpenEstimate') + '</div>';
     html += '<button onclick="sharePickDoc(\'current\',\'current\')" style="' + btnStyle + 'border-color:var(--lime);border-width:2px;">'
       + '<span style="font-size:18px;">✏️</span>'
-      + '<div><div style="color:var(--text);">' + escapeHtml(curNum||t('shareOpenEstimate')) + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(curClient||t('shareNoClient')) + '</div></div>'
+      + '<div><div style="color:var(--text);">' + escapeHtml(curNum||t('shareOpenEstimate')) + '</div><div style="font-size:11px;color:var(--muted);">' + escapeHtml(curClient) + '</div></div>'
       + '</button>';
   }
 
-  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-  var contracts  = getContracts();
+  // Filter out phantom data before rendering
+  function isRealContract(c) {
+    return (c.clientName && c.clientName !== 'No Client') || (c.totalAmount && c.totalAmount > 0);
+  }
+  function isRealEstimate(e) {
+    return e.client || (e.grand && e.grand > 0);
+  }
+
+  var estimates = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').filter(isRealEstimate);
+  var contracts  = getContracts().filter(isRealContract);
 
   if (estimates.length) {
     html += '<div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:6px 0 4px;">📋 ' + t('shareSavedEstimates') + '</div>';
@@ -7772,6 +7780,22 @@ function _upsertClient(name, phone, email, address, type) {
 // INIT
 // ═══════════════════════════════════════════════════════
 (function init() {
+  // Purge phantom contracts and estimates (no client + $0 + no payments)
+  // This handles Android backup restoring ghost test data after reinstall
+  (function() {
+    var cs = getContracts().filter(function(c) {
+      var noClient = !c.clientName || c.clientName === 'No Client';
+      var noMoney  = !c.totalAmount || c.totalAmount === 0;
+      var noPay    = !c.payments   || c.payments.length === 0;
+      return !(noClient && noMoney && noPay);
+    });
+    saveContracts(cs);
+    var es = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]').filter(function(e) {
+      return e.client || (e.grand && e.grand > 0);
+    });
+    localStorage.setItem('RS_ESTIMATES', JSON.stringify(es));
+  })();
+
   // Restore theme
   let theme = localStorage.getItem('RS_THEME') || 'light';
   document.body.setAttribute('data-theme', theme);
