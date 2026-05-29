@@ -1055,19 +1055,19 @@
     <div id="lsErrorMsg" class="ls-error-msg"></div>
     <div class="ls-input-wrap" id="lsEmailWrap">
       <span class="ls-input-ico">👤</span>
-      <input type="email" id="lsEmail" placeholder="Correo electrónico" autocomplete="email">
+      <input type="email" id="lsEmail" data-i18n-ph="lsEmailPh" placeholder="Email" autocomplete="email">
     </div>
     <div class="ls-input-wrap" id="lsPassWrap">
       <span class="ls-input-ico">🔒</span>
-      <input type="password" id="lsPass" placeholder="Contraseña" autocomplete="current-password">
+      <input type="password" id="lsPass" data-i18n-ph="lsPassPh" placeholder="Password" autocomplete="current-password">
       <span class="ls-eye" onclick="lsTogglePass()">👁</span>
     </div>
     <div class="ls-input-wrap" id="lsRegisterRow" style="display:none;">
       <span class="ls-input-ico">🔒</span>
-      <input type="password" id="lsPass2" placeholder="Confirmar contraseña">
+      <input type="password" id="lsPass2" data-i18n-ph="lsPass2Ph" placeholder="Confirm password">
     </div>
-    <div class="ls-forgot" id="lsForgotBtn" onclick="lsForgotPassword()">¿Olvidaste tu contraseña?</div>
-    <button class="ls-btn-main" id="lsMainBtn" onclick="lsSignIn()">INICIAR SESIÓN</button>
+    <div class="ls-forgot" id="lsForgotBtn" data-i18n="lsForgot" onclick="lsForgotPassword()">Forgot your password?</div>
+    <button class="ls-btn-main" id="lsMainBtn" onclick="lsSignIn()">SIGN IN</button>
     <div class="ls-sep">
       <div class="ls-sep-line"></div>
       <div class="ls-sep-dot"></div>
@@ -1075,10 +1075,10 @@
     </div>
     <button id="lsGoogleBtn" class="ls-btn-social" onclick="lsGoogleSignIn()">
       <div class="ls-google-ico"></div>
-      Continuar con Google
+      <span data-i18n="lsGoogleBtn">Continue with Google</span>
     </button>
-    <div class="ls-register"><a href="#" onclick="lsToggleRegister(event)">¿No tienes cuenta? <span id="lsRegisterLink">Regístrate aquí</span></a></div>
-    <button id="lsBtnBack" onclick="lsBackToLogin()">← Volver al login</button>
+    <div class="ls-register"><a href="#" onclick="lsToggleRegister(event)"><span data-i18n="lsNoAccount">Don't have an account?</span> <span id="lsRegisterLink">Sign up here</span></a></div>
+    <button id="lsBtnBack" onclick="lsBackToLogin()">← Back to Login</button>
   </div>
 </div>
 
@@ -1896,13 +1896,13 @@
   <div style="height:56px;display:flex;align-items:center;gap:8px;padding:0 12px;background:#0f172a;flex-shrink:0;">
     <button onclick="closeSigPad()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✕</button>
     <span id="sigPadTitle" style="flex:1;color:#fff;font-weight:700;font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;"></span>
-    <button onclick="clearSigPad()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">🔄 Borrar</button>
-    <button onclick="saveSigPad()" style="-webkit-tap-highlight-color:transparent;background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✅ Guardar</button>
+    <button data-i18n="sigPadClear" onclick="clearSigPad()" style="-webkit-tap-highlight-color:transparent;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">🔄 Clear</button>
+    <button data-i18n="sigPadSave" onclick="saveSigPad()" style="-webkit-tap-highlight-color:transparent;background:#84cc16;border:none;color:#0f172a;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;touch-action:manipulation;">✅ Save</button>
   </div>
   <div style="flex:1;position:relative;background:#fafafa;">
     <canvas id="sigPadCanvas" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;"></canvas>
     <div style="position:absolute;bottom:28%;left:8%;right:8%;border-bottom:2px solid #cbd5e1;pointer-events:none;"></div>
-    <div style="position:absolute;bottom:calc(28% + 10px);left:8%;font-size:13px;color:#94a3b8;pointer-events:none;">Firma aquí ↓</div>
+    <div data-i18n="sigPadHint" style="position:absolute;bottom:calc(28% + 10px);left:8%;font-size:13px;color:#94a3b8;pointer-events:none;">Sign here ↓</div>
   </div>
 </div>
 
@@ -2554,6 +2554,36 @@ const T = {
     bioWrongPass:'Wrong password',
     bioVerifyError:'Verification error. Try again.',
     bioSignOut:'Sign out',
+    // Login screen
+    lsEmailPh:'Email',
+    lsPassPh:'Password',
+    lsPass2Ph:'Confirm password',
+    lsForgot:'Forgot your password?',
+    lsSignInBtn:'SIGN IN',
+    lsRegisterBtn:'CREATE ACCOUNT',
+    lsGoogleBtn:'Continue with Google',
+    lsNoAccount:"Don't have an account?",
+    lsRegisterLink:'Sign up here',
+    lsHaveAccountLink:'I already have an account',
+    lsBackBtn:'← Back to Login',
+    lsErrEmailPass:'Enter your email and password',
+    lsErrPassMismatch:"Passwords don't match",
+    lsErrEmailFirst:'Enter your email first',
+    lsResetSent:'✅ Recovery email sent',
+    lsErrInvalidEmail:'Invalid email',
+    lsErrUserNotFound:'User not found',
+    lsErrWrongPass:'Wrong password',
+    lsErrInvalidCred:'Invalid email or password',
+    lsErrEmailInUse:'Email already in use',
+    lsErrWeakPass:'Password must be at least 6 characters',
+    lsErrTooMany:'Too many attempts, wait a few minutes',
+    lsErrNoNetwork:'No internet connection',
+    lsErrPopupClosed:'Google window closed',
+    lsErrPopupBlocked:'Popup blocked — use email/password',
+    // Signature pad
+    sigPadClear:'🔄 Clear',
+    sigPadSave:'✅ Save',
+    sigPadHint:'Sign here ↓',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2855,6 +2885,36 @@ const T = {
     bioWrongPass:'Contraseña incorrecta',
     bioVerifyError:'Error al verificar. Intenta de nuevo.',
     bioSignOut:'Cerrar sesión',
+    // Login screen
+    lsEmailPh:'Correo electrónico',
+    lsPassPh:'Contraseña',
+    lsPass2Ph:'Confirmar contraseña',
+    lsForgot:'¿Olvidaste tu contraseña?',
+    lsSignInBtn:'INICIAR SESIÓN',
+    lsRegisterBtn:'CREAR CUENTA',
+    lsGoogleBtn:'Continuar con Google',
+    lsNoAccount:'¿No tienes cuenta?',
+    lsRegisterLink:'Regístrate aquí',
+    lsHaveAccountLink:'Ya tengo cuenta',
+    lsBackBtn:'← Volver al login',
+    lsErrEmailPass:'Ingresa tu correo y contraseña',
+    lsErrPassMismatch:'Las contraseñas no coinciden',
+    lsErrEmailFirst:'Ingresa tu correo primero',
+    lsResetSent:'✅ Correo de recuperación enviado',
+    lsErrInvalidEmail:'Correo inválido',
+    lsErrUserNotFound:'Usuario no encontrado',
+    lsErrWrongPass:'Contraseña incorrecta',
+    lsErrInvalidCred:'Correo o contraseña incorrectos',
+    lsErrEmailInUse:'Este correo ya está registrado',
+    lsErrWeakPass:'La contraseña debe tener al menos 6 caracteres',
+    lsErrTooMany:'Demasiados intentos, espera unos minutos',
+    lsErrNoNetwork:'Sin conexión a internet',
+    lsErrPopupClosed:'Ventana de Google cerrada',
+    lsErrPopupBlocked:'Popup bloqueado — usa correo/contraseña',
+    // Signature pad
+    sigPadClear:'🔄 Borrar',
+    sigPadSave:'✅ Guardar',
+    sigPadHint:'Firma aquí ↓',
   }
 };
 
@@ -3008,11 +3068,11 @@ function lsSignIn() {
   var pass  = (document.getElementById('lsPass').value  || '');
   var isReg = document.getElementById('lsRegisterRow').style.display !== 'none';
 
-  if (!email || !pass) { lsShowError('Ingresa tu correo y contraseña'); return; }
+  if (!email || !pass) { lsShowError(t('lsErrEmailPass')); return; }
 
   if (isReg) {
     var pass2 = (document.getElementById('lsPass2').value || '');
-    if (pass !== pass2) { lsShowError('Las contraseñas no coinciden'); return; }
+    if (pass !== pass2) { lsShowError(t('lsErrPassMismatch')); return; }
     if (!_fbAuth) return;
     _fbAuth.createUserWithEmailAndPassword(email, pass)
       .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
@@ -3046,10 +3106,10 @@ function lsGoogleSignInError(msg) {
 
 function lsForgotPassword() {
   var email = (document.getElementById('lsEmail').value || '').trim();
-  if (!email) { lsShowError('Ingresa tu correo primero'); return; }
+  if (!email) { lsShowError(t('lsErrEmailFirst')); return; }
   if (!_fbAuth) return;
   _fbAuth.sendPasswordResetEmail(email)
-    .then(function() { lsShowError('✅ Correo de recuperación enviado'); })
+    .then(function() { lsShowError(t('lsResetSent')); })
     .catch(function(e) { lsShowError(lsFirebaseError(e.code)); });
 }
 
@@ -3057,8 +3117,8 @@ function lsToggleRegister(e) {
   e.preventDefault();
   var isReg = document.getElementById('lsRegisterRow').style.display !== 'none';
   document.getElementById('lsRegisterRow').style.display = isReg ? 'none' : 'flex';
-  document.getElementById('lsMainBtn').textContent = isReg ? 'INICIAR SESIÓN' : 'CREAR CUENTA';
-  document.getElementById('lsRegisterLink').textContent = isReg ? 'Regístrate aquí' : 'Ya tengo cuenta';
+  document.getElementById('lsMainBtn').textContent = t(isReg ? 'lsSignInBtn' : 'lsRegisterBtn');
+  document.getElementById('lsRegisterLink').textContent = t(isReg ? 'lsRegisterLink' : 'lsHaveAccountLink');
   document.getElementById('lsForgotBtn').style.display = isReg ? '' : 'none';
   document.getElementById('lsBtnBack').style.display = 'none';
   document.getElementById('lsErrorMsg').style.display = 'none';
@@ -3066,25 +3126,36 @@ function lsToggleRegister(e) {
 
 function lsBackToLogin() {
   document.getElementById('lsRegisterRow').style.display = 'none';
-  document.getElementById('lsMainBtn').textContent = 'INICIAR SESIÓN';
+  document.getElementById('lsMainBtn').textContent = t('lsSignInBtn');
   document.getElementById('lsBtnBack').style.display = 'none';
   document.getElementById('lsForgotBtn').style.display = '';
 }
 
+function lsRefreshText() {
+  var isReg = document.getElementById('lsRegisterRow') && document.getElementById('lsRegisterRow').style.display !== 'none';
+  var mainBtn = document.getElementById('lsMainBtn');
+  if (mainBtn) mainBtn.textContent = t(isReg ? 'lsRegisterBtn' : 'lsSignInBtn');
+  var regLink = document.getElementById('lsRegisterLink');
+  if (regLink) regLink.textContent = t(isReg ? 'lsHaveAccountLink' : 'lsRegisterLink');
+  var backBtn = document.getElementById('lsBtnBack');
+  if (backBtn) backBtn.textContent = t('lsBackBtn');
+}
+
 function lsFirebaseError(code) {
+  var L = T[currentLang] || T.en;
   var msgs = {
-    'auth/invalid-email':          'Correo inválido',
-    'auth/user-not-found':         'Usuario no encontrado',
-    'auth/wrong-password':         'Contraseña incorrecta',
-    'auth/invalid-credential':     'Correo o contraseña incorrectos',
-    'auth/email-already-in-use':   'Este correo ya está registrado',
-    'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres',
-    'auth/too-many-requests':      'Demasiados intentos, espera unos minutos',
-    'auth/network-request-failed': 'Sin conexión a internet',
-    'auth/popup-closed-by-user':   'Ventana de Google cerrada',
-    'auth/popup-blocked':          'Popup bloqueado — usa correo/contraseña'
+    'auth/invalid-email':          L.lsErrInvalidEmail,
+    'auth/user-not-found':         L.lsErrUserNotFound,
+    'auth/wrong-password':         L.lsErrWrongPass,
+    'auth/invalid-credential':     L.lsErrInvalidCred,
+    'auth/email-already-in-use':   L.lsErrEmailInUse,
+    'auth/weak-password':          L.lsErrWeakPass,
+    'auth/too-many-requests':      L.lsErrTooMany,
+    'auth/network-request-failed': L.lsErrNoNetwork,
+    'auth/popup-closed-by-user':   L.lsErrPopupClosed,
+    'auth/popup-blocked':          L.lsErrPopupBlocked
   };
-  return msgs[code] || 'Error: ' + code;
+  return msgs[code] || (t('toastErr') + code);
 }
 function t(key) { return (T[currentLang]&&T[currentLang][key]) || (T.en&&T.en[key]) || key; }
 
@@ -3101,6 +3172,7 @@ function setLanguage(lang) {
   });
   $('langEN') && ($('langEN').className = 'lang-btn' + (currentLang==='en'?' active':''));
   $('langES') && ($('langES').className = 'lang-btn' + (currentLang==='es'?' active':''));
+  lsRefreshText();
   renderTemplates();
 }
 
