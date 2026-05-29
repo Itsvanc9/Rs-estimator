@@ -1087,25 +1087,25 @@
   <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(5,10,2,0.85) 60%,#050a02 100%);pointer-events:none;"></div>
   <div style="position:relative;z-index:1;width:100%;padding:0 28px 52px;display:flex;flex-direction:column;align-items:center;gap:14px;">
     <div style="font-size:44px;margin-bottom:4px;">🔒</div>
-    <div style="font-size:17px;font-weight:700;color:#fff;letter-spacing:0.3px;">Verificar identidad</div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">¿Cómo quieres entrar?</div>
+    <div data-i18n="bioVerifyTitle" style="font-size:17px;font-weight:700;color:#fff;letter-spacing:0.3px;">Verify Identity</div>
+    <div data-i18n="bioChooseMethod" style="font-size:13px;color:rgba(255,255,255,0.45);text-align:center;">How do you want to sign in?</div>
     <!-- Opciones principales -->
     <div id="bioOptions" style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:6px;">
-      <button onclick="bioTrigger()" style="width:100%;padding:16px;background:linear-gradient(135deg,#84cc16,#5a8c0a);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;">👆 Usar huella digital</button>
-      <button onclick="bioShowPassInput()" style="width:100%;padding:16px;background:rgba(255,255,255,0.08);border:1px solid rgba(132,204,22,0.3);border-radius:14px;color:#fff;font-size:15px;font-weight:700;letter-spacing:0.5px;">🔑 Usar contraseña</button>
+      <button data-i18n="bioUseFingerprint" onclick="bioTrigger()" style="width:100%;padding:16px;background:linear-gradient(135deg,#84cc16,#5a8c0a);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;">👆 Use Fingerprint</button>
+      <button data-i18n="bioUsePassword" onclick="bioShowPassInput()" style="width:100%;padding:16px;background:rgba(255,255,255,0.08);border:1px solid rgba(132,204,22,0.3);border-radius:14px;color:#fff;font-size:15px;font-weight:700;letter-spacing:0.5px;">🔑 Use Password</button>
     </div>
-    <!-- Sección de contraseña (oculta por defecto) -->
+    <!-- Password section (hidden by default) -->
     <div id="bioPassSection" style="display:none;width:100%;flex-direction:column;gap:10px;">
       <div id="bioPassError" style="display:none;color:#f87171;font-size:13px;text-align:center;background:rgba(239,68,68,0.12);padding:10px;border-radius:10px;"></div>
       <div style="background:rgba(255,255,255,0.07);border:1px solid rgba(132,204,22,0.25);border-radius:13px;padding:14px 16px;display:flex;align-items:center;gap:10px;">
         <span style="font-size:15px;opacity:0.45;">🔒</span>
-        <input id="bioPassInput" type="password" placeholder="Contraseña" style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;font-family:inherit;" onkeydown="if(event.key==='Enter')bioVerifyPassword()">
+        <input id="bioPassInput" type="password" data-i18n-ph="bioPassPlaceholder" placeholder="Password" style="flex:1;background:none;border:none;outline:none;color:#fff;font-size:14px;font-family:inherit;" onkeydown="if(event.key==='Enter')bioVerifyPassword()">
         <span onclick="var i=document.getElementById('bioPassInput');i.type=i.type==='password'?'text':'password'" style="font-size:15px;opacity:0.35;cursor:pointer;">👁</span>
       </div>
-      <button onclick="bioVerifyPassword()" style="width:100%;padding:16px;background:linear-gradient(135deg,#84cc16,#5a8c0a);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;">ENTRAR</button>
-      <button onclick="bioHidePassInput()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:13px;cursor:pointer;">← Volver</button>
+      <button data-i18n="bioEnterBtn" onclick="bioVerifyPassword()" style="width:100%;padding:16px;background:linear-gradient(135deg,#84cc16,#5a8c0a);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:800;letter-spacing:1px;">SIGN IN</button>
+      <button data-i18n="bioBackBtn" onclick="bioHidePassInput()" style="background:none;border:none;color:rgba(255,255,255,0.35);font-size:13px;cursor:pointer;">← Back</button>
     </div>
-    <button onclick="appLogout()" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:12px;cursor:pointer;margin-top:4px;">Cerrar sesión</button>
+    <button data-i18n="bioSignOut" onclick="appLogout()" style="background:none;border:none;color:rgba(255,255,255,0.25);font-size:12px;cursor:pointer;margin-top:4px;">Sign out</button>
   </div>
 </div>
 
@@ -2543,6 +2543,17 @@ const T = {
     shareAcceptedEstimates:'Accepted Estimates',
     shareContracts:'Contracts',
     shareNoDocs:'No saved documents',
+    // Bio lock screen
+    bioVerifyTitle:'Verify Identity',
+    bioChooseMethod:'How do you want to sign in?',
+    bioUseFingerprint:'👆 Use Fingerprint',
+    bioUsePassword:'🔑 Use Password',
+    bioPassPlaceholder:'Password',
+    bioEnterBtn:'SIGN IN',
+    bioBackBtn:'← Back',
+    bioWrongPass:'Wrong password',
+    bioVerifyError:'Verification error. Try again.',
+    bioSignOut:'Sign out',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2833,6 +2844,17 @@ const T = {
     shareAcceptedEstimates:'Estimados Aceptados',
     shareContracts:'Contratos',
     shareNoDocs:'No hay documentos guardados',
+    // Bio lock screen
+    bioVerifyTitle:'Verificar identidad',
+    bioChooseMethod:'¿Cómo quieres entrar?',
+    bioUseFingerprint:'👆 Usar huella digital',
+    bioUsePassword:'🔑 Usar contraseña',
+    bioPassPlaceholder:'Contraseña',
+    bioEnterBtn:'ENTRAR',
+    bioBackBtn:'← Volver',
+    bioWrongPass:'Contraseña incorrecta',
+    bioVerifyError:'Error al verificar. Intenta de nuevo.',
+    bioSignOut:'Cerrar sesión',
   }
 };
 
@@ -2943,8 +2965,8 @@ function bioVerifyPassword() {
     .catch(function(e) {
       var errEl = document.getElementById('bioPassError');
       errEl.textContent = (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
-        ? 'Contraseña incorrecta'
-        : 'Error al verificar. Intenta de nuevo.';
+        ? (T[currentLang].bioWrongPass || T.en.bioWrongPass)
+        : (T[currentLang].bioVerifyError || T.en.bioVerifyError);
       errEl.style.display = 'block';
       document.getElementById('bioPassInput').value = '';
     });
