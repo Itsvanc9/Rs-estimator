@@ -6627,7 +6627,7 @@ function renderExpenses(c) {
     var totalSpent  = expenses.reduce(function(s,e){return s+(e.amount||0);},0);
     var revenue     = c.totalAmount || 0;
     var profit      = revenue - totalSpent;
-    var marginPct   = revenue > 0 ? Math.round(profit/revenue*100) : 0;
+    var marginPct   = revenue > 0 ? (profit/revenue*100).toFixed(1) : '0.0';
     var profitColor = profit >= 0 ? '#10b981' : '#ef4444';
     summaryEl.style.display = '';
     summaryEl.innerHTML =
