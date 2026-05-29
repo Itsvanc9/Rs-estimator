@@ -30,12 +30,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -47,11 +41,7 @@ public class AndroidBridge {
     static final int REQUEST_BACKUP           = 1001;
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
-    static final int REQUEST_GOOGLE_SIGN_IN   = 1005;
     static final int REQUEST_BIOMETRIC        = 1006;
-
-    private static final String GOOGLE_WEB_CLIENT_ID =
-        "545910015982-oeosqqntdqjidq54ln6tooocn2mlnj31.apps.googleusercontent.com";
 
     private Context context;
     private WebView webView;
@@ -79,10 +69,8 @@ public class AndroidBridge {
         intent.setType("application/json");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 try {
                     activity.startActivityForResult(intent, REQUEST_BACKUP);
                 } catch (Exception e) {
@@ -98,8 +86,7 @@ public class AndroidBridge {
     public void takePhoto() {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 if (activity.checkSelfPermission("android.permission.CAMERA")
                         != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                     activity.requestPermissions(
@@ -144,33 +131,6 @@ public class AndroidBridge {
         }
     }
 
-    // ── GOOGLE SIGN-IN ─────────────────────────────────────────────────────────
-
-    @JavascriptInterface
-    public void googleSignIn() {
-        final Activity activity = (Activity) context;
-        activity.runOnUiThread(new Runnable() {
-            @Override public void run() {
-                try {
-                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(
-                            GoogleSignInOptions.DEFAULT_SIGN_IN)
-                            .requestIdToken(GOOGLE_WEB_CLIENT_ID)
-                            .requestEmail()
-                            .build();
-                    GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
-                    activity.startActivityForResult(client.getSignInIntent(), REQUEST_GOOGLE_SIGN_IN);
-                } catch (Exception e) {
-                    final String msg = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Error";
-                    webView.post(new Runnable() {
-                        @Override public void run() {
-                            webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
-                        }
-                    });
-                }
-            }
-        });
-    }
-
     // ── ACTIVITY RESULT ──────────────────────────────────────────────────────
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -192,24 +152,6 @@ public class AndroidBridge {
             } catch (Exception e) {
                 showToastByKey("toastErrReadFile");
             }
-        }
-
-        if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
-            try {
-                GoogleSignInAccount account = GoogleSignIn
-                        .getSignedInAccountFromIntent(data)
-                        .getResult(ApiException.class);
-                final String idToken = account.getIdToken();
-                webView.post(new Runnable() { @Override public void run() {
-                    webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
-                }});
-            } catch (ApiException e) {
-                final String msg = "Error " + e.getStatusCode();
-                webView.post(new Runnable() { @Override public void run() {
-                    webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
-                }});
-            }
-            return;
         }
 
         if (requestCode == REQUEST_BIOMETRIC) {
@@ -307,8 +249,7 @@ public class AndroidBridge {
                     activity.addContentView(printWebView,
                             new android.view.ViewGroup.LayoutParams(1, 1));
                     printWebView.setWebViewClient(new android.webkit.WebViewClient() {
-                        @Override
-                        public void onPageFinished(final WebView view, String url) {
+                        @Override public void onPageFinished(final WebView view, String url) {
                             view.postDelayed(new Runnable() {
                                 @Override public void run() {
                                     try {
@@ -381,8 +322,7 @@ public class AndroidBridge {
                                                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
                                                     if (imgUri != null) {
                                                         OutputStream os = context.getContentResolver().openOutputStream(imgUri);
-                                                        bmp.compress(Bitmap.CompressFormat.PNG, 90, os);
-                                                        os.close();
+                                                        bmp.compress(Bitmap.CompressFormat.PNG, 90, os); os.close();
                                                     }
                                                 } else {
                                                     String uriStr = MediaStore.Images.Media.insertImage(
