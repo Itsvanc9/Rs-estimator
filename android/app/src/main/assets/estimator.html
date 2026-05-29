@@ -2396,6 +2396,7 @@ const T = {
     toastEstDiscarded:'🗑️ Estimate discarded',
     toastSignedSaved:'✅ Signed contract saved',
     toastAlreadyContract:'Already converted to contract',
+    toastEmptyEstimateContract:'Add a client name or total amount before creating a contract',
     toastStorageFullContracts:'⚠️ Storage full — delete old contracts or photos',
     toastBackupImported:'✓ Backup imported: ',
     toastEstimateSuffix:' estimates',
@@ -2727,6 +2728,7 @@ const T = {
     toastEstDiscarded:'🗑️ Estimado descartado',
     toastSignedSaved:'✅ Contrato firmado guardado',
     toastAlreadyContract:'Ya convertido a contrato',
+    toastEmptyEstimateContract:'Agrega un cliente o monto antes de crear un contrato',
     toastStorageFullContracts:'⚠️ Almacenamiento lleno — elimina contratos o fotos antiguas',
     toastBackupImported:'✓ Respaldo importado: ',
     toastEstimateSuffix:' estimados',
@@ -5054,6 +5056,11 @@ function acceptEstimate(id) {
   var contracts = getContracts();
   var already = contracts.find(function(c){ return c.estimateId === id; });
   if (already) { showToast(t('toastAlreadyContract')); openContractDetail(already.id); return; }
+  // Prevent creating a contract from a completely blank estimate
+  if (!est.client && (!est.grand || est.grand === 0)) {
+    showToast(t('toastEmptyEstimateContract'));
+    return;
+  }
   var total = est.grand || 0;
   var dep   = Math.round(total * 0.30 * 100) / 100;
   var prog  = Math.round(total * 0.40 * 100) / 100;
@@ -6243,6 +6250,8 @@ function _buildAlerts() {
 
   getContracts().forEach(function(c) {
     if (c.status === 'completed' || c.status === 'cancelled') return;
+    // Skip phantom/empty contracts (no client and no total amount)
+    if ((!c.clientName || c.clientName === 'No Client') && (!c.totalAmount || c.totalAmount === 0)) return;
     var paid = (c.payments||[]).reduce(function(s,p){return s+(p.amount||0);},0);
 
     // Payment schedule alerts
@@ -6315,6 +6324,8 @@ function syncNativeNotifications() {
 
   // Payment schedule notifications
   getContracts().forEach(function(c) {
+    // Skip phantom/empty contracts
+    if ((!c.clientName || c.clientName === 'No Client') && (!c.totalAmount || c.totalAmount === 0)) return;
     (c.schedule || []).forEach(function(s) {
       var idDue = 'pay_due_' + c.id + '_' + s.sid;
       var idPre = 'pay_pre_' + c.id + '_' + s.sid;
