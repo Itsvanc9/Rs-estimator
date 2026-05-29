@@ -30,6 +30,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,7 +47,11 @@ public class AndroidBridge {
     static final int REQUEST_BACKUP           = 1001;
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
+    static final int REQUEST_GOOGLE_SIGN_IN   = 1005;
     static final int REQUEST_BIOMETRIC        = 1006;
+
+    private static final String GOOGLE_WEB_CLIENT_ID =
+        "545910015982-oeosqqntdqjidq54ln6tooocn2mlnj31.apps.googleusercontent.com";
 
     private Context context;
     private WebView webView;
@@ -87,7 +97,6 @@ public class AndroidBridge {
     @JavascriptInterface
     public void takePhoto() {
         final Activity activity = (Activity) context;
-
         activity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -109,15 +118,9 @@ public class AndroidBridge {
             values.put(MediaStore.Images.Media.DISPLAY_NAME,
                     "receipt_" + System.currentTimeMillis() + ".jpg");
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-
             pendingPhotoUri = context.getContentResolver().insert(
                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-            if (pendingPhotoUri == null) {
-                showToastByKey("toastErrPrepCamera");
-                return;
-            }
-
+            if (pendingPhotoUri == null) { showToastByKey("toastErrPrepCamera"); return; }
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, pendingPhotoUri);
             intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -141,33 +144,72 @@ public class AndroidBridge {
         }
     }
 
+    // ── GOOGLE SIGN-IN ─────────────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void googleSignIn() {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                try {
+                    GoogleSignInOptions gso = new GoogleSignInOptions.Builder(
+                            GoogleSignInOptions.DEFAULT_SIGN_IN)
+                            .requestIdToken(GOOGLE_WEB_CLIENT_ID)
+                            .requestEmail()
+                            .build();
+                    GoogleSignInClient client = GoogleSignIn.getClient(activity, gso);
+                    activity.startActivityForResult(client.getSignInIntent(), REQUEST_GOOGLE_SIGN_IN);
+                } catch (Exception e) {
+                    final String msg = e.getMessage() != null ? e.getMessage().replace("'", "\\'") : "Error";
+                    webView.post(new Runnable() {
+                        @Override public void run() {
+                            webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     // ── ACTIVITY RESULT ──────────────────────────────────────────────────────
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == REQUEST_BACKUP
-                && resultCode == Activity.RESULT_OK
-                && data != null) {
-
+                && resultCode == Activity.RESULT_OK && data != null) {
             try {
                 Uri uri = data.getData();
                 if (uri == null) { showToastByKey("toastNoFileSelected"); return; }
-
                 InputStream is = context.getContentResolver().openInputStream(uri);
                 if (is == null) { showToastByKey("toastErrReadFile"); return; }
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buffer = new byte[4096];
                 int read;
                 while ((read = is.read(buffer)) != -1) baos.write(buffer, 0, read);
                 is.close();
-
                 String base64Json = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
                 webView.evaluateJavascript("importBackupBase64('" + base64Json + "')", null);
-
             } catch (Exception e) {
                 showToastByKey("toastErrReadFile");
             }
+        }
+
+        if (requestCode == REQUEST_GOOGLE_SIGN_IN) {
+            try {
+                GoogleSignInAccount account = GoogleSignIn
+                        .getSignedInAccountFromIntent(data)
+                        .getResult(ApiException.class);
+                final String idToken = account.getIdToken();
+                webView.post(new Runnable() { @Override public void run() {
+                    webView.evaluateJavascript("lsGoogleIdToken('" + idToken + "')", null);
+                }});
+            } catch (ApiException e) {
+                final String msg = "Error " + e.getStatusCode();
+                webView.post(new Runnable() { @Override public void run() {
+                    webView.evaluateJavascript("lsGoogleSignInError('" + msg + "')", null);
+                }});
+            }
+            return;
         }
 
         if (requestCode == REQUEST_BIOMETRIC) {
@@ -181,46 +223,31 @@ public class AndroidBridge {
         }
 
         if (requestCode == REQUEST_CAMERA
-                && resultCode == Activity.RESULT_OK
-                && pendingPhotoUri != null) {
-
+                && resultCode == Activity.RESULT_OK && pendingPhotoUri != null) {
             try {
                 InputStream is = context.getContentResolver().openInputStream(pendingPhotoUri);
                 if (is == null) { showToastByKey("toastErrReadPhoto"); return; }
-
                 BitmapFactory.Options opts = new BitmapFactory.Options();
                 opts.inSampleSize = 2;
                 Bitmap bitmap = BitmapFactory.decodeStream(is, null, opts);
                 is.close();
-
                 if (bitmap == null) { showToastByKey("toastErrProcessPhoto"); return; }
-
                 int maxDim = 1200;
                 int w = bitmap.getWidth(), h = bitmap.getHeight();
                 if (w > maxDim || h > maxDim) {
                     float scale = Math.min((float) maxDim / w, (float) maxDim / h);
-                    bitmap = Bitmap.createScaledBitmap(
-                            bitmap,
-                            Math.round(w * scale),
-                            Math.round(h * scale),
-                            true
-                    );
+                    bitmap = Bitmap.createScaledBitmap(bitmap,
+                            Math.round(w * scale), Math.round(h * scale), true);
                 }
-
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 75, baos);
                 bitmap.recycle();
-
                 String base64 = "data:image/jpeg;base64," +
                         Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
-
                 final String jsCall = "receiveNativePhoto('" + base64 + "')";
                 webView.post(new Runnable() {
-                    @Override public void run() {
-                        webView.evaluateJavascript(jsCall, null);
-                    }
+                    @Override public void run() { webView.evaluateJavascript(jsCall, null); }
                 });
-
             } catch (Exception e) {
                 showToastByKey("toastErrSavePhoto");
             } finally {
@@ -233,111 +260,75 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void saveTextFile(String content, String filename, String mimeType) {
-
         try {
-
             byte[] bytes = content.getBytes("UTF-8");
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
                 values.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
                 values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
                 Uri uri = context.getContentResolver().insert(
                         MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-
                 if (uri != null) {
                     OutputStream os = context.getContentResolver().openOutputStream(uri);
-                    os.write(bytes);
-                    os.close();
+                    os.write(bytes); os.close();
                     showToastByKey("toastBackupSaved");
-                } else {
-                    showToastByKey("toastBackupFailed");
-                }
-
+                } else { showToastByKey("toastBackupFailed"); }
             } else {
-
                 File downloadsDir = Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOWNLOADS);
                 if (!downloadsDir.exists()) downloadsDir.mkdirs();
-
                 File file = new File(downloadsDir, filename);
                 FileOutputStream fos = new FileOutputStream(file);
-                fos.write(bytes);
-                fos.close();
+                fos.write(bytes); fos.close();
                 showToastByKey("toastBackupSaved");
             }
-
-        } catch (Exception e) {
-            showToastByKey("toastBackupError");
-        }
+        } catch (Exception e) { showToastByKey("toastBackupError"); }
     }
 
     // ── PRINT / PDF ───────────────────────────────────────────────────────────
 
     @JavascriptInterface
     public void printHtml(final String htmlContent, final String filename) {
-
         final Activity activity = (Activity) context;
-
         activity.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-
+            @Override public void run() {
                 try {
-
                     if (printWebView != null) {
                         android.view.ViewParent parent = printWebView.getParent();
-                        if (parent instanceof android.view.ViewGroup) {
+                        if (parent instanceof android.view.ViewGroup)
                             ((android.view.ViewGroup) parent).removeView(printWebView);
-                        }
-                        printWebView.destroy();
-                        printWebView = null;
+                        printWebView.destroy(); printWebView = null;
                     }
-
                     printWebView = new WebView(activity);
                     printWebView.getSettings().setJavaScriptEnabled(true);
                     printWebView.getSettings().setLoadWithOverviewMode(true);
                     printWebView.getSettings().setUseWideViewPort(true);
-
-                    activity.addContentView(
-                            printWebView,
-                            new android.view.ViewGroup.LayoutParams(1, 1)
-                    );
-
+                    activity.addContentView(printWebView,
+                            new android.view.ViewGroup.LayoutParams(1, 1));
                     printWebView.setWebViewClient(new android.webkit.WebViewClient() {
                         @Override
                         public void onPageFinished(final WebView view, String url) {
                             view.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
+                                @Override public void run() {
                                     try {
-                                        PrintManager printManager = (PrintManager)
+                                        PrintManager pm = (PrintManager)
                                                 activity.getSystemService(Context.PRINT_SERVICE);
                                         PrintDocumentAdapter adapter =
                                                 view.createPrintDocumentAdapter(filename);
-                                        PrintAttributes attributes = new PrintAttributes.Builder()
+                                        PrintAttributes attrs = new PrintAttributes.Builder()
                                                 .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
                                                 .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
                                                 .build();
-                                        printManager.print(filename, adapter, attributes);
-                                    } catch (Exception e) {
-                                        showToastByKey("toastErrPrint");
-                                    }
+                                        pm.print(filename, adapter, attrs);
+                                    } catch (Exception e) { showToastByKey("toastErrPrint"); }
                                 }
                             }, 400);
                         }
                     });
-
                     printWebView.loadDataWithBaseURL(
                             "file:///android_asset/", htmlContent, "text/html", "UTF-8", null);
-
-                } catch (Exception e) {
-                    showToastByKey("toastErrPrepPrint");
-                }
+                } catch (Exception e) { showToastByKey("toastErrPrepPrint"); }
             }
         });
     }
@@ -368,12 +359,11 @@ public class AndroidBridge {
                         view.postDelayed(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    int h = (int)(Math.min(Math.max(view.getContentHeight(), 400), (int)(10000 / density)) * density);
+                                    int h = (int)(Math.min(Math.max(view.getContentHeight(), 400),
+                                            (int)(10000 / density)) * density);
                                     view.layout(0, 0, physW, h);
                                     final Bitmap bmp = Bitmap.createBitmap(physW, h, Bitmap.Config.ARGB_8888);
-                                    Canvas c = new Canvas(bmp);
-                                    c.drawColor(Color.WHITE);
-                                    view.draw(c);
+                                    Canvas c = new Canvas(bmp); c.drawColor(Color.WHITE); view.draw(c);
                                     if (iv.getParent() instanceof ViewGroup)
                                         ((ViewGroup) iv.getParent()).removeView(iv);
                                     iv.destroy();
@@ -415,21 +405,15 @@ public class AndroidBridge {
                                                 });
                                             } catch (Exception e) {
                                                 showToastByKey("toastErrSaveImage");
-                                            } finally {
-                                                if (!bmp.isRecycled()) bmp.recycle();
-                                            }
+                                            } finally { if (!bmp.isRecycled()) bmp.recycle(); }
                                         }
                                     }).start();
                                 } catch (OutOfMemoryError oom) {
-                                    if (iv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) iv.getParent()).removeView(iv);
-                                    iv.destroy();
-                                    showToastByKey("toastErrGenImage");
+                                    if (iv.getParent() instanceof ViewGroup) ((ViewGroup)iv.getParent()).removeView(iv);
+                                    iv.destroy(); showToastByKey("toastErrGenImage");
                                 } catch (Exception e) {
-                                    if (iv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) iv.getParent()).removeView(iv);
-                                    iv.destroy();
-                                    showToastByKey("toastErrGenImage");
+                                    if (iv.getParent() instanceof ViewGroup) ((ViewGroup)iv.getParent()).removeView(iv);
+                                    iv.destroy(); showToastByKey("toastErrGenImage");
                                 }
                             }
                         }, 400);
@@ -446,9 +430,7 @@ public class AndroidBridge {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
-                final int pageW = 794;
-                final int pageH = 1123;
-                final int maxH  = 15000;
+                final int pageW = 794, pageH = 1123, maxH = 15000;
                 final float density = activity.getResources().getDisplayMetrics().density;
                 final int physW = (int)(pageW * density);
                 final int physPageH = (int)(pageH * density);
@@ -467,31 +449,25 @@ public class AndroidBridge {
                                     pv.layout(0, 0, physW, totalH);
                                     final Bitmap bmp = Bitmap.createBitmap(physW, totalH, Bitmap.Config.ARGB_8888);
                                     Canvas bmpCanvas = new Canvas(bmp);
-                                    bmpCanvas.drawColor(Color.WHITE);
-                                    pv.draw(bmpCanvas);
-                                    if (pv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) pv.getParent()).removeView(pv);
+                                    bmpCanvas.drawColor(Color.WHITE); pv.draw(bmpCanvas);
+                                    if (pv.getParent() instanceof ViewGroup) ((ViewGroup)pv.getParent()).removeView(pv);
                                     pv.destroy();
                                     new Thread(new Runnable() {
                                         @Override public void run() {
                                             try {
-                                                android.graphics.pdf.PdfDocument document =
-                                                        new android.graphics.pdf.PdfDocument();
+                                                android.graphics.pdf.PdfDocument document = new android.graphics.pdf.PdfDocument();
                                                 int pageNum = 1;
                                                 for (int yOff = 0; yOff < totalH; yOff += physPageH) {
                                                     int srcH = Math.min(physPageH, totalH - yOff);
                                                     int dstH = Math.max(1, (int) Math.round((float) srcH / density));
                                                     android.graphics.pdf.PdfDocument.PageInfo info =
-                                                        new android.graphics.pdf.PdfDocument.PageInfo
-                                                            .Builder(pageW, dstH, pageNum++).create();
-                                                    android.graphics.pdf.PdfDocument.Page page =
-                                                        document.startPage(info);
+                                                        new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, dstH, pageNum++).create();
+                                                    android.graphics.pdf.PdfDocument.Page page = document.startPage(info);
                                                     Canvas canvas = page.getCanvas();
                                                     canvas.drawColor(Color.WHITE);
                                                     android.graphics.Rect src = new android.graphics.Rect(
                                                             0, yOff, physW, Math.min(yOff + srcH, bmp.getHeight()));
-                                                    canvas.drawBitmap(bmp, src,
-                                                            new android.graphics.RectF(0, 0, pageW, dstH), null);
+                                                    canvas.drawBitmap(bmp, src, new android.graphics.RectF(0, 0, pageW, dstH), null);
                                                     document.finishPage(page);
                                                 }
                                                 String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
@@ -505,18 +481,14 @@ public class AndroidBridge {
                                                             MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
                                                     if (dlUri == null) throw new Exception("MediaStore insert failed");
                                                     OutputStream dlOs = context.getContentResolver().openOutputStream(dlUri);
-                                                    if (dlOs == null) throw new Exception("MediaStore openOutputStream returned null");
-                                                    document.writeTo(dlOs);
-                                                    dlOs.close();
+                                                    if (dlOs == null) throw new Exception("openOutputStream null");
+                                                    document.writeTo(dlOs); dlOs.close();
                                                     shareUri = dlUri;
                                                 } else {
                                                     File pdfFile = new File(activity.getCacheDir(), safeName + ".pdf");
                                                     FileOutputStream fos = new FileOutputStream(pdfFile);
-                                                    document.writeTo(fos);
-                                                    fos.close();
-                                                    shareUri = Uri.parse(
-                                                            "content://com.blackracoon.estimator.rsprovider"
-                                                            + pdfFile.getAbsolutePath());
+                                                    document.writeTo(fos); fos.close();
+                                                    shareUri = Uri.parse("content://com.blackracoon.estimator.rsprovider" + pdfFile.getAbsolutePath());
                                                 }
                                                 document.close();
                                                 final Intent intent = new Intent(Intent.ACTION_SEND);
@@ -525,38 +497,28 @@ public class AndroidBridge {
                                                 intent.putExtra(Intent.EXTRA_SUBJECT, name);
                                                 intent.setClipData(ClipData.newRawUri("", shareUri));
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                if ("whatsapp".equals(channel)) {
-                                                    intent.setPackage("com.whatsapp");
-                                                } else if ("email".equals(channel)) {
-                                                    intent.setPackage("com.google.android.gm");
-                                                }
+                                                if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                                                else if ("email".equals(channel)) intent.setPackage("com.google.android.gm");
                                                 activity.runOnUiThread(new Runnable() {
                                                     @Override public void run() {
                                                         try { activity.startActivity(intent); }
                                                         catch (Exception e) {
                                                             intent.setPackage(null);
-                                                            activity.startActivity(
-                                                                    Intent.createChooser(intent, "Compartir PDF"));
+                                                            activity.startActivity(Intent.createChooser(intent, "Compartir PDF"));
                                                         }
                                                     }
                                                 });
                                             } catch (Exception e) {
                                                 showToastByKey("toastErrSavePdf");
-                                            } finally {
-                                                if (!bmp.isRecycled()) bmp.recycle();
-                                            }
+                                            } finally { if (!bmp.isRecycled()) bmp.recycle(); }
                                         }
                                     }).start();
                                 } catch (OutOfMemoryError oom) {
-                                    if (pv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) pv.getParent()).removeView(pv);
-                                    pv.destroy();
-                                    showToastByKey("toastErrGenPdf");
+                                    if (pv.getParent() instanceof ViewGroup) ((ViewGroup)pv.getParent()).removeView(pv);
+                                    pv.destroy(); showToastByKey("toastErrGenPdf");
                                 } catch (Exception e) {
-                                    if (pv.getParent() instanceof ViewGroup)
-                                        ((ViewGroup) pv.getParent()).removeView(pv);
-                                    pv.destroy();
-                                    showToastByKey("toastErrGenPdf");
+                                    if (pv.getParent() instanceof ViewGroup) ((ViewGroup)pv.getParent()).removeView(pv);
+                                    pv.destroy(); showToastByKey("toastErrGenPdf");
                                 }
                             }
                         }, 400);
@@ -584,12 +546,10 @@ public class AndroidBridge {
                 cv.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
                 cv.put(MediaStore.Downloads.MIME_TYPE, mimeType);
                 cv.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-                Uri uri = context.getContentResolver().insert(
-                        MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
+                Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
                 if (uri != null) {
                     OutputStream os = context.getContentResolver().openOutputStream(uri);
-                    os.write(bytes);
-                    os.close();
+                    os.write(bytes); os.close();
                     showToastParam("toastSavedToDownloads", fileName);
                 }
             } else {
@@ -597,13 +557,10 @@ public class AndroidBridge {
                 if (!dir.exists()) dir.mkdirs();
                 File file = new File(dir, fileName);
                 FileOutputStream fos = new FileOutputStream(file);
-                fos.write(bytes);
-                fos.close();
+                fos.write(bytes); fos.close();
                 showToastParam("toastSavedToDownloads", fileName);
             }
-        } catch (Exception e) {
-            showToastByKey("toastErrSaveFile");
-        }
+        } catch (Exception e) { showToastByKey("toastErrSaveFile"); }
     }
 
     // ── SHARE TEXT ────────────────────────────────────────────────────────────
@@ -617,20 +574,14 @@ public class AndroidBridge {
                     Intent intent = new Intent(Intent.ACTION_SEND);
                     intent.setType("text/plain");
                     intent.putExtra(Intent.EXTRA_TEXT, text);
-                    if ("whatsapp".equals(channel)) {
-                        intent.setPackage("com.whatsapp");
-                    } else if ("email".equals(channel)) {
+                    if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
+                    else if ("email".equals(channel)) {
                         intent.putExtra(Intent.EXTRA_SUBJECT, "Estimado");
                         intent.setType("message/rfc822");
                     }
-                    try {
-                        activity.startActivity(intent);
-                    } catch (Exception e) {
-                        activity.startActivity(Intent.createChooser(intent, "Compartir"));
-                    }
-                } catch (Exception e) {
-                    showToastByKey("toastErrShare");
-                }
+                    try { activity.startActivity(intent); }
+                    catch (Exception e) { activity.startActivity(Intent.createChooser(intent, "Compartir")); }
+                } catch (Exception e) { showToastByKey("toastErrShare"); }
             }
         });
     }
@@ -641,17 +592,15 @@ public class AndroidBridge {
     public void showBiometricPrompt() {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     try {
                         android.hardware.biometrics.BiometricPrompt.Builder builder =
                             new android.hardware.biometrics.BiometricPrompt.Builder(context)
                                 .setTitle("BlackRacoon Estimator")
                                 .setDescription("Usa tu huella o contraseña para entrar");
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                             builder.setConfirmationRequired(false);
-                        }
                         builder.setDeviceCredentialAllowed(true);
                         builder.build().authenticate(
                             new android.os.CancellationSignal(),
@@ -716,8 +665,7 @@ public class AndroidBridge {
     @JavascriptInterface
     public void mostrarMensaje(final String mensaje) {
         new android.os.Handler(context.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
+            @Override public void run() {
                 Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show();
             }
         });
@@ -748,38 +696,28 @@ public class AndroidBridge {
     public void scheduleNotification(final String notifId, final String title,
                                      final String body, final long timestampMs) {
         if (timestampMs <= System.currentTimeMillis()) return;
-
         Intent intent = new Intent(context, NotifReceiver.class);
-        intent.putExtra("title",   title);
-        intent.putExtra("body",    body);
+        intent.putExtra("title", title);
+        intent.putExtra("body", body);
         intent.putExtra("notifId", notifId.hashCode());
-
-        PendingIntent pi = PendingIntent.getBroadcast(
-                context, notifId.hashCode(), intent,
+        PendingIntent pi = PendingIntent.getBroadcast(context, notifId.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am == null) return;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, timestampMs, pi);
-        } else {
+        else
             am.setExact(AlarmManager.RTC_WAKEUP, timestampMs, pi);
-        }
     }
 
     @JavascriptInterface
     public void cancelNotification(final String notifId) {
         Intent intent = new Intent(context, NotifReceiver.class);
-        PendingIntent pi = PendingIntent.getBroadcast(
-                context, notifId.hashCode(), intent,
+        PendingIntent pi = PendingIntent.getBroadcast(context, notifId.hashCode(), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         if (am != null) am.cancel(pi);
-
-        NotificationManager nm = (NotificationManager)
-                context.getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         if (nm != null) nm.cancel(notifId.hashCode());
     }
 
@@ -793,50 +731,35 @@ public class AndroidBridge {
             String title   = intent.getStringExtra("title");
             String body    = intent.getStringExtra("body");
             int    notifId = intent.getIntExtra("notifId", 0);
-
-            NotificationManager nm = (NotificationManager)
-                    ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             if (nm == null) return;
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel ch = new NotificationChannel(
-                        CHANNEL_ID, "RS Estimator Alerts",
+                NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "RS Estimator Alerts",
                         NotificationManager.IMPORTANCE_HIGH);
                 ch.setDescription("Payment reminders and job alerts");
                 nm.createNotificationChannel(ch);
             }
-
-            Intent openApp = ctx.getPackageManager()
-                    .getLaunchIntentForPackage(ctx.getPackageName());
-            if (openApp != null) {
+            Intent openApp = ctx.getPackageManager().getLaunchIntentForPackage(ctx.getPackageName());
+            if (openApp != null)
                 openApp.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            }
-            PendingIntent pi = PendingIntent.getActivity(
-                    ctx, notifId, openApp != null ? openApp : new Intent(),
+            PendingIntent pi = PendingIntent.getActivity(ctx, notifId,
+                    openApp != null ? openApp : new Intent(),
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-
             Notification notification;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 notification = new Notification.Builder(ctx, CHANNEL_ID)
                         .setSmallIcon(R.drawable.icon)
-                        .setContentTitle(title)
-                        .setContentText(body)
+                        .setContentTitle(title).setContentText(body)
                         .setStyle(new Notification.BigTextStyle().bigText(body))
-                        .setContentIntent(pi)
-                        .setAutoCancel(true)
-                        .build();
+                        .setContentIntent(pi).setAutoCancel(true).build();
             } else {
                 notification = new Notification.Builder(ctx)
                         .setSmallIcon(R.drawable.icon)
-                        .setContentTitle(title)
-                        .setContentText(body)
+                        .setContentTitle(title).setContentText(body)
                         .setStyle(new Notification.BigTextStyle().bigText(body))
-                        .setContentIntent(pi)
-                        .setAutoCancel(true)
-                        .setPriority(Notification.PRIORITY_HIGH)
-                        .build();
+                        .setContentIntent(pi).setAutoCancel(true)
+                        .setPriority(Notification.PRIORITY_HIGH).build();
             }
-
             nm.notify(notifId, notification);
         }
     }
