@@ -5634,6 +5634,10 @@ function saveInvoice() {
   closeInvModal();
   renderInvoiceList();
   showToast(t('toastInvSaved'));
+  // Navigate directly to the saved invoice so the user can see, print or share it
+  openEstimatesPage();
+  switchEpTab('invoices');
+  openInvoiceDetail(inv.id);
 }
 
 function generateInvoiceFromContract() {
