@@ -5338,7 +5338,14 @@ function closeContractDetail() {
 function markContractComplete(id) {
   var contracts = getContracts();
   var c = contracts.find(function(x){ return x.id===id; });
-  if (c) { c.status = 'completed'; saveContracts(contracts); renderContracts(); showToast(t('toastContractComplete')); }
+  if (c) {
+    c.status = 'completed';
+    c.jobStart = ''; c.jobEnd = ''; c.jobStartTime = ''; c.jobEndTime = '';
+    saveContracts(contracts);
+    renderContracts();
+    if (typeof renderScheduleCalendar === 'function') renderScheduleCalendar();
+    showToast(t('toastContractComplete'));
+  }
 }
 
 function acceptContract() {
