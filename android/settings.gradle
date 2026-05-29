@@ -1,9 +1,2 @@
-dependencyResolutionManagement {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 rootProject.name = "Blackracoon Construction Estimator"
 include ':app'
