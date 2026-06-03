@@ -7,6 +7,7 @@
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2961,7 +2962,7 @@ let currentLang = (function(){ var l = localStorage.getItem('RS_LANG'); return (
 var TERMS_VERSION = '2026.07';
 
 // ── FIREBASE AUTH ─────────────────────────────────────────────────────────────
-var _fbApp, _fbAuth;
+var _fbApp, _fbAuth, _db = null;
 (function() {
   var cfg = {
     apiKey:            "AIzaSyD3cQ7OQhqTlvyC3JuYsWcrVFfuHmY6rPE",
@@ -2974,6 +2975,8 @@ var _fbApp, _fbAuth;
   if (typeof firebase !== 'undefined') {
     _fbApp  = firebase.initializeApp(cfg);
     _fbAuth = firebase.auth();
+    _db     = firebase.firestore();
+    _db.enablePersistence({ synchronizeTabs: false }).catch(function(e){ console.warn('[FS] persistence:', e.code); });
     _fbAuth.onAuthStateChanged(function(user) {
       if (user) {
         var email = document.getElementById('accountEmail');
@@ -2982,6 +2985,10 @@ var _fbApp, _fbAuth;
         if (sec) sec.style.display = '';
         lsHideLoginScreen();
         if (!window._bioVerified) { bioLockShow(); }
+        cloudPullAll(function() {
+          if (typeof renderContracts === 'function') renderContracts();
+          if (typeof renderInvoiceList === 'function') renderInvoiceList();
+        });
       } else {
         window._bioVerified = false;
         var sec = document.getElementById('accountSection');
@@ -3000,6 +3007,75 @@ var _fbApp, _fbAuth;
 setTimeout(function() {
   if (!_fbAuth) lsShowLoginScreen();
 }, 3000);
+
+// ═══════════════════════════════════════════════════════
+// CLOUD SYNC (Firestore)
+// localStorage = primary (fast, offline). Firestore = cloud backup + cross-device.
+// Photos (base64) stay in localStorage only — too large for Firestore (phase 2: Storage).
+// ═══════════════════════════════════════════════════════
+var _FS_KEYS = ['RS_ESTIMATES','RS_CONTRACTS','RS_INVOICES','RS_CLIENTS','RS_CAL_NOTES','RS_PROFILE'];
+
+function _fsStrip(val) {
+  return JSON.parse(JSON.stringify(val, function(k, v) {
+    if (typeof v === 'string' && v.length > 200 && v.indexOf('data:') === 0) return null;
+    return v;
+  }));
+}
+
+function _fsRef(key) {
+  if (!_db || !_fbAuth || !_fbAuth.currentUser) return null;
+  return _db.collection('users').doc(_fbAuth.currentUser.uid).collection('sync').doc(key);
+}
+
+function cloudPush(key, data) {
+  var ref = _fsRef(key);
+  if (!ref) return;
+  ref.set({ d: _fsStrip(data), ts: Date.now() }).catch(function(e){ console.warn('[FS] push:', key, e.message); });
+}
+
+function cloudPullAll(onDone) {
+  if (!_db || !_fbAuth || !_fbAuth.currentUser) { onDone && onDone(); return; }
+  var uid = _fbAuth.currentUser.uid;
+  var pending = _FS_KEYS.length;
+  function done() { if (--pending <= 0) { onDone && onDone(); } }
+  _FS_KEYS.forEach(function(key) {
+    _db.collection('users').doc(uid).collection('sync').doc(key).get()
+      .then(function(snap) {
+        if (!snap.exists) { done(); return; }
+        var cloud = snap.data();
+        var cloudTs  = cloud.ts || 0;
+        var localTs  = parseInt(localStorage.getItem(key + '_TS') || '0');
+        var hasLocal = !!localStorage.getItem(key);
+        if (cloudTs > localTs || !hasLocal) {
+          if (key === 'RS_CAL_NOTES' || key === 'RS_PROFILE') {
+            if (cloud.d) localStorage.setItem(key, JSON.stringify(cloud.d));
+          } else {
+            var local      = JSON.parse(localStorage.getItem(key) || '[]');
+            var cloudItems = Array.isArray(cloud.d) ? cloud.d : [];
+            var localById  = {};
+            local.forEach(function(x){ if (x.id) localById[x.id] = x; });
+            var cloudIds   = {};
+            var merged = cloudItems.map(function(ci) {
+              cloudIds[ci.id] = true;
+              var li = localById[ci.id];
+              if (!li) return ci;
+              // Keep local photos/signatures/receipts; use cloud for all other fields
+              var photoFields = ['receipts','signatures','milestones','expenses','payments','logoBase64','bannerBase64','splashBase64'];
+              var kept = {};
+              photoFields.forEach(function(f){ if (li[f] !== undefined) kept[f] = li[f]; });
+              return Object.assign({}, ci, kept);
+            });
+            // Add local-only items (created offline, not yet in cloud)
+            local.forEach(function(li){ if (li.id && !cloudIds[li.id]) merged.push(li); });
+            localStorage.setItem(key, JSON.stringify(merged));
+          }
+          localStorage.setItem(key + '_TS', cloudTs);
+        }
+        done();
+      })
+      .catch(function(e){ console.warn('[FS] pull:', key, e.message); done(); });
+  });
+}
 
 function bioLockShow() {
   var el = document.getElementById('bioLock');
@@ -3532,6 +3608,8 @@ function saveProfile() {
     bannerBase64:   prev.bannerBase64 || null,
     splashBase64:   prev.splashBase64 || null
   }));
+  localStorage.setItem('RS_PROFILE_TS', Date.now());
+  cloudPush('RS_PROFILE', getProfile());
   ['termsCompanyName','termsCompanyName2','footerCompanyName'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.textContent = cn;
   });
@@ -4264,7 +4342,7 @@ function saveEstimate() {
     savedArray.unshift(current);
   }
   try {
-    localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray));
+    saveEstimates(savedArray);
   } catch(e) {
     showToast(t('toastStorageFull'));
     return;
@@ -4319,7 +4397,7 @@ function loadEstimate(id) {
 
 function deleteEstimate(id) {
   let savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
-  localStorage.setItem('RS_ESTIMATES', JSON.stringify(savedArray.filter(s => s.id != id)));
+  saveEstimates(savedArray.filter(s => s.id != id));
   renderSaved(); updateDashboard();
   showToast(t('toastDeleted'));
 }
@@ -5020,9 +5098,9 @@ function importBackupBase64(base64Text) {
     let contracts = Array.isArray(data) ? [] : (data.RS_CONTRACTS || []);
     let currentEst = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
     let currentCon = JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
-    localStorage.setItem('RS_ESTIMATES', JSON.stringify(currentEst.concat(estimates)));
+    saveEstimates(currentEst.concat(estimates));
     if (contracts.length > 0)
-      localStorage.setItem('RS_CONTRACTS', JSON.stringify(currentCon.concat(contracts)));
+      saveContracts(currentCon.concat(contracts));
     renderSaved(); updateDashboard(); updateContractCount();
     showToast(t('toastImported') + estimates.length + t('toastImportedSuffix') + contracts.length + t('toastImportedContracts'));
   } catch(err) { showToast(t('toastImportErr') + err.message); }
@@ -5036,12 +5114,12 @@ function importBackup(e) {
     try {
       let data = JSON.parse(ev.target.result);
       if (Array.isArray(data)) {
-        localStorage.setItem('RS_ESTIMATES', JSON.stringify(data));
+        saveEstimates(data);
         renderSaved(); updateDashboard();
         showToast(t('toastBackupImported') + data.length + t('toastEstimateSuffix'));
       } else if (data.RS_ESTIMATES || data.RS_CONTRACTS) {
-        if (data.RS_ESTIMATES) localStorage.setItem('RS_ESTIMATES', JSON.stringify(data.RS_ESTIMATES));
-        if (data.RS_CONTRACTS) localStorage.setItem('RS_CONTRACTS', JSON.stringify(data.RS_CONTRACTS));
+        if (data.RS_ESTIMATES) saveEstimates(data.RS_ESTIMATES);
+        if (data.RS_CONTRACTS) saveContracts(data.RS_CONTRACTS);
         renderSaved(); updateDashboard(); updateContractCount();
         showToast(t('toastBackupImported') + (data.RS_ESTIMATES||[]).length + t('toastImportedSuffix') + (data.RS_CONTRACTS||[]).length + t('toastImportedContracts'));
       } else { showToast(t('toastInvalidBackup')); }
@@ -5074,6 +5152,14 @@ var currentEstimateId  = null;
 var _currentInvId      = null;
 var selectedPayMethod = 'cash';
 
+function saveEstimates(arr) {
+  try {
+    localStorage.setItem('RS_ESTIMATES', JSON.stringify(arr));
+    localStorage.setItem('RS_ESTIMATES_TS', Date.now());
+    cloudPush('RS_ESTIMATES', arr);
+  } catch(e) { showToast(t('toastStorageFull') || 'Storage full'); }
+}
+
 function getContracts() {
   try {
     var arr = JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]');
@@ -5088,6 +5174,8 @@ function getContracts() {
 function saveContracts(arr) {
   try {
     localStorage.setItem('RS_CONTRACTS', JSON.stringify(arr));
+    localStorage.setItem('RS_CONTRACTS_TS', Date.now());
+    cloudPush('RS_CONTRACTS', arr);
     if (typeof updateNotifBadge === 'function') updateNotifBadge();
   } catch(e) {
     showToast(t('toastStorageFullContracts'));
@@ -5159,7 +5247,7 @@ function acceptEstimate(id) {
   saveContracts(contracts);
   // Remove from estimates
   var remaining = estimates.filter(function(e){ return e.id !== id; });
-  localStorage.setItem('RS_ESTIMATES', JSON.stringify(remaining));
+  saveEstimates(remaining);
   renderSaved();
   updateContractCount();
   resetFields(getNextEstimateNumber(true));
@@ -5364,7 +5452,12 @@ function acceptContract() {
 // ── JOB DAY SHEET ────────────────────────────────────────────────────────────
 
 function getCalNotes() { return JSON.parse(localStorage.getItem('RS_CAL_NOTES') || '{}'); }
-function saveCalNotes(notes) { localStorage.setItem('RS_CAL_NOTES', JSON.stringify(notes)); if (typeof updateNotifBadge === 'function') updateNotifBadge(); }
+function saveCalNotes(notes) {
+  localStorage.setItem('RS_CAL_NOTES', JSON.stringify(notes));
+  localStorage.setItem('RS_CAL_NOTES_TS', Date.now());
+  cloudPush('RS_CAL_NOTES', notes);
+  if (typeof updateNotifBadge === 'function') updateNotifBadge();
+}
 
 function formatTime12(t24) {
   if (!t24) return '';
@@ -5520,7 +5613,11 @@ function closeJobDaySheet() {
 // INVOICES
 // ═══════════════════════════════════════════════════════
 function getInvoices() { return JSON.parse(localStorage.getItem('RS_INVOICES') || '[]'); }
-function saveInvoices(arr) { localStorage.setItem('RS_INVOICES', JSON.stringify(arr)); }
+function saveInvoices(arr) {
+  localStorage.setItem('RS_INVOICES', JSON.stringify(arr));
+  localStorage.setItem('RS_INVOICES_TS', Date.now());
+  cloudPush('RS_INVOICES', arr);
+}
 
 function getNextInvoiceNumber() {
   var invs = getInvoices();
@@ -7713,7 +7810,11 @@ function getClients() {
     });
   } catch(e) { return []; }
 }
-function saveClients(arr) { localStorage.setItem('RS_CLIENTS', JSON.stringify(arr)); }
+function saveClients(arr) {
+  localStorage.setItem('RS_CLIENTS', JSON.stringify(arr));
+  localStorage.setItem('RS_CLIENTS_TS', Date.now());
+  cloudPush('RS_CLIENTS', arr);
+}
 
 var _clientTab = 'clients';
 
