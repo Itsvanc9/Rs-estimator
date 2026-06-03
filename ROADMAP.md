@@ -50,5 +50,29 @@
 - They do NOT see: prices, margins, client billing
 - Requires Firebase Hosting + Firestore
 
-## 💡 Ideas Adicionales (por revisar)
-- TBD after app audit
+## 💡 Ideas Adicionales (de auditoría)
+
+### Finanzas
+- Pagos parciales en invoices (registrar abonos, no solo "pagado/no pagado")
+- Recordatorios automáticos de cobro cuando invoice lleva N días vencida
+- Recibo de pago formal al marcar invoice como pagada
+- Proyección de flujo de caja: "vas a cobrar $X los próximos 30 días"
+- Descuentos por línea en estimados
+
+### Clientes
+- Historial del cliente: total gastado, # proyectos, fecha último trabajo
+- Seguimiento de leads: llamé, mandé estimado, esperando respuesta
+- Balance pendiente total del cliente (suma de invoices abiertas)
+
+### Reportes
+- P&L mensual por cliente / tipo de trabajo / equipo
+- Resumen de gastos de toda la empresa (no solo por contrato)
+- Métricas de cobro: quién tarda más en pagar, promedio de días
+
+### Contratos
+- Contratos T&M (tiempo y materiales) además de precio fijo
+- Timesheet: horas reales trabajadas vs. horas estimadas
+
+### Fotos
+- Anotación/rayado de fotos con el dedo (ya en roadmap #4)
+- Vista comparativa before/after lado a lado
