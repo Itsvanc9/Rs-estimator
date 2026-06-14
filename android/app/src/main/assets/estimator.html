@@ -2460,6 +2460,10 @@ const T = {
     toastDocNotFound:'Document not found',
     toastGeneratingPdf:'Generating PDF...',
     toastGeneratingImg:'Generating image...',
+    toastNoClientPhone:'No client phone number on file',
+    waClientMsg:'Hi {client}, here\'s your estimate #{folio} for ${total}. Reply "ACCEPT" to schedule your project. - {company}',
+    waInvoiceMsg:'Hi {client}, here\'s your invoice #{folio} for ${total}. Thank you for your business! - {company}',
+    waSendClientBtn:'📲 Send to Client',
     signaturesTitle:'Electronic Signatures',
     contractorLabel:'Contractor',
     clientLabel:'Client',
@@ -2796,6 +2800,10 @@ const T = {
     toastDocNotFound:'Documento no encontrado',
     toastGeneratingPdf:'Generando PDF...',
     toastGeneratingImg:'Generando imagen...',
+    toastNoClientPhone:'El cliente no tiene número de teléfono guardado',
+    waClientMsg:'Hola {client}, aquí está tu estimado #{folio} por ${total}. Responde "ACEPTO" para agendar tu proyecto. - {company}',
+    waInvoiceMsg:'Hola {client}, aquí está tu factura #{folio} por ${total}. ¡Gracias por tu confianza! - {company}',
+    waSendClientBtn:'📲 Enviar al Cliente',
     signaturesTitle:'Firmas Electrónicas',
     contractorLabel:'Contratista',
     clientLabel:'Cliente',
@@ -4461,6 +4469,7 @@ function renderSaved() {
       <div class="saved-actions">
         <button class="btn btn-light btn-sm" onclick="loadEstimate('${s.id}')">📂 Open</button>
         <button class="btn btn-primary btn-sm" onclick="acceptEstimate('${s.id}')" title="Convert to Contract">✅ Accept</button>
+        ${s.clientPhone ? `<button class="btn btn-sm" style="background:#25D366;color:#fff;border-color:#25D366;" onclick="sendEstimateToClientWA('${s.id}')">${t('waSendClientBtn')}</button>` : ''}
         <button class="btn btn-danger btn-sm" onclick="deleteEstimate('${s.id}')">🗑️</button>
       </div>
     </div>`).join('');
@@ -4982,6 +4991,45 @@ function _fireShareIntent(method, text, title) {
   document.body.appendChild(a);
   a.click();
   setTimeout(function(){ if (document.body.contains(a)) document.body.removeChild(a); }, 500);
+}
+
+function _waCleanPhone(phone) {
+  var digits = (phone || '').replace(/[^0-9]/g, '');
+  if (!digits) return '';
+  if (digits.length === 10) digits = '1' + digits;
+  return digits;
+}
+
+function _waFillTemplate(tpl, vars) {
+  return tpl.replace(/\{(\w+)\}/g, function(m, key) {
+    return (vars[key] !== undefined && vars[key] !== null) ? String(vars[key]) : '';
+  });
+}
+
+function sendEstimateToClientWA(id) {
+  var savedArray = JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]');
+  var s = savedArray.find(function(x){ return x.id === id; });
+  if (!s) return;
+  var phone = _waCleanPhone(s.clientPhone);
+  if (!phone) { showToast(t('toastNoClientPhone')); return; }
+  var msg = _waFillTemplate(t('waClientMsg'), {
+    client: s.client || '', folio: s.estNum || '',
+    total: fmtMoney(s.grand || 0), company: getProfile().companyName
+  });
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+function sendInvoiceToClientWA(id) {
+  var invoices = JSON.parse(localStorage.getItem('RS_INVOICES') || '[]');
+  var inv = invoices.find(function(x){ return x.id === id; });
+  if (!inv) return;
+  var phone = _waCleanPhone(inv.clientPhone);
+  if (!phone) { showToast(t('toastNoClientPhone')); return; }
+  var msg = _waFillTemplate(t('waInvoiceMsg'), {
+    client: inv.clientName || '', folio: inv.invoiceNum || '',
+    total: fmtMoney(inv.total || (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0)), company: getProfile().companyName
+  });
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
 
@@ -5863,6 +5911,9 @@ function openInvoiceDetail(id) {
 
   // Status action buttons
   var sa = '';
+  if (inv.clientPhone) {
+    sa += '<button onclick="sendInvoiceToClientWA(\'' + inv.id + '\')" class="btn" style="flex:1;justify-content:center;background:#25D366;color:#fff;border-color:#25D366;">' + t('waSendClientBtn') + '</button>';
+  }
   if (inv.status === 'draft') {
     sa += '<button onclick="invMarkSentFromDetail()" class="btn" style="flex:1;justify-content:center;background:#3b82f6;color:#fff;border-color:#3b82f6;">✉️ ' + t('invMarkSent') + '</button>';
   }
