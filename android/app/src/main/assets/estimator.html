@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -2962,7 +2963,7 @@ let currentLang = (function(){ var l = localStorage.getItem('RS_LANG'); return (
 var TERMS_VERSION = '2026.07';
 
 // ── FIREBASE AUTH ─────────────────────────────────────────────────────────────
-var _fbApp, _fbAuth, _db = null;
+var _fbApp, _fbAuth, _db = null, _storage = null;
 (function() {
   var cfg = {
     apiKey:            "AIzaSyD3cQ7OQhqTlvyC3JuYsWcrVFfuHmY6rPE",
@@ -2976,6 +2977,7 @@ var _fbApp, _fbAuth, _db = null;
     _fbApp  = firebase.initializeApp(cfg);
     _fbAuth = firebase.auth();
     _db     = firebase.firestore();
+    _storage = firebase.storage();
     _db.enablePersistence({ synchronizeTabs: false }).catch(function(e){ console.warn('[FS] persistence:', e.code); });
     _fbAuth.onAuthStateChanged(function(user) {
       if (user) {
@@ -3033,6 +3035,20 @@ function cloudPush(key, data) {
   ref.set({ d: _fsStrip(data), ts: Date.now() }).catch(function(e){ console.warn('[FS] push:', key, e.message); });
 }
 
+// Upload a data: URL (base64 image) to Firebase Storage and return its download URL via onDone(url).
+// Used to back up photos (logo, receipts, signatures, milestones) to the cloud so they
+// survive reinstall/new-device, while localStorage keeps the base64 for fast offline display.
+function uploadToStorage(dataUrl, path, onDone) {
+  if (!_storage || !_fbAuth || !_fbAuth.currentUser || !dataUrl) { onDone && onDone(null); return; }
+  var uid = _fbAuth.currentUser.uid;
+  var ref = _storage.ref().child('users/' + uid + '/' + path);
+  fetch(dataUrl).then(function(res){ return res.blob(); })
+    .then(function(blob){ return ref.put(blob); })
+    .then(function(){ return ref.getDownloadURL(); })
+    .then(function(url){ onDone && onDone(url); })
+    .catch(function(e){ console.warn('[Storage] upload:', path, e.message); onDone && onDone(null); });
+}
+
 function cloudPullAll(onDone) {
   if (!_db || !_fbAuth || !_fbAuth.currentUser) { onDone && onDone(); return; }
   var uid = _fbAuth.currentUser.uid;
@@ -3047,7 +3063,16 @@ function cloudPullAll(onDone) {
         var localTs  = parseInt(localStorage.getItem(key + '_TS') || '0');
         var hasLocal = !!localStorage.getItem(key);
         if (cloudTs > localTs || !hasLocal) {
-          if (key === 'RS_CAL_NOTES' || key === 'RS_PROFILE') {
+          if (key === 'RS_PROFILE') {
+            if (cloud.d) {
+              var localP = JSON.parse(localStorage.getItem(key) || '{}');
+              var mergedP = Object.assign({}, cloud.d);
+              ['logoBase64','bannerBase64','splashBase64'].forEach(function(f){
+                if (localP[f]) mergedP[f] = localP[f];
+              });
+              localStorage.setItem(key, JSON.stringify(mergedP));
+            }
+          } else if (key === 'RS_CAL_NOTES') {
             if (cloud.d) localStorage.setItem(key, JSON.stringify(cloud.d));
           } else {
             var local      = JSON.parse(localStorage.getItem(key) || '[]');
@@ -3606,7 +3631,10 @@ function saveProfile() {
     contactName:    ($('cfgContactName').value    ||'').trim(),
     logoBase64:     prev.logoBase64   || null,
     bannerBase64:   prev.bannerBase64 || null,
-    splashBase64:   prev.splashBase64 || null
+    splashBase64:   prev.splashBase64 || null,
+    logoUrl:        prev.logoUrl      || null,
+    bannerUrl:      prev.bannerUrl    || null,
+    splashUrl:      prev.splashUrl    || null
   }));
   localStorage.setItem('RS_PROFILE_TS', Date.now());
   cloudPush('RS_PROFILE', getProfile());
@@ -3618,6 +3646,7 @@ function saveProfile() {
 function logoSrc() {
   var p = getProfile();
   if (p.logoBase64) return p.logoBase64;
+  if (p.logoUrl) return p.logoUrl;
   if (window.AndroidBridge) return 'file:///android_asset/logo.png';
   return '';
 }
@@ -3626,7 +3655,7 @@ function applyProfileImages() {
   var p = getProfile();
   var hdr = document.querySelector('header');
   if (hdr) {
-    var bg = p.bannerBase64 || 'file:///android_asset/banner.jpg';
+    var bg = p.bannerBase64 || p.bannerUrl || 'file:///android_asset/banner.jpg';
     hdr.style.background = 'linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,0.72) 100%),url("' + bg + '")';
     hdr.style.backgroundSize = '100% auto';
     hdr.style.backgroundPosition = 'top center';
@@ -3634,7 +3663,7 @@ function applyProfileImages() {
   }
   var spl = document.querySelector('.splash-screen');
   if (spl) {
-    var sbg = p.splashBase64 || 'file:///android_asset/banner_splash.png';
+    var sbg = p.splashBase64 || p.splashUrl || 'file:///android_asset/banner_splash.png';
     spl.style.backgroundImage = 'url("' + sbg + '")';
     spl.style.backgroundSize = 'cover';
     spl.style.backgroundPosition = 'center';
@@ -3671,13 +3700,25 @@ function saveProfileImage(key, file, maxW, maxH) {
     var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
     if (previewId && $(previewId)) $(previewId).src = b64;
     showToast(t('toastImgSaved'));
+    // Back up to Firebase Storage so the image survives reinstall / syncs to other devices
+    var urlKey = { logoBase64:'logoUrl', bannerBase64:'bannerUrl', splashBase64:'splashUrl' }[key];
+    uploadToStorage(b64, 'profile/' + key + '.jpg', function(url) {
+      if (!url) return;
+      var p2 = getProfile();
+      p2[urlKey] = url;
+      localStorage.setItem('RS_PROFILE', JSON.stringify(p2));
+      cloudPush('RS_PROFILE', p2);
+    });
   });
 }
 
 function removeProfileImage(key) {
   var p = getProfile();
   p[key] = null;
+  var urlKey = { logoBase64:'logoUrl', bannerBase64:'bannerUrl', splashBase64:'splashUrl' }[key];
+  if (urlKey) p[urlKey] = null;
   localStorage.setItem('RS_PROFILE', JSON.stringify(p));
+  cloudPush('RS_PROFILE', p);
   applyProfileImages();
   var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
   var defaultSrc = { logoBase64:'file:///android_asset/logo.png', bannerBase64:'file:///android_asset/banner.jpg', splashBase64:'file:///android_asset/banner_splash.png' }[key];
