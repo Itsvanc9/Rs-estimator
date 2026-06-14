@@ -367,6 +367,11 @@ public class AndroidBridge {
 
     @JavascriptInterface
     public void shareHtmlAsPdf(final String html, final String name, final String channel) {
+        shareHtmlAsPdf(html, name, channel, null);
+    }
+
+    @JavascriptInterface
+    public void shareHtmlAsPdf(final String html, final String name, final String channel, final String text) {
         final Activity activity = (Activity) context;
         activity.runOnUiThread(new Runnable() {
             @Override public void run() {
@@ -437,6 +442,7 @@ public class AndroidBridge {
                                                 intent.putExtra(Intent.EXTRA_SUBJECT, name);
                                                 intent.setClipData(ClipData.newRawUri("", shareUri));
                                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                                if (text != null && !text.isEmpty()) intent.putExtra(Intent.EXTRA_TEXT, text);
                                                 if ("whatsapp".equals(channel)) intent.setPackage("com.whatsapp");
                                                 else if ("email".equals(channel)) intent.setPackage("com.google.android.gm");
                                                 activity.runOnUiThread(new Runnable() {

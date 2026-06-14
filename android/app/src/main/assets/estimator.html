@@ -5016,7 +5016,11 @@ function sendEstimateToClientWA(id) {
     client: s.client || '', folio: s.estNum || '',
     total: fmtMoney(s.grand || 0), company: getProfile().companyName
   });
-  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsPdf) {
+    window.AndroidBridge.shareHtmlAsPdf(getEstimateDoc(s), 'Estimate_' + (s.estNum||'RS'), 'whatsapp', msg);
+  } else {
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  }
 }
 
 function sendInvoiceToClientWA(id) {
@@ -5029,7 +5033,11 @@ function sendInvoiceToClientWA(id) {
     client: inv.clientName || '', folio: inv.invoiceNum || '',
     total: fmtMoney(inv.total || (inv.items||[]).reduce(function(s,it){return s+(it.amount||0);},0)), company: getProfile().companyName
   });
-  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  if (window.AndroidBridge && window.AndroidBridge.shareHtmlAsPdf) {
+    window.AndroidBridge.shareHtmlAsPdf(generateInvoiceDoc(inv), 'Invoice_' + (inv.invoiceNum||'RS'), 'whatsapp', msg);
+  } else {
+    window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+  }
 }
 
 
