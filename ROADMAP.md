@@ -17,8 +17,9 @@
   offline persistence enabled, merge-by-id preserving local photos. Verified working in
   Firebase Console (users/{uid}/sync/RS_CONTRACTS, RS_CLIENTS, RS_ESTIMATES populated).
 - WhatsApp direct-to-client messaging: "📲 Send to Client" button on saved estimates and
-  invoice detail (when clientPhone exists), opens wa.me chat with pre-filled friendly
-  message + "Responde ACEPTO" call-to-action. i18n (EN/ES) templates added.
+  invoice detail (when clientPhone exists). Attaches the actual PDF (estimate/invoice) plus
+  a pre-filled friendly message with "Responde ACEPTO" call-to-action, opens WhatsApp
+  contact picker. i18n (EN/ES) templates added.
 
 ## 🔜 Próximos (en orden)
 
