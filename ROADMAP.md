@@ -13,14 +13,16 @@
 - Invoice PDF redesigned to match estimate/contract branding
 - Invoice list grouped by client and project
 - Mark contract complete → removes from calendar
+- Firestore cloud sync (Phase 1): localStorage primary + Firestore backup/cross-device,
+  offline persistence enabled, merge-by-id preserving local photos. Verified working in
+  Firebase Console (users/{uid}/sync/RS_CONTRACTS, RS_CLIENTS, RS_ESTIMATES populated).
 
 ## 🔜 Próximos (en orden)
 
-### 1. Firebase Migration (PRIORITY — cimientos)
-- Migrate localStorage → Firestore (RS_ESTIMATES, RS_CONTRACTS, RS_INVOICES, RS_CLIENTS, etc.)
-- Photos → Firebase Storage
-- Add firebase-firestore-compat.js + firebase-storage-compat.js CDN
-- Offline sync: auto-sync when connection returns
+### 1. Firebase Migration — Phase 2 (Storage para fotos)
+- Photos (receipts, milestones, signatures, logo) → Firebase Storage
+- Add firebase-storage-compat.js CDN
+- Replace base64 photo fields with Storage URLs, sync via Firestore
 
 ### 2. WhatsApp Integration
 - Button on estimate/contract to send summary via WhatsApp
