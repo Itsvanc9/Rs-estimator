@@ -20,6 +20,7 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> filePathCallback;
 
     private static final int FILE_CHOOSER_REQUEST = 2001;
+    private static final int RECORD_AUDIO_PERMISSION_REQUEST = 2002;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,6 +107,25 @@ public class MainActivity extends Activity {
                 }
 
                 return true;
+            }
+
+            @Override
+            public void onPermissionRequest(final android.webkit.PermissionRequest request) {
+                for (String resource : request.getResources()) {
+                    if (android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                        if (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
+                                == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                            request.grant(new String[]{android.webkit.PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                        } else {
+                            requestPermissions(
+                                    new String[]{android.Manifest.permission.RECORD_AUDIO},
+                                    RECORD_AUDIO_PERMISSION_REQUEST);
+                            request.deny();
+                        }
+                        return;
+                    }
+                }
+                request.deny();
             }
         });
 

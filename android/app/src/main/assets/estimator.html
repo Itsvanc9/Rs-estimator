@@ -1218,6 +1218,9 @@
   <!-- MATERIALS -->
   <div class="card ca-emerald">
     <div class="card-header"><div class="si si-emerald">🧱</div><h2 data-i18n="materials">Materials</h2><span class="card-tag" id="materialsTotalShow">$0.00</span></div>
+    <div class="card-body" style="padding-bottom:0;">
+      <button type="button" class="add-row-btn" onclick="startVoiceDictation()" data-i18n="voiceDictateBtn" style="width:100%;margin-bottom:10px;">🎤 Dictate</button>
+    </div>
     <div class="card-body">
       <div class="table-wrap">
         <table>
@@ -2464,6 +2467,13 @@ const T = {
     waClientMsg:'Hi {client}, here\'s your estimate #{folio} for ${total}. Reply "ACCEPT" to schedule your project. - {company}',
     waInvoiceMsg:'Hi {client}, here\'s your invoice #{folio} for ${total}. Thank you for your business! - {company}',
     waSendClientBtn:'📲 Send to Client',
+    voiceNotSupported:'Voice dictation not supported on this device',
+    voiceListening:'🎤 Listening...',
+    voiceError:'Could not hear you, try again',
+    voiceNoMatch:'Didn\'t understand that, try again',
+    voiceAddedMaterials:'Added {n} material(s) by voice',
+    voiceAddedLabor:'Labor updated by voice',
+    voiceDictateBtn:'🎤 Dictate',
     signaturesTitle:'Electronic Signatures',
     contractorLabel:'Contractor',
     clientLabel:'Client',
@@ -2804,6 +2814,13 @@ const T = {
     waClientMsg:'Hola {client}, aquí está tu estimado #{folio} por ${total}. Responde "ACEPTO" para agendar tu proyecto. - {company}',
     waInvoiceMsg:'Hola {client}, aquí está tu factura #{folio} por ${total}. ¡Gracias por tu confianza! - {company}',
     waSendClientBtn:'📲 Enviar al Cliente',
+    voiceNotSupported:'Dictado por voz no disponible en este dispositivo',
+    voiceListening:'🎤 Escuchando...',
+    voiceError:'No te escuché bien, intenta otra vez',
+    voiceNoMatch:'No entendí eso, intenta otra vez',
+    voiceAddedMaterials:'Se agregaron {n} material(es) por voz',
+    voiceAddedLabor:'Mano de obra actualizada por voz',
+    voiceDictateBtn:'🎤 Dictar',
     signaturesTitle:'Firmas Electrónicas',
     contractorLabel:'Contratista',
     clientLabel:'Cliente',
@@ -3790,6 +3807,88 @@ function formatDate() {
 // ═══════════════════════════════════════════════════════
 function addMaterial() { materials.push({ desc:'', qty:'0', unit:'', cost:'0' }); updateTotal(); }
 function addOther() { otherCosts.push({ desc:'', amount:'0' }); updateTotal(); }
+
+// ── Voice Dictation (materials & labor) ──────────────────
+var _voiceUnitsEN = ['sheets','sheet','gallons','gallon','bags','bag','boxes','box','feet','ft','units','unit','pieces','piece','rolls','roll','buckets','bucket','yards','yard','tubes','tube','cans','can','bundles','bundle'];
+var _voiceUnitsES = ['láminas','lámina','laminas','lamina','galones','galón','galon','bultos','bulto','cajas','caja','pies','unidades','unidad','piezas','pieza','rollos','rollo','cubetas','cubeta','yardas','yarda','tubos','tubo','latas','lata','paquetes','paquete'];
+
+function _voiceLang() { return (currentLang === 'es') ? 'es-US' : 'en-US'; }
+
+function startVoiceDictation() {
+  if (window.AndroidBridge && window.AndroidBridge.startVoiceRecognition) {
+    window.AndroidBridge.startVoiceRecognition(_voiceLang());
+    return;
+  }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { showToast(t('voiceNotSupported')); return; }
+  var rec = new SR();
+  rec.lang = _voiceLang();
+  rec.interimResults = false;
+  rec.maxAlternatives = 1;
+  rec.onresult = function(e) {
+    var transcript = e.results[0][0].transcript;
+    _voiceProcessTranscript(transcript);
+  };
+  rec.onerror = function() { showToast(t('voiceError')); };
+  try { rec.start(); showToast(t('voiceListening')); }
+  catch(e) { showToast(t('voiceError')); }
+}
+
+function _voiceProcessTranscript(text) {
+  var segments = text.split(/\s*,\s*|\s+(?:and|y)\s+/i).map(function(s){ return s.trim(); }).filter(Boolean);
+  var addedMaterials = 0, laborUpdated = false;
+  segments.forEach(function(seg) {
+    if (/\b(hours?|horas?)\b/i.test(seg)) {
+      var hoursM = seg.match(/(\d+(?:\.\d+)?)\s*(?:hours?|horas?)/i);
+      if (hoursM) {
+        var hours = parseFloat(hoursM[1]);
+        var curHours = parseFloat($('laborHours').value) || 0;
+        $('laborHours').value = curHours + hours;
+        var workersM = seg.match(/(\d+)\s*(?:workers?|trabajadores?|people|personas?|men|hombres?)/i);
+        if (workersM) $('workersCount').value = parseInt(workersM[1]);
+        var rateM = seg.match(/(?:at|a|por)\s*\$?\s*(\d+(?:\.\d+)?)/i);
+        if (rateM) $('hourlyRate').value = parseFloat(rateM[1]);
+        laborUpdated = true;
+      }
+      return;
+    }
+    var qtyM = seg.match(/^(\d+(?:\.\d+)?)\s+(.+)$/);
+    if (qtyM) {
+      var qty = qtyM[1];
+      var rest = qtyM[2];
+      var cost = '0';
+      var priceM = rest.match(/(?:at|a|for|por)\s*\$?\s*(\d+(?:\.\d+)?)\s*(?:dollars?|d[oó]lares?|each|c\/u|cada uno)?\s*$/i);
+      if (priceM) {
+        cost = priceM[1];
+        rest = rest.slice(0, priceM.index).trim();
+      } else {
+        var priceM2 = rest.match(/\$\s*(\d+(?:\.\d+)?)\s*$/);
+        if (priceM2) { cost = priceM2[1]; rest = rest.slice(0, priceM2.index).trim(); }
+      }
+      var unit = '';
+      var words = rest.split(/\s+/);
+      var allUnits = _voiceUnitsEN.concat(_voiceUnitsES);
+      if (words.length > 1 && allUnits.indexOf(words[0].toLowerCase()) >= 0) {
+        unit = words.shift();
+        rest = words.join(' ');
+      }
+      rest = rest.replace(/^(of|de)\s+/i, '');
+      materials.push({ desc: rest, qty: qty, unit: unit, cost: cost });
+      addedMaterials++;
+    }
+  });
+  if (addedMaterials > 0) {
+    updateTotal();
+    showToast(_waFillTemplate(t('voiceAddedMaterials'), { n: addedMaterials }));
+  }
+  if (laborUpdated) {
+    updateTotal();
+    showToast(t('voiceAddedLabor'));
+  }
+  if (addedMaterials === 0 && !laborUpdated) {
+    showToast(t('voiceNoMatch'));
+  }
+}
 
 function computeTotals() {
   let unit = (parseFloat($('unitQty').value)||0) * (parseFloat($('unitPrice').value)||0);

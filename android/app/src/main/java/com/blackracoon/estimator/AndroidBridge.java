@@ -42,6 +42,7 @@ public class AndroidBridge {
     static final int REQUEST_CAMERA           = 1003;
     static final int REQUEST_CAMERA_PERMISSION = 1004;
     static final int REQUEST_BIOMETRIC        = 1006;
+    static final int REQUEST_VOICE            = 1007;
 
     private Context context;
     private WebView webView;
@@ -161,6 +162,27 @@ public class AndroidBridge {
                     webView.evaluateJavascript(ok ? "biometricSuccess()" : "biometricDenied()", null);
                 }
             });
+            return;
+        }
+
+        if (requestCode == REQUEST_VOICE) {
+            if (resultCode == Activity.RESULT_OK && data != null) {
+                java.util.ArrayList<String> results =
+                        data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+                if (results != null && !results.isEmpty()) {
+                    final String transcript = results.get(0)
+                            .replace("\\", "\\\\").replace("'", "\\'");
+                    webView.post(new Runnable() {
+                        @Override public void run() {
+                            webView.evaluateJavascript("_voiceProcessTranscript('" + transcript + "')", null);
+                        }
+                    });
+                } else {
+                    showToastByKey("voiceNoMatch");
+                }
+            } else {
+                showToastByKey("voiceError");
+            }
             return;
         }
 
@@ -528,6 +550,28 @@ public class AndroidBridge {
                     try { activity.startActivity(intent); }
                     catch (Exception e) { activity.startActivity(Intent.createChooser(intent, "Compartir")); }
                 } catch (Exception e) { showToastByKey("toastErrShare"); }
+            }
+        });
+    }
+
+    // ── NATIVE VOICE RECOGNITION ────────────────────────────────────────────────
+
+    @JavascriptInterface
+    public void startVoiceRecognition(final String lang) {
+        final Activity activity = (Activity) context;
+        activity.runOnUiThread(new Runnable() {
+            @Override public void run() {
+                Intent intent = new Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                if (lang != null && !lang.isEmpty()) {
+                    intent.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, lang);
+                }
+                try {
+                    activity.startActivityForResult(intent, REQUEST_VOICE);
+                } catch (Exception e) {
+                    showToastByKey("voiceNotSupported");
+                }
             }
         });
     }

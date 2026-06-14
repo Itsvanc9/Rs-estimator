@@ -20,6 +20,10 @@
   invoice detail (when clientPhone exists). Attaches the actual PDF (estimate/invoice) plus
   a pre-filled friendly message with "Responde ACEPTO" call-to-action, opens WhatsApp
   contact picker. i18n (EN/ES) templates added.
+- Voice Dictation: "🎤 Dictate" button in Materials card. Uses native Android speech
+  recognizer (RecognizerIntent, with Web Speech API fallback for browser). Parses phrases
+  like "20 drywall sheets at 15 dollars" or "4 hours of painting with 2 workers at 25 per
+  hour" (EN/ES) to auto-fill materials table and labor fields.
 
 ## 🔜 Próximos (en orden)
 
@@ -28,24 +32,18 @@
 - Add firebase-storage-compat.js CDN
 - Replace base64 photo fields with Storage URLs, sync via Firestore
 
-### 2. Voice Dictation (Hands-Free Mode)
-- Mic button in materials/labor sections
-- Dictate: "Add 20 drywall sheets and 4 hours of painting"
-- Auto-fills cost table cells
-- Uses Web Speech API (free, needs internet) or AndroidBridge native speech
-
-### 3. Photo Annotation
+### 2. Photo Annotation
 - Draw/annotate on photos with finger before adding to PDF
 - Canvas overlay with arrows, circles, text
 - Great for Fold 6 large screen
 - Pure HTML5 Canvas, no dependencies
 
-### 4. Offline Sync (depends on Firebase)
+### 3. Offline Sync (depends on Firebase)
 - Already offline with localStorage
 - Real value: auto-sync when signal returns
 - Requires Firebase migration first
 
-### 5. Subcontractor Portal (future)
+### 4. Subcontractor Portal (future)
 - Unique link for subcontractors
 - They see: address, job description, photo upload button
 - They do NOT see: prices, margins, client billing
