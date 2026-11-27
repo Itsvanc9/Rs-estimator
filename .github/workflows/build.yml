@@ -39,17 +39,33 @@ jobs:
           cat > capacitor.config.json << 'EOF'
           {
             "appId": "com.blackracoon.estimator",
-            "appName": "Blackracoon",
+            "appName": "Blackracoon Construction Estimator",
             "webDir": "www"
           }
           EOF
           mkdir -p www
           cp Blackracoon/estimator.html www/index.html
+          cat Blackracoon/img-b64/banner.jpg.b64.part1 Blackracoon/img-b64/banner.jpg.b64.part2 Blackracoon/img-b64/banner.jpg.b64.part3 | base64 -d > www/banner.jpg
+          cat Blackracoon/img-b64/banner_splash.png.b64.part1 Blackracoon/img-b64/banner_splash.png.b64.part2 Blackracoon/img-b64/banner_splash.png.b64.part3 | base64 -d > www/banner_splash.png
+          base64 -d Blackracoon/img-b64/logo.png.b64 > www/logo.png
 
       - name: Add Android and sync
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Apply Blackracoon icon and splash
+        run: |
+          RES=android/app/src/main/res
+          for d in mdpi hdpi xhdpi xxhdpi xxxhdpi; do
+            base64 -d Blackracoon/img-b64/ic_launcher_$d.b64 > $RES/mipmap-$d/ic_launcher.png
+            base64 -d Blackracoon/img-b64/ic_launcher_round_$d.b64 > $RES/mipmap-$d/ic_launcher_round.png
+            base64 -d Blackracoon/img-b64/ic_launcher_foreground_$d.b64 > $RES/mipmap-$d/ic_launcher_foreground.png
+          done
+          cat Blackracoon/img-b64/banner_splash.png.b64.part1 Blackracoon/img-b64/banner_splash.png.b64.part2 Blackracoon/img-b64/banner_splash.png.b64.part3 | base64 -d > $RES/drawable/splash.png
+          mkdir -p $RES/drawable-port-xxhdpi $RES/drawable-land-xxhdpi
+          cat Blackracoon/img-b64/banner_splash.png.b64.part1 Blackracoon/img-b64/banner_splash.png.b64.part2 Blackracoon/img-b64/banner_splash.png.b64.part3 | base64 -d > $RES/drawable-port-xxhdpi/splash.png
+          base64 -d Blackracoon/img-b64/splash_land.b64 > $RES/drawable-land-xxhdpi/splash.png
 
       - name: Fix Kotlin duplicate classes
         working-directory: android
