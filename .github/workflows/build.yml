@@ -389,52 +389,54 @@ jobs:
                               pv.setWebViewClient(new WebViewClient() {
                                   public void onPageFinished(final WebView view, String url) {
                                       try {
-                                          final PrintDocumentAdapter adapter = view.createPrintDocumentAdapter(name);
-                                          final PrintAttributes attrs = new PrintAttributes.Builder()
-                                              .setMediaSize(PrintAttributes.MediaSize.NA_LETTER)
-                                              .setResolution(new PrintAttributes.Resolution("pdf", "PDF", 300, 300))
-                                              .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
-                                              .build();
                                           String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
                                           final File pdfFile = new File(getCacheDir(), safeName + ".pdf");
-                                          final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
-                                              ParcelFileDescriptor.MODE_READ_WRITE |
-                                              ParcelFileDescriptor.MODE_CREATE |
-                                              ParcelFileDescriptor.MODE_TRUNCATE);
-                                          adapter.onStart();
-                                          adapter.onLayout(null, attrs, new CancellationSignal(),
-                                              new PrintDocumentAdapter.LayoutResultCallback() {
-                                                  public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
-                                                      adapter.onWrite(
-                                                          new PageRange[]{PageRange.ALL_PAGES},
-                                                          pfd,
-                                                          new CancellationSignal(),
-                                                          new PrintDocumentAdapter.WriteResultCallback() {
-                                                              public void onWriteFinished(PageRange[] pages) {
-                                                                  try { pfd.close(); } catch (IOException ignored) {}
-                                                                  adapter.onFinish();
-                                                                  Uri uri = FileProvider.getUriForFile(
-                                                                      MainActivity.this,
-                                                                      getPackageName() + ".fileprovider",
-                                                                      pdfFile);
-                                                                  Intent intent = new Intent(Intent.ACTION_SEND);
-                                                                  intent.setType("application/pdf");
-                                                                  intent.putExtra(Intent.EXTRA_STREAM, uri);
-                                                                  intent.putExtra(Intent.EXTRA_SUBJECT, name);
-                                                                  intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                                                                  if ("whatsapp".equals(channel)) {
-                                                                      intent.setPackage("com.whatsapp");
-                                                                  }
-                                                                  try {
-                                                                      startActivity(intent);
-                                                                  } catch (Exception ex) {
-                                                                      startActivity(Intent.createChooser(intent, "Share PDF"));
-                                                                  }
-                                                              }
-                                                          }
-                                                      );
-                                                  }
-                                              }, null);
+                                          int pdfW = 816;
+                                          view.measure(android.view.View.MeasureSpec.makeMeasureSpec(pdfW, android.view.View.MeasureSpec.EXACTLY),
+                                              android.view.View.MeasureSpec.makeMeasureSpec(0, android.view.View.MeasureSpec.UNSPECIFIED));
+                                      view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+                                      view.setBackgroundColor(android.graphics.Color.WHITE);
+                                      android.graphics.pdf.PdfDocument doc = new android.graphics.pdf.PdfDocument();
+                                      int pageW = 612;
+                                      int pageH = 792;
+                                      float scale = (float) pageW / pdfW;
+                                      int pageViewH = (int) (pageH / scale);
+                                      int totalH = Math.max(view.getMeasuredHeight(), pageViewH);
+                                      int pages = Math.max(1, (int) Math.ceil((double) totalH / pageViewH));
+                                      for (int i = 0; i < pages; i++) {
+                                          android.graphics.pdf.PdfDocument.PageInfo pinfo = new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, i).create();
+                                          android.graphics.pdf.PdfDocument.Page page = doc.startPage(pinfo);
+                                          android.graphics.Canvas canvas = page.getCanvas();
+                                          canvas.drawColor(android.graphics.Color.WHITE);
+                                          canvas.save();
+                                          canvas.scale(scale, scale);
+                                          canvas.translate(0, -i * pageViewH);
+                                          canvas.clipRect(0, i * pageViewH, pdfW, Math.min((i + 1) * pageViewH, totalH));
+                                          view.draw(canvas);
+                                          canvas.restore();
+                                          doc.finishPage(page);
+                                  }
+                                  java.io.FileOutputStream fos = new java.io.FileOutputStream(pdfFile);
+                                  doc.writeTo(fos);
+                                  fos.close();
+                                  doc.close();
+                                  Uri uri = FileProvider.getUriForFile(
+                                      MainActivity.this,
+                                      getPackageName() + ".fileprovider",
+                                      pdfFile);
+                              Intent intent = new Intent(Intent.ACTION_SEND);
+                              intent.setType("application/pdf");
+                              intent.putExtra(Intent.EXTRA_STREAM, uri);
+                              intent.putExtra(Intent.EXTRA_SUBJECT, name);
+                              intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                              if ("whatsapp".equals(channel)) {
+                                  intent.setPackage("com.whatsapp");
+                          }
+                          try {
+                              startActivity(intent);
+                      } catch (Exception ex) {
+                          startActivity(Intent.createChooser(intent, "Share PDF"));
+                  }
                                       } catch (Exception e) {
                                           e.printStackTrace();
                                           Toast.makeText(MainActivity.this,
