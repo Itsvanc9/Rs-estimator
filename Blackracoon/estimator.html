@@ -99,7 +99,7 @@
   ══════════════════════════════════════════ */
   header {
     background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.72) 100%),
-                url('file:///android_asset/banner.jpg');
+                url('banner.jpg');
     background-size: 100% auto; background-position: top center; background-repeat: no-repeat;
     min-height: 200px; padding: 0 20px 24px;
     display: flex; flex-direction: column; justify-content: flex-end;
@@ -649,7 +649,7 @@
   ══════════════════════════════════════════ */
   .splash-screen {
     position: fixed; inset: 0; z-index: 99990; cursor: pointer;
-    background: url('file:///android_asset/banner_splash.png') center/cover no-repeat;
+    background: url('banner_splash.png') center/cover no-repeat;
     display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
   }
   .splash-overlay {
@@ -950,7 +950,7 @@
     <div style="border-top:1px solid var(--border);padding-top:16px;">
       <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Logo (aparece en estimados y contratos)</label>
       <div style="display:flex;align-items:center;gap:12px;">
-        <img id="cfgLogoPreview" src="file:///android_asset/logo.png" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
+        <img id="cfgLogoPreview" src="logo.png" style="width:72px;height:72px;border-radius:14px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;">
         <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
           <button onclick="$('cfgLogoPick').click()" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">📁 Cambiar logo</button>
           <button onclick="removeProfileImage('logoBase64')" style="padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:13px;font-family:inherit;cursor:pointer;text-align:left;">↩ Restablecer</button>
@@ -2394,7 +2394,7 @@ function saveProfile() {
 function logoSrc() {
   var p = getProfile();
   if (p.logoBase64) return p.logoBase64;
-  if (window.AndroidBridge) return 'file:///android_asset/logo.png';
+  if (window.AndroidBridge) return 'logo.png';
   return '';
 }
 
@@ -2402,7 +2402,7 @@ function applyProfileImages() {
   var p = getProfile();
   var hdr = document.querySelector('header');
   if (hdr) {
-    var bg = p.bannerBase64 || 'file:///android_asset/banner.jpg';
+    var bg = p.bannerBase64 || 'banner.jpg';
     hdr.style.background = 'linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,0.72) 100%),url("' + bg + '")';
     hdr.style.backgroundSize = '100% auto';
     hdr.style.backgroundPosition = 'top center';
@@ -2410,7 +2410,7 @@ function applyProfileImages() {
   }
   var spl = document.querySelector('.splash-screen');
   if (spl) {
-    var sbg = p.splashBase64 || 'file:///android_asset/banner_splash.png';
+    var sbg = p.splashBase64 || 'banner_splash.png';
     spl.style.backgroundImage = 'url("' + sbg + '")';
     spl.style.backgroundSize = 'cover';
     spl.style.backgroundPosition = 'center';
@@ -2456,7 +2456,7 @@ function removeProfileImage(key) {
   localStorage.setItem('RS_PROFILE', JSON.stringify(p));
   applyProfileImages();
   var previewId = { logoBase64:'cfgLogoPreview', bannerBase64:'cfgBannerPreview', splashBase64:'cfgSplashPreview' }[key];
-  var defaultSrc = { logoBase64:'file:///android_asset/logo.png', bannerBase64:'file:///android_asset/banner.jpg', splashBase64:'file:///android_asset/banner_splash.png' }[key];
+  var defaultSrc = { logoBase64:'logo.png', bannerBase64:'banner.jpg', splashBase64:'banner_splash.png' }[key];
   if (previewId && $(previewId)) $(previewId).src = defaultSrc;
   showToast(t('toastImgReset'));
 }
@@ -2472,7 +2472,7 @@ function openCompanyProfile() {
   $('cfgCompanyPhone').value    = p.companyPhone;
   $('cfgCompanyEmail').value    = p.companyEmail;
   $('cfgContactName').value     = p.contactName || '';
-  $('cfgLogoPreview').src       = p.logoBase64 || 'file:///android_asset/logo.png';
+  $('cfgLogoPreview').src       = p.logoBase64 || 'logo.png';
   history.pushState({ panel: 'companyProfile' }, '');
   $('companyProfilePanel').style.display = 'flex';
 }
