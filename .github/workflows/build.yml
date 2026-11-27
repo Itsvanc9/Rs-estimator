@@ -395,7 +395,7 @@ jobs:
                                               .setResolution(new PrintAttributes.Resolution("pdf", "PDF", 300, 300))
                                               .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
                                               .build();
-String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
+                                          String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
                                           final File pdfFile = new File(getCacheDir(), safeName + ".pdf");
                                           final ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
                                               ParcelFileDescriptor.MODE_READ_WRITE |
