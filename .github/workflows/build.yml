@@ -107,6 +107,18 @@ jobs:
             sed -i 's|</application>|        <provider\n            android:name="androidx.core.content.FileProvider"\n            android:authorities="${applicationId}.fileprovider"\n            android:exported="false"\n            android:grantUriPermissions="true">\n            <meta-data\n                android:name="android.support.FILE_PROVIDER_PATHS"\n                android:resource="@xml/file_paths"/>\n        </provider>\n    </application>|' "$MANIFEST"
           fi
 
+          # Add notification and location permissions before <application tag
+          for PERM in android.permission.POST_NOTIFICATIONS android.permission.ACCESS_FINE_LOCATION android.permission.ACCESS_COARSE_LOCATION; do
+            if ! grep -q "$PERM" "$MANIFEST"; then
+              sed -i "s|<application|<uses-permission android:name=\"$PERM\"/>\n    <application|" "$MANIFEST"
+            fi
+          done
+
+          # Register the payment-reminder receiver inside <application>
+          if ! grep -q 'NotifyReceiver' "$MANIFEST"; then
+            sed -i 's|</application>|        <receiver\n            android:name=".AuthBridge$NotifyReceiver"\n            android:exported="false"/>\n    </application>|' "$MANIFEST"
+          fi
+
           echo "=== AndroidManifest.xml after patching ==="
           cat "$MANIFEST"
 
