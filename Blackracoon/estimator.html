@@ -3263,6 +3263,12 @@ window.__cameraFallback = function() {
   else $('receiptInput').click();
 };
 
+// After the user answers the Android camera-permission prompt, MainActivity
+// calls this so the pending photo actually opens the camera.
+window.__onCameraPermissionResult = function() {
+  try { if (window.AndroidBridge && AndroidBridge.launchCameraNow) AndroidBridge.launchCameraNow(); } catch (e) {}
+};
+
 function receiveNativePhoto(base64) {
   var img = new Image();
   img.onload = function() {
