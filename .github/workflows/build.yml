@@ -500,7 +500,7 @@ jobs:
                               iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                               iv.setWebViewClient(new WebViewClient() {
                                   public void onPageFinished(final WebView view, String url) {
-                                    view.postDelayed(new Runnable() {
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
                                         public void run() {
                                       int width = 1080;
                                       int height = Math.max(view.getContentHeight(), 400);
@@ -561,7 +561,7 @@ jobs:
                               pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                               pv.setWebViewClient(new WebViewClient() {
                                   public void onPageFinished(final WebView view, String url) {
-                                    view.postDelayed(new Runnable() {
+                                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
                                         public void run() {
                                       try {
                                           String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
