@@ -29,6 +29,12 @@ jobs:
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
+      - name: Install fixed debug keystore
+        run: |
+          mkdir -p $HOME/.android
+          base64 -d Blackracoon/keystore/debug.keystore.b64 > $HOME/.android/debug.keystore
+          ls -la $HOME/.android/
+
       - name: Install Capacitor
         run: |
           npm init -y
@@ -466,6 +472,37 @@ jobs:
               }
           }
           JAVAEOF
+
+      - name: Add Firebase authentication
+        run: |
+          cp Blackracoon/android/app/google-services.json android/app/google-services.json
+          sed -i "/com.android.tools.build:gradle/a\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
+          grep -n "google-services" android/build.gradle
+          cat >> android/app/build.gradle << 'GRADLEEOF'
+          apply plugin: 'com.google.gms.google-services'
+          dependencies {
+              implementation platform('com.google.firebase:firebase-bom:33.3.0')
+              implementation 'com.google.firebase:firebase-auth'
+              implementation 'com.google.android.gms:play-services-auth:21.2.0'
+              implementation 'androidx.biometric:biometric:1.1.0'
+          }
+          GRADLEEOF
+          cp Blackracoon/AuthBridge.java android/app/src/main/java/com/blackracoon/estimator/AuthBridge.java
+          python3 << 'PYEOF'
+          p = 'android/app/src/main/java/com/blackracoon/estimator/MainActivity.java'
+          s = open(p).read()
+          a = 'mainWebView.addJavascriptInterface(new AndroidBridge(), "AndroidBridge");'
+          assert a in s, 'anchor registro bridge no encontrado'
+          s = s.replace(a, a + '\n                  authBridge = new AuthBridge(MainActivity.this, mainWebView);\n                  mainWebView.addJavascriptInterface(authBridge, "AuthBridge");', 1)
+          b = 'private WebView mainWebView;'
+          assert b in s, 'anchor campo webview no encontrado'
+          s = s.replace(b, b + '\n              private AuthBridge authBridge;', 1)
+          idx = s.rstrip().rfind('}')
+          method = '\n              @Override\n              protected void onActivityResult(int requestCode, int resultCode, Intent data) {\n                  super.onActivityResult(requestCode, resultCode, data);\n                  if (authBridge != null) authBridge.onActivityResult(requestCode, resultCode, data);\n              }\n'
+          s = s[:idx] + method + s[idx:]
+          open(p, 'w').write(s)
+          print('MainActivity parcheado para AuthBridge')
+          PYEOF
 
       - name: Build Blackracoon APK
         working-directory: android
