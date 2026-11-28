@@ -142,6 +142,67 @@ public class AuthBridge {
         notifyJs(userJson("signedOut"));
     }
 
+    private void notifyKv(String event, String k1, Object v1, String k2, Object v2) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("event", event);
+            if (k1 != null) o.put(k1, v1);
+            if (k2 != null) o.put(k2, v2);
+            notifyJs(o.toString());
+        } catch (Exception ignored) {}
+    }
+
+    private com.google.firebase.firestore.FirebaseFirestore firestore() {
+        return com.google.firebase.firestore.FirebaseFirestore.getInstance();
+    }
+
+    @JavascriptInterface
+    public void backupToCloud(final String json) {
+        try {
+            FirebaseUser u = auth().getCurrentUser();
+            if (u == null) { notifyKv("backupError", "message", "not-signed-in", null, null); return; }
+            java.util.Map<String, Object> doc = new java.util.HashMap<>();
+            doc.put("data", json == null ? "{}" : json);
+            doc.put("updatedAt", com.google.firebase.firestore.FieldValue.serverTimestamp());
+            firestore().collection("users").document(u.getUid()).set(doc).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    notifyKv("backupOk", "updatedAt", System.currentTimeMillis(), null, null);
+                } else {
+                    Exception e = task.getException();
+                    notifyKv("backupError", "message", e == null ? "Error" : (e.getMessage() == null ? e.toString() : e.getMessage()), null, null);
+                }
+            });
+        } catch (Exception e) {
+            notifyKv("backupError", "message", e.getMessage() == null ? e.toString() : e.getMessage(), null, null);
+        }
+    }
+
+    @JavascriptInterface
+    public void restoreFromCloud() {
+        try {
+            FirebaseUser u = auth().getCurrentUser();
+            if (u == null) { notifyKv("restoreError", "message", "not-signed-in", null, null); return; }
+            firestore().collection("users").document(u.getUid()).get().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    com.google.firebase.firestore.DocumentSnapshot snap = task.getResult();
+                    if (snap.exists()) {
+                        String data = snap.getString("data");
+                        com.google.firebase.Timestamp ts = snap.getTimestamp("updatedAt");
+                        long updated = ts != null ? ts.toDate().getTime() : 0;
+                        notifyKv("restoreData", "data", data == null ? "{}" : data, "updatedAt", updated);
+                    } else {
+                        notifyKv("restoreEmpty", null, null, null, null);
+                    }
+                } else {
+                    Exception e = task.getException();
+                    notifyKv("restoreError", "message", e == null ? "Error" : (e.getMessage() == null ? e.toString() : e.getMessage()), null, null);
+                }
+            });
+        } catch (Exception e) {
+            notifyKv("restoreError", "message", e.getMessage() == null ? e.toString() : e.getMessage(), null, null);
+        }
+    }
+
     @JavascriptInterface
     public void biometricUnlock() {
         activity.runOnUiThread(new Runnable() {

@@ -871,6 +871,12 @@
         <span class="setting-label">👆 <span data-i18n="authFingerprint">Fingerprint sign-in</span></span>
         <div class="toggle-wrap" id="biometricToggle" onclick="toggleBiometricSetting()"><div class="toggle-knob"></div></div>
       </div>
+      <div class="setting-row">
+        <span class="setting-label">☁️ <span data-i18n="cloudTitle">Cloud backup</span></span>
+        <span id="cloudStatus" style="color:var(--muted);font-size:12px;font-weight:600;"></span>
+      </div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="cloudManualBackup()">☁️ <span data-i18n="cloudBackupNow">Back up now</span></button>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="cloudManualRestore()">⬇️ <span data-i18n="cloudRestoreBtn">Restore from cloud</span></button>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="authDoSignOut()">🚪 <span data-i18n="authSignOut">Sign out</span></button>
     </div>
 
@@ -1944,7 +1950,7 @@ const T = {
     authWelcome:'Construction Estimator', authGoogle:'Sign in with Google', authOr:'or',
     authEmailPh:'Email', authPassPh:'Password', authSignIn:'Sign in', authCreate:'Create account',
     authNoAccount:'No account? Create one', authHaveAccount:'Already have an account? Sign in',
-    authUseFingerprint:'Enter with fingerprint', authFingerprint:'Fingerprint sign-in', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
+    authUseFingerprint:'Enter with fingerprint', authFingerprint:'Fingerprint sign-in', cloudTitle:'Cloud backup', cloudBackupNow:'Back up now', cloudRestoreBtn:'Restore from cloud', cloudSaved:'Backup saved to the cloud ✓', cloudRestored:'Data restored from the cloud ✓', cloudError:'Cloud error — check your connection', cloudNewerAsk:'There is newer data in the cloud. Restore it? This would replace the data on this phone.', cloudRestoreAsk:'Restore your data from the cloud? This will replace the data on this phone.', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
     authFillFields:'Enter your email and password', authPassShort:'Password must be at least 6 characters',
     authErrWrong:'Wrong email or password', authErrInUse:'That email already has an account — sign in',
     authErrEmail:'Invalid email address', authErrNetwork:'Network error — check your connection', authErrCancel:'Sign-in cancelled',
@@ -2115,7 +2121,7 @@ const T = {
     authWelcome:'Estimador de Construcción', authGoogle:'Iniciar sesión con Google', authOr:'o',
     authEmailPh:'Correo electrónico', authPassPh:'Contraseña', authSignIn:'Entrar', authCreate:'Crear cuenta',
     authNoAccount:'¿No tienes cuenta? Crear una', authHaveAccount:'¿Ya tienes cuenta? Entrar',
-    authUseFingerprint:'Entrar con huella', authFingerprint:'Inicio con huella digital', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
+    authUseFingerprint:'Entrar con huella', authFingerprint:'Inicio con huella digital', cloudTitle:'Respaldo en la nube', cloudBackupNow:'Respaldar ahora', cloudRestoreBtn:'Restaurar de la nube', cloudSaved:'Respaldo guardado en la nube ✓', cloudRestored:'Datos restaurados de la nube ✓', cloudError:'Error de la nube — revisa tu conexión', cloudNewerAsk:'Hay datos más recientes en la nube. ¿Restaurarlos? Se reemplazarían los datos de este teléfono.', cloudRestoreAsk:'¿Restaurar tus datos de la nube? Se reemplazarán los datos de este teléfono.', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
     authFillFields:'Escribe tu correo y contraseña', authPassShort:'La contraseña debe tener al menos 6 caracteres',
     authErrWrong:'Correo o contraseña incorrectos', authErrInUse:'Ese correo ya tiene cuenta — inicia sesión',
     authErrEmail:'Correo no válido', authErrNetwork:'Error de red — revisa tu conexión', authErrCancel:'Inicio de sesión cancelado',
@@ -4838,7 +4844,7 @@ function authEmailMain() {
   } catch (e) { authShowError(e.message); }
 }
 function authBiometric() { try { window.AuthBridge.biometricUnlock(); } catch (e) {} }
-function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); }
+function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); cloudCheckOnEnter(); }
 function authDoSignOut() { try { window.AuthBridge.signOut(); } catch (e) {} if (!authHasBridge()) return; authPassed = false; authUnlockShown = false; window.__authUser = null; authGate(); }
 function authFriendlyError(msg) {
   msg = String(msg || '');
@@ -4866,8 +4872,109 @@ window.__onAuthEvent = function(json) {
     authShowError(authFriendlyError(d.message));
   } else if (d.event === 'biometricOk') {
     authEnterApp();
+  } else if (d.event === 'backupOk') {
+    cloudOnBackupOk(d);
+  } else if (d.event === 'backupError') {
+    cloudOnBackupError(d);
+  } else if (d.event === 'restoreData') {
+    cloudHandleRestore(d);
+  } else if (d.event === 'restoreEmpty') {
+    cloudBackupNow();
+  } else if (d.event === 'restoreError') {
+    cloudOnRestoreError(d);
   }
 };
+
+// ═══════════════════════════════════════════════════════
+// CLOUD BACKUP (Firebase Storage, via AuthBridge)
+// ═══════════════════════════════════════════════════════
+var CLOUD_KEYS = ['RS_ESTIMATES', 'RS_CONTRACTS', 'RS_CLIENTS', 'RS_TEMPLATES', 'RS_PROFILE', 'RS_OVERHEAD', 'RS_STATE'];
+var cloudBackupTimer = null;
+var cloudManualFlag = false;
+var cloudManualRestoreFlag = false;
+
+function cloudHasBridge() { return authHasBridge() && typeof window.AuthBridge.backupToCloud === 'function'; }
+function cloudCollect() {
+  var o = {};
+  for (var i = 0; i < CLOUD_KEYS.length; i++) { var v = localStorage.getItem(CLOUD_KEYS[i]); if (v !== null) o[CLOUD_KEYS[i]] = v; }
+  return JSON.stringify(o);
+}
+function cloudLocalEmpty() {
+  var e = localStorage.getItem('RS_ESTIMATES'), c = localStorage.getItem('RS_CLIENTS');
+  return (!e || e === '[]' || e === '{}') && (!c || c === '[]' || c === '{}');
+}
+function cloudScheduleBackup() {
+  if (!cloudHasBridge() || !window.__authUser) return;
+  if (cloudBackupTimer) clearTimeout(cloudBackupTimer);
+  cloudBackupTimer = setTimeout(cloudBackupNow, 4000);
+}
+function cloudBackupNow() {
+  if (!cloudHasBridge() || !window.__authUser) return;
+  try { window.AuthBridge.backupToCloud(cloudCollect()); } catch (e) {}
+}
+function cloudCheckOnEnter() {
+  cloudUpdateStatusUI();
+  if (!cloudHasBridge() || !window.__authUser) return;
+  try { if (sessionStorage.getItem('RS_CLOUD_CHECKED')) return; sessionStorage.setItem('RS_CLOUD_CHECKED', '1'); } catch (e) {}
+  try { window.AuthBridge.restoreFromCloud(); } catch (e) {}
+}
+function cloudApplyData(json) {
+  try {
+    var o = JSON.parse(json); if (!o) return false;
+    window.__cloudApplying = true;
+    for (var k in o) { if (CLOUD_KEYS.indexOf(k) >= 0 && o[k] != null) localStorage.setItem(k, o[k]); }
+    window.__cloudApplying = false;
+    return true;
+  } catch (e) { window.__cloudApplying = false; return false; }
+}
+function cloudHandleRestore(d) {
+  var cloudTs = d.updatedAt || 0;
+  if (cloudManualRestoreFlag) {
+    cloudManualRestoreFlag = false;
+    if (cloudApplyData(d.data)) { showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
+    return;
+  }
+  if (cloudLocalEmpty()) {
+    if (cloudApplyData(d.data)) { showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
+    return;
+  }
+  var localTs = parseInt(localStorage.getItem('RS_DATA_TS') || '0', 10);
+  if (cloudTs > localTs + 5000) {
+    if (confirm(t('cloudNewerAsk'))) {
+      if (cloudApplyData(d.data)) { try { localStorage.setItem('RS_DATA_TS', String(cloudTs)); } catch (e) {} showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
+    }
+  }
+}
+function cloudOnBackupOk(d) {
+  try { localStorage.setItem('RS_CLOUD_LAST', String(d.updatedAt || Date.now())); } catch (e) {}
+  cloudUpdateStatusUI();
+  if (cloudManualFlag) { cloudManualFlag = false; showToast(t('cloudSaved')); }
+}
+function cloudOnBackupError(d) { if (cloudManualFlag) { cloudManualFlag = false; showToast(t('cloudError')); } }
+function cloudOnRestoreError(d) { if (cloudManualRestoreFlag) { cloudManualRestoreFlag = false; showToast(t('cloudError')); } }
+function cloudManualBackup() { if (!cloudHasBridge()) return; cloudManualFlag = true; cloudBackupNow(); }
+function cloudManualRestore() {
+  if (!cloudHasBridge()) return;
+  if (!confirm(t('cloudRestoreAsk'))) return;
+  cloudManualRestoreFlag = true;
+  try { window.AuthBridge.restoreFromCloud(); } catch (e) { cloudManualRestoreFlag = false; }
+}
+function cloudUpdateStatusUI() {
+  var el = $('cloudStatus'); if (!el) return;
+  var last = parseInt(localStorage.getItem('RS_CLOUD_LAST') || '0', 10);
+  el.textContent = last ? ('✓ ' + new Date(last).toLocaleDateString() + ' ' + new Date(last).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})) : '';
+}
+// Auto-backup: hook every data save
+(function() {
+  var origSet = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function(k, v) {
+    origSet(k, v);
+    if (!window.__cloudApplying && CLOUD_KEYS.indexOf(k) >= 0) {
+      try { origSet('RS_DATA_TS', String(Date.now())); } catch (e) {}
+      cloudScheduleBackup();
+    }
+  };
+})();
 
 function openTerms() {
   var ts = $('termsScreen');
