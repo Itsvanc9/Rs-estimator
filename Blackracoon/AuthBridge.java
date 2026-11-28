@@ -183,6 +183,7 @@ public class AuthBridge {
             FirebaseUser u = auth().getCurrentUser();
             if (u == null) { notifyKv("restoreError", "message", "not-signed-in", null, null); return; }
             firestore().collection("users").document(u.getUid()).get().addOnCompleteListener(task -> {
+              try {
                 if (task.isSuccessful() && task.getResult() != null) {
                     com.google.firebase.firestore.DocumentSnapshot snap = task.getResult();
                     if (snap.exists()) {
@@ -197,6 +198,9 @@ public class AuthBridge {
                     Exception e = task.getException();
                     notifyKv("restoreError", "message", e == null ? "Error" : (e.getMessage() == null ? e.toString() : e.getMessage()), null, null);
                 }
+              } catch (Exception e) {
+                notifyKv("restoreError", "message", e.toString(), null, null);
+              }
             });
         } catch (Exception e) {
             notifyKv("restoreError", "message", e.getMessage() == null ? e.toString() : e.getMessage(), null, null);

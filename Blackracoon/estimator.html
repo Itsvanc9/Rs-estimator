@@ -4877,7 +4877,7 @@ window.__onAuthEvent = function(json) {
   } else if (d.event === 'backupError') {
     cloudOnBackupError(d);
   } else if (d.event === 'restoreData') {
-    cloudHandleRestore(d);
+    if (cloudDataHasKeys(d.data)) cloudHandleRestore(d); else cloudBackupNow();
   } else if (d.event === 'restoreEmpty') {
     cloudBackupNow();
   } else if (d.event === 'restoreError') {
@@ -4894,6 +4894,13 @@ var cloudManualFlag = false;
 var cloudManualRestoreFlag = false;
 
 function cloudHasBridge() { return authHasBridge() && typeof window.AuthBridge.backupToCloud === 'function'; }
+function cloudDataHasKeys(json) {
+  try {
+    var o = JSON.parse(json); if (!o) return false;
+    for (var i = 0; i < CLOUD_KEYS.length; i++) { if (o[CLOUD_KEYS[i]] != null) return true; }
+    return false;
+  } catch (e) { return false; }
+}
 function cloudCollect() {
   var o = {};
   for (var i = 0; i < CLOUD_KEYS.length; i++) { var v = localStorage.getItem(CLOUD_KEYS[i]); if (v !== null) o[CLOUD_KEYS[i]] = v; }
