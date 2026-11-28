@@ -4753,6 +4753,7 @@ function dismissSplash() {
   splash.style.opacity = '0';
   setTimeout(function() {
     splash.style.display = 'none';
+    window.__splashDone = true;
     if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
       $('termsScreen').style.display = 'flex';
     } else if (window.authGate) {
@@ -4789,7 +4790,7 @@ function authGate() {
     $('authUnlockBox').style.display = 'block';
     $('authUserEmail').textContent = u.email || '';
     scr.classList.add('open');
-    if (!authUnlockShown) { authUnlockShown = true; setTimeout(authBiometric, 400); }
+    if (!authUnlockShown && window.__splashDone) { authUnlockShown = true; setTimeout(authBiometric, 400); }
   } else {
     $('authUnlockBox').style.display = 'none';
     $('authLoginBox').style.display = 'block';
@@ -5149,6 +5150,9 @@ function _upsertClient(name, phone, email, address, type) {
   renderTemplates();
   updateTotal();
   updateContractCount();
+
+  // Pre-arm the login/unlock gate under the splash so the app never flashes first
+  if (window.authGate) authGate();
 
   // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
   setTimeout(dismissSplash, 2500);
