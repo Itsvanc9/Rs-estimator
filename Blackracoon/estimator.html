@@ -2096,7 +2096,7 @@ const T = {
     authWelcome:'Construction Estimator', authGoogle:'Sign in with Google', authOr:'or',
     authEmailPh:'Email', authPassPh:'Password', authSignIn:'Sign in', authCreate:'Create account',
     authNoAccount:'No account? Create one', authHaveAccount:'Already have an account? Sign in',
-    authUseFingerprint:'Enter with fingerprint', authFingerprint:'Fingerprint sign-in', cloudTitle:'Cloud backup', cloudBackupNow:'Back up now', cloudRestoreBtn:'Restore from cloud', cloudSaved:'Backup saved to the cloud ✓', cloudRestored:'Data restored from the cloud ✓', cloudError:'Cloud error — check your connection', cloudNewerAsk:'There is newer data in the cloud. Restore it? This would replace the data on this phone.', cloudRestoreAsk:'Restore your data from the cloud? This will replace the data on this phone.', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
+    authUseFingerprint:'Enter with fingerprint', authBioAsk:'Do you want to sign in with your fingerprint next time? You can turn this on or off whenever you want in Settings → Account.', authBioOn:'Fingerprint sign-in on 👆', authFingerprint:'Fingerprint sign-in', cloudTitle:'Cloud backup', cloudBackupNow:'Back up now', cloudRestoreBtn:'Restore from cloud', cloudSaved:'Backup saved to the cloud ✓', cloudRestored:'Data restored from the cloud ✓', cloudError:'Cloud error — check your connection', cloudNewerAsk:'There is newer data in the cloud. Restore it? This would replace the data on this phone.', cloudRestoreAsk:'Restore your data from the cloud? This will replace the data on this phone.', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
     authFillFields:'Enter your email and password', authPassShort:'Password must be at least 6 characters',
     authErrWrong:'Wrong email or password', authErrInUse:'That email already has an account — sign in',
     authErrEmail:'Invalid email address', authErrNetwork:'Network error — check your connection', authErrCancel:'Sign-in cancelled',
@@ -2297,7 +2297,7 @@ const T = {
     authWelcome:'Estimador de Construcción', authGoogle:'Iniciar sesión con Google', authOr:'o',
     authEmailPh:'Correo electrónico', authPassPh:'Contraseña', authSignIn:'Entrar', authCreate:'Crear cuenta',
     authNoAccount:'¿No tienes cuenta? Crear una', authHaveAccount:'¿Ya tienes cuenta? Entrar',
-    authUseFingerprint:'Entrar con huella', authFingerprint:'Inicio con huella digital', cloudTitle:'Respaldo en la nube', cloudBackupNow:'Respaldar ahora', cloudRestoreBtn:'Restaurar de la nube', cloudSaved:'Respaldo guardado en la nube ✓', cloudRestored:'Datos restaurados de la nube ✓', cloudError:'Error de la nube — revisa tu conexión', cloudNewerAsk:'Hay datos más recientes en la nube. ¿Restaurarlos? Se reemplazarían los datos de este teléfono.', cloudRestoreAsk:'¿Restaurar tus datos de la nube? Se reemplazarán los datos de este teléfono.', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
+    authUseFingerprint:'Entrar con huella', authBioAsk:'¿Quieres entrar con tu huella digital la próxima vez? Puedes activarlo o desactivarlo cuando quieras en Configuración → Cuenta.', authBioOn:'Inicio con huella activado 👆', authFingerprint:'Inicio con huella digital', cloudTitle:'Respaldo en la nube', cloudBackupNow:'Respaldar ahora', cloudRestoreBtn:'Restaurar de la nube', cloudSaved:'Respaldo guardado en la nube ✓', cloudRestored:'Datos restaurados de la nube ✓', cloudError:'Error de la nube — revisa tu conexión', cloudNewerAsk:'Hay datos más recientes en la nube. ¿Restaurarlos? Se reemplazarían los datos de este teléfono.', cloudRestoreAsk:'¿Restaurar tus datos de la nube? Se reemplazarán los datos de este teléfono.', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
     authFillFields:'Escribe tu correo y contraseña', authPassShort:'La contraseña debe tener al menos 6 caracteres',
     authErrWrong:'Correo o contraseña incorrectos', authErrInUse:'Ese correo ya tiene cuenta — inicia sesión',
     authErrEmail:'Correo no válido', authErrNetwork:'Error de red — revisa tu conexión', authErrCancel:'Inicio de sesión cancelado',
@@ -5034,10 +5034,28 @@ var authMode = 'login';
 var authUnlockShown = false;
 var authPassed = false;
 function authHasBridge() { return typeof window.AuthBridge !== 'undefined' && window.AuthBridge && typeof window.AuthBridge.getUser === 'function'; }
-function authBiometricEnabled() { return localStorage.getItem('RS_BIOMETRIC') !== '0'; }
+function authBiometricEnabled() { return localStorage.getItem('RS_BIOMETRIC') === '1'; }
 function toggleBiometricSetting() {
   localStorage.setItem('RS_BIOMETRIC', authBiometricEnabled() ? '0' : '1');
+  localStorage.setItem('RS_BIO_ASKED', '1');
   updateBiometricToggleUI();
+}
+// Ask ONCE, right after a fresh sign-in, whether to enable fingerprint
+// sign-in. The user decides; it can be changed later in Settings → Account.
+function authMaybeAskBiometric() {
+  if (!authHasBridge()) return;
+  if (localStorage.getItem('RS_BIO_ASKED') === '1') return;
+  if (localStorage.getItem('RS_BIOMETRIC') !== null) { localStorage.setItem('RS_BIO_ASKED', '1'); return; }
+  localStorage.setItem('RS_BIO_ASKED', '1');
+  setTimeout(function() {
+    if (confirm(t('authBioAsk'))) {
+      localStorage.setItem('RS_BIOMETRIC', '1');
+      showToast(t('authBioOn'));
+    } else {
+      localStorage.setItem('RS_BIOMETRIC', '0');
+    }
+    updateBiometricToggleUI();
+  }, 1200);
 }
 function updateBiometricToggleUI() {
   var wrap = $('biometricToggle');
@@ -5122,6 +5140,7 @@ window.__onAuthEvent = function(json) {
     authUnlockShown = false;
     authEnterApp();
     authRefreshTexts();
+    authMaybeAskBiometric();
   } else if (d.event === 'signedOut') {
     window.__authUser = null;
     authUnlockShown = false;
