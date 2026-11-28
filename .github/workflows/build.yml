@@ -497,9 +497,9 @@ jobs:
           b = 'private WebView mainWebView;'
           assert b in s, 'anchor campo webview no encontrado'
           s = s.replace(b, b + '\n              private AuthBridge authBridge;', 1)
-          idx = s.rstrip().rfind('}')
-          method = '\n              @Override\n              protected void onActivityResult(int requestCode, int resultCode, Intent data) {\n                  super.onActivityResult(requestCode, resultCode, data);\n                  if (authBridge != null) authBridge.onActivityResult(requestCode, resultCode, data);\n              }\n'
-          s = s[:idx] + method + s[idx:]
+          c = '        super.onActivityResult(requestCode, resultCode, data);'
+          assert s.count(c) == 1, 'anchor onActivityResult no unico'
+          s = s.replace(c, '        if (authBridge != null) authBridge.onActivityResult(requestCode, resultCode, data);\n' + c, 1)
           open(p, 'w').write(s)
           print('MainActivity parcheado para AuthBridge')
           PYEOF
