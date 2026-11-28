@@ -358,10 +358,6 @@ jobs:
                         intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.setClipData(android.content.ClipData.newRawUri("", photoUri));
-                        if (intent.resolveActivity(getPackageManager()) == null) {
-                            cameraFallbackToPicker();
-                            return;
-                        }
                         startActivityForResult(intent, CAMERA_REQUEST);
                     } catch (Exception e) {
                         e.printStackTrace();
