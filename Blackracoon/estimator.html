@@ -867,6 +867,10 @@
     <div class="setting-section">
       <div class="setting-section-title" data-i18n="lblAccount">Account</div>
       <div class="setting-row"><span class="setting-label" id="authAccountEmail">—</span></div>
+      <div class="setting-row">
+        <span class="setting-label">👆 <span data-i18n="authFingerprint">Fingerprint sign-in</span></span>
+        <div class="toggle-wrap" id="biometricToggle" onclick="toggleBiometricSetting()"><div class="toggle-knob"></div></div>
+      </div>
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="authDoSignOut()">🚪 <span data-i18n="authSignOut">Sign out</span></button>
     </div>
 
@@ -1940,7 +1944,7 @@ const T = {
     authWelcome:'Construction Estimator', authGoogle:'Sign in with Google', authOr:'or',
     authEmailPh:'Email', authPassPh:'Password', authSignIn:'Sign in', authCreate:'Create account',
     authNoAccount:'No account? Create one', authHaveAccount:'Already have an account? Sign in',
-    authUseFingerprint:'Enter with fingerprint', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
+    authUseFingerprint:'Enter with fingerprint', authFingerprint:'Fingerprint sign-in', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
     authFillFields:'Enter your email and password', authPassShort:'Password must be at least 6 characters',
     authErrWrong:'Wrong email or password', authErrInUse:'That email already has an account — sign in',
     authErrEmail:'Invalid email address', authErrNetwork:'Network error — check your connection', authErrCancel:'Sign-in cancelled',
@@ -2111,7 +2115,7 @@ const T = {
     authWelcome:'Estimador de Construcción', authGoogle:'Iniciar sesión con Google', authOr:'o',
     authEmailPh:'Correo electrónico', authPassPh:'Contraseña', authSignIn:'Entrar', authCreate:'Crear cuenta',
     authNoAccount:'¿No tienes cuenta? Crear una', authHaveAccount:'¿Ya tienes cuenta? Entrar',
-    authUseFingerprint:'Entrar con huella', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
+    authUseFingerprint:'Entrar con huella', authFingerprint:'Inicio con huella digital', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
     authFillFields:'Escribe tu correo y contraseña', authPassShort:'La contraseña debe tener al menos 6 caracteres',
     authErrWrong:'Correo o contraseña incorrectos', authErrInUse:'Ese correo ya tiene cuenta — inicia sesión',
     authErrEmail:'Correo no válido', authErrNetwork:'Error de red — revisa tu conexión', authErrCancel:'Inicio de sesión cancelado',
@@ -4777,6 +4781,15 @@ var authMode = 'login';
 var authUnlockShown = false;
 var authPassed = false;
 function authHasBridge() { return typeof window.AuthBridge !== 'undefined' && window.AuthBridge && typeof window.AuthBridge.getUser === 'function'; }
+function authBiometricEnabled() { return localStorage.getItem('RS_BIOMETRIC') !== '0'; }
+function toggleBiometricSetting() {
+  localStorage.setItem('RS_BIOMETRIC', authBiometricEnabled() ? '0' : '1');
+  updateBiometricToggleUI();
+}
+function updateBiometricToggleUI() {
+  var wrap = $('biometricToggle');
+  if (wrap) wrap.className = 'toggle-wrap' + (authBiometricEnabled() ? ' on' : '');
+}
 function authGate() {
   if (!authHasBridge()) return;
   if (authPassed) return;
@@ -4786,6 +4799,7 @@ function authGate() {
   if (!scr) return;
   if (u && u.signedIn) {
     window.__authUser = u;
+    if (!authBiometricEnabled()) { authEnterApp(); authRefreshTexts(); return; }
     $('authLoginBox').style.display = 'none';
     $('authUnlockBox').style.display = 'block';
     $('authUserEmail').textContent = u.email || '';
@@ -5153,9 +5167,16 @@ function _upsertClient(name, phone, email, address, type) {
 
   // Pre-arm the login/unlock gate under the splash so the app never flashes first
   if (window.authGate) authGate();
+  updateBiometricToggleUI();
 
-  // Auto-dismiss splash after 2.5s; terms shows if not yet accepted
-  setTimeout(dismissSplash, 2500);
+  // Direct entry: no splash wait — straight to terms (first time only) or sign-in
+  var sp = $('splash'); if (sp) sp.style.display = 'none';
+  window.__splashDone = true;
+  if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
+    $('termsScreen').style.display = 'flex';
+  } else if (window.authGate) {
+    authGate();
+  }
 
   // Android hardware back button — close topmost visible panel
   window.addEventListener('popstate', function() {
