@@ -31,9 +31,10 @@ jobs:
 
       - name: Install fixed debug keystore
         run: |
+          base64 -d Blackracoon/keystore/debug.keystore.b64 > fixed.keystore
           mkdir -p $HOME/.android
-          base64 -d Blackracoon/keystore/debug.keystore.b64 > $HOME/.android/debug.keystore
-          ls -la $HOME/.android/
+          cp fixed.keystore $HOME/.android/debug.keystore
+          ls -la $HOME/.android/ fixed.keystore
 
       - name: Install Capacitor
         run: |
@@ -476,6 +477,7 @@ jobs:
       - name: Add Firebase authentication
         run: |
           cp Blackracoon/android/app/google-services.json android/app/google-services.json
+          cp fixed.keystore android/app/fixed.keystore
           sed -i "/com.android.tools.build:gradle/a\        classpath 'com.google.gms:google-services:4.4.2'" android/build.gradle
           grep -n "google-services" android/build.gradle
           cat >> android/app/build.gradle << 'GRADLEEOF'
@@ -485,6 +487,21 @@ jobs:
               implementation 'com.google.firebase:firebase-auth'
               implementation 'com.google.android.gms:play-services-auth:21.2.0'
               implementation 'androidx.biometric:biometric:1.1.0'
+          }
+          android {
+              signingConfigs {
+                  fixedDebug {
+                      storeFile file('fixed.keystore')
+                      storePassword 'android'
+                      keyAlias 'androiddebugkey'
+                      keyPassword 'android'
+                  }
+              }
+              buildTypes {
+                  debug {
+                      signingConfig signingConfigs.fixedDebug
+                  }
+              }
           }
           GRADLEEOF
           cp Blackracoon/AuthBridge.java android/app/src/main/java/com/blackracoon/estimator/AuthBridge.java
