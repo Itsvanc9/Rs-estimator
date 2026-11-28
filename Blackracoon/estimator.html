@@ -1074,10 +1074,12 @@
       <div class="grid-2">
         <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal();validateFolio()" autocomplete="off"><div id="folioWarn" style="display:none;font-size:11px;margin-top:5px;padding:6px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;"></div></div>
         <div class="field"><label data-i18n="date">Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
-        <div class="field" style="position:relative;">
-          <label data-i18n="client">Client</label>
-          <input id="clientName" placeholder="Client Name" oninput="updateTotal()" autocomplete="off" style="padding-right:124px;">
-          <button onclick="openClientsPage()" style="position:absolute;right:6px;bottom:8px;background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1;" data-i18n="loadClientBtn">👥 Load</button>
+        <div class="field">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <label data-i18n="client" style="margin:0;">Client</label>
+            <button onclick="openClientsPage()" style="background:var(--lime-light);border:1px solid var(--lime);color:var(--lime-dark);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;line-height:1.2;" data-i18n="loadClientBtn">👥 Load</button>
+          </div>
+          <input id="clientName" placeholder="Client Name" oninput="updateTotal()" autocomplete="off">
         </div>
         <div class="field"><label data-i18n="project">Project</label><input id="projectName" placeholder="Project Name" oninput="updateTotal()"></div>
         <div class="field"><label data-i18n="clientPhone">Phone</label><input id="clientPhone" placeholder="Client phone"></div>
