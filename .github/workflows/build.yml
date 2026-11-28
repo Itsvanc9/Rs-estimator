@@ -194,6 +194,7 @@ import java.io.OutputStream;
               private static final int STORAGE_PERMISSION_REQUEST = 2;
               private static final int CAMERA_REQUEST = 3;
 private static final int BACKUP_PICK_REQUEST = 7;
+private static final int CAMERA_PERMISSION_REQUEST = 8;
               private File cameraOutputFile;
               private WebView mainWebView;
 
@@ -247,6 +248,11 @@ private static final int BACKUP_PICK_REQUEST = 7;
                           filePathCallback = null;
                       }
                   } else if (requestCode == CAMERA_REQUEST) {
+                    if (cameraOutputFile == null) {
+                        String savedPath = getSharedPreferences("br_camera", MODE_PRIVATE).getString("last_path", null);
+                        if (savedPath != null) cameraOutputFile = new File(savedPath);
+                    }
+                    getSharedPreferences("br_camera", MODE_PRIVATE).edit().remove("last_path").apply();
                       if (resultCode == Activity.RESULT_OK
                               && cameraOutputFile != null
                               && cameraOutputFile.exists()
@@ -307,31 +313,68 @@ private static final int BACKUP_PICK_REQUEST = 7;
 
               class AndroidBridge {
 
-                  @JavascriptInterface
-                  public void takePhoto() {
-                      runOnUiThread(new Runnable() {
-                          public void run() {
-                              try {
-                                  File dir = new File(getCacheDir(), "photos");
-                                  dir.mkdirs();
-                                  cameraOutputFile = File.createTempFile("photo_", ".jpg", dir);
-                                  Uri photoUri = FileProvider.getUriForFile(
-                                      MainActivity.this,
-                                      getPackageName() + ".fileprovider",
-                                      cameraOutputFile
-                                  );
-                                  Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                                  intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                                  intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                                  startActivityForResult(intent, CAMERA_REQUEST);
-                              } catch (Exception e) {
-                                  e.printStackTrace();
-                              }
-                          }
-                      });
-                  }
+                @JavascriptInterface
+                public void takePhoto() {
+                    runOnUiThread(new Runnable() {
+                    public void run() {                        
+                                    if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)
+                                    != PackageManager.PERMISSION_GRANTED) {
+                                ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
+                                return;
+                            }
+                            launchCamera();
+                        }
+                    });
+                }
 
-                                  @JavascriptInterface
+                @Override
+                public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                    if (requestCode == CAMERA_PERMISSION_REQUEST) {
+                        launchCamera();
+                    }
+                }
+
+                private void launchCamera() {
+                    try {
+                        File dir = new File(getCacheDir(), "photos");
+                        dir.mkdirs();
+                        cameraOutputFile = File.createTempFile("photo_", ".jpg", dir);
+                        getSharedPreferences("br_camera", MODE_PRIVATE).edit()
+                            .putString("last_path", cameraOutputFile.getAbsolutePath()).apply();
+                        Uri photoUri = FileProvider.getUriForFile(
+                            MainActivity.this,
+                            getPackageName() + ".fileprovider",
+                            cameraOutputFile
+                        );
+                        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                        intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                        intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        intent.setClipData(android.content.ClipData.newRawUri("", photoUri));
+                        if (intent.resolveActivity(getPackageManager()) == null) {
+                            cameraFallbackToPicker();
+                            return;
+                        }
+                        startActivityForResult(intent, CAMERA_REQUEST);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        cameraFallbackToPicker();
+                    }
+                }
+                                private void cameraFallbackToPicker() {
+                    if (mainWebView != null) {
+                        mainWebView.post(new Runnable() {
+                            public void run() {
+                                mainWebView.evaluateJavascript(
+                                    "window.__cameraFallback && window.__cameraFallback()", null);
+                            }
+                        });
+                    }
+                }
+
+                @JavascriptInterface
                 public void saveBase64File(String base64Data, String fileName, String mimeType) {
                     try {
                         String[] parts = base64Data.split(",");
