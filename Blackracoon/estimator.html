@@ -807,6 +807,23 @@
 .action-sheet-body{position:absolute;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:12px 16px 40px;}
 .action-sheet-handle{width:36px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 14px;}
 .action-sheet-btn{width:100%;padding:15px 16px;margin-bottom:8px;background:var(--bg);border:1px solid var(--border-solid);border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;text-align:left;color:var(--text);}
+
+  /* ── LOGIN / AUTH GATE ── */
+  .auth-screen { position: fixed; inset: 0; z-index: 12000; display: none; align-items: center; justify-content: center; background: #0c0f0a url('banner_splash.png') center/cover no-repeat; }
+  .auth-screen.open { display: flex; }
+  .auth-card { background: rgba(16,20,14,0.93); border: 1px solid rgba(163,230,53,0.35); border-radius: 20px; padding: 28px 24px; width: min(92vw, 360px); text-align: center; color: #f4f7ee; box-shadow: 0 18px 50px rgba(0,0,0,0.5); max-height: 92vh; overflow-y: auto; }
+  .auth-logo { width: 92px; height: 92px; border-radius: 22px; object-fit: cover; margin-bottom: 10px; }
+  .auth-title { font-family: 'Bebas Neue', sans-serif; font-size: 27px; letter-spacing: 1px; margin: 2px 0; }
+  .auth-sub { font-size: 13px; color: #c9d4bb; margin-bottom: 18px; }
+  .auth-google-btn { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #1f2937; border: none; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .auth-divider { display: flex; align-items: center; gap: 10px; color: #9fb08a; font-size: 12px; margin: 16px 0; }
+  .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.18); }
+  .auth-input { width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22); border-radius: 12px; padding: 12px; color: #fff; font-size: 15px; margin-bottom: 10px; }
+  .auth-input::placeholder { color: #a7b394; }
+  .auth-main-btn { width: 100%; background: var(--lime, #a3e635); color: #16210a; border: none; border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 800; cursor: pointer; }
+  .auth-link { color: #bef264; font-size: 13px; font-weight: 700; cursor: pointer; background: none; border: none; margin-top: 12px; }
+  .auth-error { color: #fda4af; font-size: 13px; min-height: 18px; margin-top: 10px; }
+  .auth-bio-btn { width: 100%; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 12px; padding: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -846,6 +863,14 @@
     <button onclick="closeSettings()">✕</button>
   </div>
   <div class="settings-body">
+
+    <div class="setting-section">
+      <div class="setting-section-title" data-i18n="lblAccount">Account</div>
+      <div class="setting-row"><span class="setting-label" id="authAccountEmail">—</span></div>
+      <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="authDoSignOut()">🚪 <span data-i18n="authSignOut">Sign out</span></button>
+    </div>
+
+    
 
     <div class="setting-section">
       <div class="setting-section-title" data-i18n="lblAppearance">Appearance</div>
@@ -1002,6 +1027,31 @@
     <button id="termsAcceptBtn" class="terms-accept-btn" disabled onclick="acceptTerms()" data-i18n="termsContinue">
       Continue to App →
     </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════ LOGIN / AUTH GATE ═══════════════ -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <img src="logo.png" class="auth-logo" alt="Blackracoon">
+    <div class="auth-title">BLACKRACOON</div>
+    <div class="auth-sub" data-i18n="authWelcome">Construction Estimator</div>
+    <div id="authUnlockBox" style="display:none;">
+      <div class="auth-sub" id="authUserEmail" style="margin-bottom:12px;"></div>
+      <button class="auth-bio-btn" onclick="authBiometric()">👆 <span data-i18n="authUseFingerprint">Enter with fingerprint</span></button>
+      <button class="auth-main-btn" onclick="authEnterApp()"><span data-i18n="authEnter">Enter</span></button>
+      <br><button class="auth-link" onclick="authDoSignOut()"><span data-i18n="authSignOut">Sign out</span></button>
+    </div>
+    <div id="authLoginBox">
+      <button class="auth-google-btn" onclick="authGoogle()"><span style="font-weight:900;color:#4285F4;font-size:17px;">G</span> <span data-i18n="authGoogle">Sign in with Google</span></button>
+      <div class="auth-divider"><span data-i18n="authOr">or</span></div>
+      <input class="auth-input" id="authEmail" type="email" placeholder="Email" autocomplete="email">
+      <input class="auth-input" id="authPass" type="password" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')authEmailMain()">
+      <button class="auth-main-btn" id="authMainBtn" onclick="authEmailMain()"><span data-i18n="authSignIn">Sign in</span></button>
+      <br><button class="auth-link" id="authToggleMode" onclick="authToggleMode()"><span data-i18n="authNoAccount">No account? Create one</span></button>
+    </div>
+    <div class="auth-error" id="authError"></div>
   </div>
 </div>
 
@@ -1885,6 +1935,13 @@ const T = {
     clientTotalValue:'Total Value', clientNewEst:'📝 New Estimate',
     deleteClientConfirm:'Delete this client?',
     loadClientBtn:'👥 Load Client',
+    authWelcome:'Construction Estimator', authGoogle:'Sign in with Google', authOr:'or',
+    authEmailPh:'Email', authPassPh:'Password', authSignIn:'Sign in', authCreate:'Create account',
+    authNoAccount:'No account? Create one', authHaveAccount:'Already have an account? Sign in',
+    authUseFingerprint:'Enter with fingerprint', authEnter:'Enter', authSignOut:'Sign out', lblAccount:'Account',
+    authFillFields:'Enter your email and password', authPassShort:'Password must be at least 6 characters',
+    authErrWrong:'Wrong email or password', authErrInUse:'That email already has an account — sign in',
+    authErrEmail:'Invalid email address', authErrNetwork:'Network error — check your connection', authErrCancel:'Sign-in cancelled',
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
@@ -2049,6 +2106,13 @@ const T = {
     clientTotalValue:'Valor Total', clientNewEst:'📝 Nuevo Estimado',
     deleteClientConfirm:'¿Eliminar este cliente?',
     loadClientBtn:'👥 Cargar Cliente',
+    authWelcome:'Estimador de Construcción', authGoogle:'Iniciar sesión con Google', authOr:'o',
+    authEmailPh:'Correo electrónico', authPassPh:'Contraseña', authSignIn:'Entrar', authCreate:'Crear cuenta',
+    authNoAccount:'¿No tienes cuenta? Crear una', authHaveAccount:'¿Ya tienes cuenta? Entrar',
+    authUseFingerprint:'Entrar con huella', authEnter:'Entrar', authSignOut:'Cerrar sesión', lblAccount:'Cuenta',
+    authFillFields:'Escribe tu correo y contraseña', authPassShort:'La contraseña debe tener al menos 6 caracteres',
+    authErrWrong:'Correo o contraseña incorrectos', authErrInUse:'Ese correo ya tiene cuenta — inicia sesión',
+    authErrEmail:'Correo no válido', authErrNetwork:'Error de red — revisa tu conexión', authErrCancel:'Inicio de sesión cancelado',
   }
 };
 
@@ -4689,6 +4753,8 @@ function dismissSplash() {
     splash.style.display = 'none';
     if (localStorage.getItem('RS_TERMS_VERSION') !== TERMS_VERSION) {
       $('termsScreen').style.display = 'flex';
+    } else if (window.authGate) {
+      authGate();
     }
   }, 400);
 }
@@ -4699,7 +4765,92 @@ function acceptTerms() {
   ts.style.transition = 'opacity 0.3s ease';
   ts.style.opacity = '0';
   setTimeout(function() { ts.style.display = 'none'; }, 300);
+  if (window.authGate) authGate();
 }
+
+
+/* ═══════ AUTH (Firebase via AndroidBridge) ═══════ */
+var authMode = 'login';
+var authUnlockShown = false;
+var authPassed = false;
+function authHasBridge() { return typeof window.AuthBridge !== 'undefined' && window.AuthBridge && typeof window.AuthBridge.getUser === 'function'; }
+function authGate() {
+  if (!authHasBridge()) return;
+  if (authPassed) return;
+  var u = null;
+  try { u = JSON.parse(window.AuthBridge.getUser()); } catch (e) {}
+  var scr = $('authScreen');
+  if (!scr) return;
+  if (u && u.signedIn) {
+    window.__authUser = u;
+    $('authLoginBox').style.display = 'none';
+    $('authUnlockBox').style.display = 'block';
+    $('authUserEmail').textContent = u.email || '';
+    scr.classList.add('open');
+    if (!authUnlockShown) { authUnlockShown = true; setTimeout(authBiometric, 400); }
+  } else {
+    $('authUnlockBox').style.display = 'none';
+    $('authLoginBox').style.display = 'block';
+    scr.classList.add('open');
+  }
+  authRefreshTexts();
+}
+function authRefreshTexts() {
+  var e = $('authEmail'), p = $('authPass');
+  if (e) e.placeholder = t('authEmailPh');
+  if (p) p.placeholder = t('authPassPh');
+  var mb = $('authMainBtn');
+  if (mb) mb.innerHTML = '<span>' + (authMode === 'register' ? t('authCreate') : t('authSignIn')) + '</span>';
+  var tg = $('authToggleMode');
+  if (tg) tg.innerHTML = '<span>' + (authMode === 'register' ? t('authHaveAccount') : t('authNoAccount')) + '</span>';
+  var ac = $('authAccountEmail');
+  if (ac) ac.textContent = (window.__authUser && window.__authUser.email) ? window.__authUser.email : '—';
+}
+function authShowError(msg) { var el = $('authError'); if (el) el.textContent = msg || ''; }
+function authGoogle() { authShowError(''); try { window.AuthBridge.signInWithGoogle(); } catch (e) { authShowError(e.message); } }
+function authToggleMode() { authMode = (authMode === 'login') ? 'register' : 'login'; authShowError(''); authRefreshTexts(); }
+function authEmailMain() {
+  var email = ($('authEmail').value || '').trim();
+  var pass = $('authPass').value || '';
+  if (!email || !pass) { authShowError(t('authFillFields')); return; }
+  if (pass.length < 6) { authShowError(t('authPassShort')); return; }
+  authShowError('');
+  try {
+    if (authMode === 'register') window.AuthBridge.createAccount(email, pass);
+    else window.AuthBridge.signInWithEmail(email, pass);
+  } catch (e) { authShowError(e.message); }
+}
+function authBiometric() { try { window.AuthBridge.biometricUnlock(); } catch (e) {} }
+function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); }
+function authDoSignOut() { try { window.AuthBridge.signOut(); } catch (e) {} if (!authHasBridge()) return; authPassed = false; authUnlockShown = false; window.__authUser = null; authGate(); }
+function authFriendlyError(msg) {
+  msg = String(msg || '');
+  if (/no user record|wrong password|invalid credential|INVALID_LOGIN|invalid login/i.test(msg)) return t('authErrWrong');
+  if (/already in use/i.test(msg)) return t('authErrInUse');
+  if (/badly formatted|invalid email/i.test(msg)) return t('authErrEmail');
+  if (/network/i.test(msg)) return t('authErrNetwork');
+  if (/cancel/i.test(msg)) return t('authErrCancel');
+  return msg;
+}
+window.__onAuthEvent = function(json) {
+  var d = null; try { d = JSON.parse(json); } catch (e) { return; }
+  if (!d) return;
+  if (d.event === 'signedIn') {
+    window.__authUser = d;
+    authUnlockShown = false;
+    authEnterApp();
+    authRefreshTexts();
+  } else if (d.event === 'signedOut') {
+    window.__authUser = null;
+    authUnlockShown = false;
+    authPassed = false;
+    authGate();
+  } else if (d.event === 'error') {
+    authShowError(authFriendlyError(d.message));
+  } else if (d.event === 'biometricOk') {
+    authEnterApp();
+  }
+};
 
 function openTerms() {
   var ts = $('termsScreen');
