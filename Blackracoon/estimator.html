@@ -5127,8 +5127,56 @@ function authShowPasswordFallback() {
   if (pw) { pw.value = ''; setTimeout(function() { try { pw.focus(); } catch (e) {} }, 150); }
   authRefreshTexts();
 }
-function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); cloudCheckOnEnter(); try { ecoBootstrap(); } catch (e) {} }
-function authDoSignOut() { try { window.AuthBridge.signOut(); } catch (e) {} if (!authHasBridge()) return; authPassed = false; authUnlockShown = false; window.__authUser = null; authGate(); }
+// Local data belongs to ONE account. On an account switch, stash the
+// outgoing account's data, clear the workspace, and restore the incoming
+// account's stash (if any) so each account only ever sees its own data.
+function authBindLocalToAccount() {
+  var uid = null;
+  try {
+    if (window.__authUser && window.__authUser.uid) uid = window.__authUser.uid;
+    else if (authHasBridge()) { var gu = JSON.parse(window.AuthBridge.getUser()); if (gu && gu.uid) uid = gu.uid; }
+  } catch (e) {}
+  if (!uid) return;
+  var owner = null;
+  try { owner = localStorage.getItem('RS_OWNER_UID'); } catch (e) {}
+  if (owner === uid) return;
+  try {
+    if (owner) {
+      var stash = {};
+      CLOUD_KEYS.forEach(function(k) { var v = localStorage.getItem(k); if (v != null) stash[k] = v; });
+      var stashJson = JSON.stringify(stash);
+      if (stashJson.length < 1500000) localStorage.setItem('RS_STASH_' + owner, stashJson);
+      CLOUD_KEYS.forEach(function(k) { localStorage.removeItem(k); });
+      localStorage.removeItem('RS_DATA_TS');
+      localStorage.removeItem('RS_CLOUD_LAST');
+      localStorage.removeItem('RS_ECO');
+    }
+    var mine = localStorage.getItem('RS_STASH_' + uid);
+    if (mine) {
+      var o = JSON.parse(mine);
+      for (var k in o) { if (CLOUD_KEYS.indexOf(k) >= 0 && o[k] != null) localStorage.setItem(k, o[k]); }
+      localStorage.removeItem('RS_STASH_' + uid);
+    }
+    localStorage.setItem('RS_OWNER_UID', uid);
+    try { sessionStorage.removeItem('RS_CLOUD_CHECKED'); } catch (e) {}
+  } catch (e) {}
+}
+function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); authBindLocalToAccount(); cloudCheckOnEnter(); try { ecoBootstrap(); } catch (e) {} }
+var _signOutTimer = null;
+function authDoSignOut() {
+  if (!authHasBridge()) return;
+  // Save this account's latest data to its cloud before leaving
+  try { cloudBackupNow(); } catch (e) {}
+  if (_signOutTimer) clearTimeout(_signOutTimer);
+  _signOutTimer = setTimeout(_authFinishSignOut, 1800);
+}
+function _authFinishSignOut() {
+  _signOutTimer = null;
+  try { window.AuthBridge.signOut(); } catch (e) {}
+  authPassed = false; authUnlockShown = false; window.__authUser = null;
+  try { sessionStorage.removeItem('RS_CLOUD_CHECKED'); } catch (e) {}
+  authGate();
+}
 function authFriendlyError(msg) {
   msg = String(msg || '');
   if (/no user record|wrong password|invalid credential|INVALID_LOGIN|invalid login/i.test(msg)) return t('authErrWrong');
