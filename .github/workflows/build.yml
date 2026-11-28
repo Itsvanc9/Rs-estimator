@@ -484,15 +484,20 @@ private static final int CAMERA_PERMISSION_REQUEST = 8;
                   public void shareHtmlAsImage(final String html, final String name, final String channel) {
                       runOnUiThread(new Runnable() {
                           public void run() {
-                              final WebView iv = new WebView(MainActivity.this);
+                              WebView.enableSlowWholeDocumentDraw();
+                            final WebView iv = new WebView(MainActivity.this);
                               iv.getSettings().setJavaScriptEnabled(true);
                               iv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                               iv.setWebViewClient(new WebViewClient() {
-                                  public void onPageFinished(WebView view, String url) {
+                                  public void onPageFinished(final WebView view, String url) {
+                                    view.postDelayed(new Runnable() {
+                                        public void run() {
                                       int width = 1080;
                                       int height = Math.max(view.getContentHeight(), 400);
                                       if (height > 8000) height = 8000;
-                                      view.layout(0, 0, width, height);
+                                      view.measure(android.view.View.MeasureSpec.makeMeasureSpec(width, android.view.View.MeasureSpec.EXACTLY),
+                                        android.view.View.MeasureSpec.makeMeasureSpec(height, android.view.View.MeasureSpec.EXACTLY));
+                                    view.layout(0, 0, width, height);
                                       try {
                                           android.graphics.Bitmap bmp = android.graphics.Bitmap.createBitmap(
                                               width, height, android.graphics.Bitmap.Config.ARGB_8888);
@@ -514,16 +519,22 @@ private static final int CAMERA_PERMISSION_REQUEST = 8;
                                           if ("whatsapp".equals(channel)) {
                                               intent.setPackage("com.whatsapp");
                                           }
-                                          try {
+                                          if ("whatsapp".equals(channel)) {
+                                            try {
                                               startActivity(intent);
                                           } catch (Exception e) {
-                                              startActivity(Intent.createChooser(intent, "Share"));
+                                              startActivity(Intent.createChooser(intent, "Compartir"));
                                           }
+                                        } else {
+                                            startActivity(Intent.createChooser(intent, "Compartir"));
+                                        }
                                       } catch (Exception e) {
                                           e.printStackTrace();
                                           Toast.makeText(MainActivity.this,
                                               "Error al generar imagen", Toast.LENGTH_SHORT).show();
                                       }
+                                    }
+                                    }, 500);
                                   }
                               });
                           }
@@ -534,11 +545,14 @@ private static final int CAMERA_PERMISSION_REQUEST = 8;
                   public void shareHtmlAsPdf(final String html, final String name, final String channel) {
                       runOnUiThread(new Runnable() {
                           public void run() {
-                              final WebView pv = new WebView(MainActivity.this);
+                              WebView.enableSlowWholeDocumentDraw();
+                            final WebView pv = new WebView(MainActivity.this);
                               pv.getSettings().setJavaScriptEnabled(true);
                               pv.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "UTF-8", null);
                               pv.setWebViewClient(new WebViewClient() {
                                   public void onPageFinished(final WebView view, String url) {
+                                    view.postDelayed(new Runnable() {
+                                        public void run() {
                                       try {
                                           String safeName = name.replaceAll("[^a-zA-Z0-9_\\-]", "_");
                                           final File pdfFile = new File(getCacheDir(), safeName + ".pdf");
@@ -583,16 +597,22 @@ private static final int CAMERA_PERMISSION_REQUEST = 8;
                               if ("whatsapp".equals(channel)) {
                                   intent.setPackage("com.whatsapp");
                           }
-                          try {
+                          if ("whatsapp".equals(channel)) {
+                                            try {
                               startActivity(intent);
                       } catch (Exception ex) {
-                          startActivity(Intent.createChooser(intent, "Share PDF"));
+                          startActivity(Intent.createChooser(intent, "Compartir"));
                   }
+                                        } else {
+                                            startActivity(Intent.createChooser(intent, "Compartir"));
+                                        }
                                       } catch (Exception e) {
                                           e.printStackTrace();
                                           Toast.makeText(MainActivity.this,
                                               "Error al generar PDF", Toast.LENGTH_SHORT).show();
-                                      }
+                                                                              }
+                                    }
+                                    }, 500);
                                   }
                               });
                           }
