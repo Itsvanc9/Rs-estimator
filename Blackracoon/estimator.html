@@ -3253,6 +3253,16 @@ function openCamera(context) {
 
 function openReceiptCamera() { openCamera('receipt'); }
 
+// If the native camera cannot open, MainActivity calls this so the button
+// still works: fall back to the system photo picker (camera/gallery).
+window.__cameraFallback = function() {
+  var ctx = cameraContext;
+  if (ctx === 'payReceipt') $('payReceiptCamera').click();
+  else if (ctx === 'job') $('jobPhotoInput').click();
+  else if (ctx === 'signed') $('signedCameraInput').click();
+  else $('receiptInput').click();
+};
+
 function receiveNativePhoto(base64) {
   var img = new Image();
   img.onload = function() {
