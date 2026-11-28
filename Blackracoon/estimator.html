@@ -1002,6 +1002,14 @@
       <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">Contact Name</label>
       <input id="cfgContactName" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
     </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">N.º de póliza — Seguro comercial (opcional, sale en el contrato)</label>
+      <input id="cfgInsuranceComm" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:5px;">N.º de póliza — Seguro residencial (opcional, sale en el contrato)</label>
+      <input id="cfgInsuranceRes" oninput="saveProfile()" autocomplete="off" style="width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--border);background:var(--input-bg);color:var(--text);font-size:15px;font-family:inherit;">
+    </div>
 
     <div style="border-top:1px solid var(--border);padding-top:16px;">
       <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:8px;">Logo (aparece en estimados y contratos)</label>
@@ -2623,7 +2631,7 @@ function closeEstimatesPage() {
 }
 
 function getProfile() {
-  var d = {companyName:'Blackracoon Construction',companyLocation:'',companyPhone:'',companyEmail:'',contactName:''};
+  var d = {companyName:'Blackracoon Construction',companyLocation:'',companyPhone:'',companyEmail:'',contactName:'',insuranceComm:'',insuranceRes:''};
   try { return Object.assign({}, d, JSON.parse(localStorage.getItem('RS_PROFILE')||'{}')); } catch(e) { return d; }
 }
 
@@ -2647,6 +2655,8 @@ function saveProfile() {
     companyPhone:   ($('cfgCompanyPhone').value   ||'').trim(),
     companyEmail:   ($('cfgCompanyEmail').value   ||'').trim(),
     contactName:    ($('cfgContactName').value    ||'').trim(),
+    insuranceComm:  ($('cfgInsuranceComm').value  ||'').trim(),
+    insuranceRes:   ($('cfgInsuranceRes').value   ||'').trim(),
     logoBase64:     prev.logoBase64   || null,
     bannerBase64:   prev.bannerBase64 || null,
     splashBase64:   prev.splashBase64 || null
@@ -2735,6 +2745,8 @@ function openCompanyProfile() {
   $('cfgCompanyPhone').value    = p.companyPhone;
   $('cfgCompanyEmail').value    = p.companyEmail;
   $('cfgContactName').value     = p.contactName || '';
+  $('cfgInsuranceComm').value   = p.insuranceComm || '';
+  $('cfgInsuranceRes').value    = p.insuranceRes || '';
   $('cfgLogoPreview').src       = p.logoBase64 || 'logo.png';
   history.pushState({ panel: 'companyProfile' }, '');
   $('companyProfilePanel').style.display = 'flex';
@@ -4792,6 +4804,8 @@ function getContractDoc(c) {
   '<div class="footer">' +
     '<div>📍 ' + escapeHtml(p.companyName) + (p.companyLocation ? ' · ' + escapeHtml(p.companyLocation) : '') + ' · ' + pdfStr('Licensed &amp; Insured','Licenciado y Asegurado') + '</div>' +
     '<div>☎ ' + escapeHtml(p.companyPhone) + ' · ✉ ' + escapeHtml(p.companyEmail) + '</div>' +
+    (p.insuranceComm ? '<div>🛡 ' + pdfStr('Commercial Insurance · Policy No. ','Seguro Comercial · Póliza N.º ') + escapeHtml(p.insuranceComm) + '</div>' : '') +
+    (p.insuranceRes ? '<div>🛡 ' + pdfStr('Residential Insurance · Policy No. ','Seguro Residencial · Póliza N.º ') + escapeHtml(p.insuranceRes) + '</div>' : '') +
   '</div>' +
   '<div class="copyright">'+pdfStr('This is a legally binding contract governed by the laws of ','Este es un contrato legalmente vinculante regido por las leyes de ') + sl.n + pdfStr(' and applicable federal law · © 2026 ',' y la ley federal aplicable · © 2026 ') + escapeHtml(p.companyName) + pdfStr(' · All rights reserved',' · Todos los derechos reservados') + '</div>' +
   '</body></html>';
