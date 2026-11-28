@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackracoon — Client Portal</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f1f5f9; color: #0f172a; padding-bottom: 40px; }
+  .hero { background: linear-gradient(135deg, #14532d, #166534); color: #fff; padding: 28px 20px 22px; text-align: center; }
+  .hero img { max-height: 64px; max-width: 200px; border-radius: 12px; margin-bottom: 10px; }
+  .hero h1 { font-size: 22px; font-weight: 900; }
+  .hero .folio { opacity: .85; font-size: 13px; margin-top: 4px; }
+  .wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
+  .card { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+  .card h2 { font-size: 15px; font-weight: 800; margin-bottom: 10px; }
+  .muted { color: #64748b; font-size: 13px; }
+  .bar { height: 14px; background: #e2e8f0; border-radius: 8px; overflow: hidden; margin: 8px 0 4px; }
+  .bar > div { height: 100%; background: #84cc16; border-radius: 8px; transition: width .5s; }
+  .money { display: flex; gap: 8px; text-align: center; margin-bottom: 12px; }
+  .money > div { flex: 1; background: #f8fafc; border-radius: 12px; padding: 10px 4px; }
+  .money .v { font-size: 17px; font-weight: 900; }
+  .money .l { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+  .sched { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+  .sched:last-child { border-bottom: none; }
+  .paid { color: #16a34a; font-weight: 700; }
+  .due { color: #d97706; font-weight: 700; }
+  .photos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+  .photos img { width: 100%; height: 92px; object-fit: cover; border-radius: 10px; cursor: pointer; }
+  .stage-title { font-size: 13px; font-weight: 800; margin: 10px 0 6px; }
+  .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; text-align: center; text-decoration: none; margin-top: 8px; }
+  .btn-lime { background: #84cc16; color: #0f172a; }
+  .btn-dark { background: #0f172a; color: #fff; }
+  .btn-light { background: #f1f5f9; color: #0f172a; border: 1.5px solid #e2e8f0; }
+  .btn-wa { background: #22c55e; color: #fff; }
+  input[type=text] { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; margin: 8px 0; font-family: inherit; }
+  .co { border: 1.5px solid #fde68a; background: #fffbeb; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .co .price { font-size: 18px; font-weight: 900; }
+  .row { display: flex; gap: 8px; } .row .btn { flex: 1; }
+  #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 50; align-items: center; justify-content: center; }
+  #lightbox img { max-width: 96vw; max-height: 92vh; border-radius: 8px; }
+  .center { text-align: center; padding: 60px 20px; color: #64748b; }
+  .foot { text-align: center; color: #94a3b8; font-size: 12px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div id="app"><div class="center">⏳</div></div>
+<div id="lightbox" onclick="this.style.display='none'"><img id="lightboxImg" alt=""></div>
+
+<script>
+var API = 'https://firestore.googleapis.com/v1/projects/buildracoon-app/databases/(default)/documents';
+var qs = new URLSearchParams(location.search);
+var TOKEN = qs.get('t') || '';
+var LANG = (qs.get('lang') || navigator.language || 'en').toLowerCase().indexOf('es') === 0 ? 'es' : 'en';
+var S = {
+  en: { loading:'Loading your project…', invalid:'This link is not valid or was revoked. Please ask your contractor for a new link.',
+    progress:'Project progress', scope:'Scope of work', photos:'Project photos', before:'📸 Before', progressStage:'🔨 In progress', after:'✅ After',
+    payments:'Payments', total:'Total', paidL:'Paid', balance:'Balance', paidOk:'Paid ✓', dueL:'Due',
+    payNow:'💳 Pay now', changeOrders:'Change orders needing your approval', coText:'Extra work found on site:',
+    yourName:'Your full name', approve:'✓ Approve', reject:'✗ Reject', thanks:'Thank you! Your answer was sent.',
+    confirmTitle:'Is the job complete?', confirmText:'Tap below to confirm the work is finished to your satisfaction.',
+    confirmBtn:'✅ Confirm job completion', confirmed:'You confirmed completion. Thank you!',
+    contact:'Questions? Contact us', call:'📞 Call', whatsapp:'💬 WhatsApp', greeting:'Hello', contract:'Contract',
+    sentOk:'Sent ✓' },
+  es: { loading:'Cargando su proyecto…', invalid:'Este link no es válido o fue revocado. Pida a su contratista un link nuevo.',
+    progress:'Avance del proyecto', scope:'Alcance del trabajo', photos:'Fotos del proyecto', before:'📸 Antes', progressStage:'🔨 Avance', after:'✅ Después',
+    payments:'Pagos', total:'Total', paidL:'Pagado', balance:'Saldo', paidOk:'Pagado ✓', dueL:'Vence',
+    payNow:'💳 Pagar ahora', changeOrders:'Órdenes de cambio que necesitan su aprobación', coText:'Trabajo extra encontrado en el sitio:',
+    yourName:'Su nombre completo', approve:'✓ Aprobar', reject:'✗ Rechazar', thanks:'¡Gracias! Su respuesta fue enviada.',
+    confirmTitle:'¿El trabajo está terminado?', confirmText:'Toque el botón para confirmar que el trabajo quedó terminado a su satisfacción.',
+    confirmBtn:'✅ Confirmar trabajo terminado', confirmed:'Usted confirmó la terminación. ¡Gracias!',
+    contact:'¿Preguntas? Contáctenos', call:'📞 Llamar', whatsapp:'💬 WhatsApp', greeting:'Hola', contract:'Contrato',
+    sentOk:'Enviado ✓' }
+}[LANG];
+function t(k) { return S[k] || k; }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]; }); }
+function money(n) { return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fsGet(path) {
+  return fetch(API + '/' + path).then(function(r) { if (!r.ok) throw new Error('nf'); return r.json(); });
+}
+function fsPost(path, fields) {
+  return fetch(API + '/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: fields }) })
+    .then(function(r) { if (!r.ok) throw new Error('post'); return r.json(); });
+}
+function sv(v) { return { stringValue: String(v == null ? '' : v) }; }
+function postResponse(fields) {
+  fields.at = { integerValue: String(Date.now()) };
+  return fsPost('portal/' + encodeURIComponent(TOKEN) + '/responses', fields).catch(function() {});
+}
+function beacon() {
+  try {
+    var key = 'br_view_' + TOKEN;
+    var last = parseInt(localStorage.getItem(key) || '0', 10);
+    if (Date.now() - last > 12 * 3600 * 1000) { localStorage.setItem(key, String(Date.now())); postResponse({ type: sv('view') }); }
+  } catch (e) { postResponse({ type: sv('view') }); }
+}
+var VIEW = null;
+function render() {
+  var v = VIEW;
+  var pct = Math.max(0, Math.min(100, v.pct || 0));
+  var h = '';
+  h += '<div class="hero">' + (v.logo ? '<img src="' + v.logo + '" alt="">' : '') +
+    '<h1>' + esc(v.company || 'Blackracoon') + '</h1>' +
+    '<div class="folio">' + t('contract') + ' ' + esc(v.contractNum || '') + (v.projectName ? ' · ' + esc(v.projectName) : '') + '</div></div>';
+  h += '<div class="wrap">';
+  h += '<div class="card"><div style="font-size:16px;font-weight:800;">' + t('greeting') + (v.clientName ? ', ' + esc(v.clientName) : '') + ' 👋</div>' +
+    (v.address ? '<div class="muted" style="margin-top:4px;">📍 ' + esc(v.address) + '</div>' : '') +
+    (v.scope ? '<div style="margin-top:10px;"><strong>' + t('scope') + ':</strong> ' + esc(v.scope) + '</div>' : '') +
+    '<div style="margin-top:14px;"><strong>' + t('progress') + '</strong><div class="bar"><div style="width:' + pct + '%"></div></div><div class="muted">' + pct + '%</div></div></div>';
+  // Photos
+  var stages = [['before', t('before')], ['progress', t('progressStage')], ['after', t('after')]];
+  var anyPhoto = (v.photos || []).length > 0;
+  if (anyPhoto) {
+    h += '<div class="card"><h2>📷 ' + t('photos') + '</h2>';
+    stages.forEach(function(st) {
+      var list = (v.photos || []).filter(function(p) { return (p.stage || 'progress') === st[0]; });
+      if (!list.length) return;
+      h += '<div class="stage-title">' + st[1] + '</div><div class="photos">' + list.map(function(p) {
+        return '<img data-pid="' + esc(p.id) + '" alt="" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" style="background:#e2e8f0;">';
+      }).join('') + '</div>';
+    });
+    h += '</div>';
+  }
+  // Change orders awaiting decision
+  var cos = (v.changeOrders || []).filter(function(c) { return c.status === 'client-pending'; });
+  if (cos.length) {
+    h += '<div class="card"><h2>🔀 ' + t('changeOrders') + '</h2>' + cos.map(function(c) {
+      return '<div class="co" id="co_' + esc(c.cloudId) + '"><div class="muted">' + t('coText') + '</div>' +
+        '<div style="font-size:15px;margin:4px 0;">' + esc(c.desc) + '</div><div class="price">' + money(c.price) + '</div>' +
+        '<input type="text" id="coname_' + esc(c.cloudId) + '" placeholder="' + t('yourName') + '">' +
+        '<div class="row"><button class="btn btn-lime" onclick="answerCO(\'' + esc(c.cloudId) + '\',\'approved\')">' + t('approve') + '</button>' +
+        '<button class="btn btn-light" onclick="answerCO(\'' + esc(c.cloudId) + '\',\'rejected\')">' + t('reject') + '</button></div></div>';
+    }).join('') + '</div>';
+  }
+  // Payments
+  h += '<div class="card"><h2>💵 ' + t('payments') + '</h2><div class="money">' +
+    '<div><div class="v">' + money(v.total) + '</div><div class="l">' + t('total') + '</div></div>' +
+    '<div><div class="v" style="color:#16a34a;">' + money(v.paid) + '</div><div class="l">' + t('paidL') + '</div></div>' +
+    '<div><div class="v">' + money(v.balance) + '</div><div class="l">' + t('balance') + '</div></div></div>' +
+    (v.schedule || []).map(function(s) {
+      return '<div class="sched"><span>' + esc(s.label) + '</span><span>' + money(s.amount) + ' · ' + (s.paid ? '<span class="paid">' + t('paidOk') + '</span>' : '<span class="due">' + t('dueL') + ' ' + esc(s.due || '') + '</span>') + '</span></div>';
+    }).join('') +
+    (v.payLink && (v.balance || 0) > 0 ? '<a class="btn btn-dark" href="' + esc(v.payLink) + '" target="_blank" rel="noopener">' + t('payNow') + '</a>' : '') + '</div>';
+  // Completion
+  if (!v.clientConfirmed) {
+    h += '<div class="card" id="completionCard"><h2>🏁 ' + t('confirmTitle') + '</h2><div class="muted">' + t('confirmText') + '</div>' +
+      '<input type="text" id="compName" placeholder="' + t('yourName') + '">' +
+      '<button class="btn btn-lime" onclick="confirmCompletion()">' + t('confirmBtn') + '</button></div>';
+  } else {
+    h += '<div class="card"><div style="font-weight:800;">🏁 ' + t('confirmed') + '</div></div>';
+  }
+  // Contact
+  if (v.contactPhone) {
+    var digits = String(v.contactPhone).replace(/\D/g, '');
+    h += '<div class="card"><h2>' + t('contact') + '</h2><div class="row">' +
+      '<a class="btn btn-light" href="tel:' + esc(v.contactPhone) + '">' + t('call') + '</a>' +
+      '<a class="btn btn-wa" href="https://wa.me/' + digits + '" target="_blank" rel="noopener">' + t('whatsapp') + '</a></div></div>';
+  }
+  h += '<div class="foot">Blackracoon Construction Estimator</div></div>';
+  document.getElementById('app').innerHTML = h;
+  // Lazy-load photos
+  (v.photos || []).forEach(function(p) {
+    fsGet('portalPhotos/' + encodeURIComponent(TOKEN + '_' + p.id)).then(function(doc) {
+      var src = doc && doc.fields && doc.fields.data ? doc.fields.data.stringValue : '';
+      if (!src) return;
+      var img = document.querySelector('img[data-pid="' + p.id + '"]');
+      if (img) { img.src = src; img.onclick = function() { var lb = document.getElementById('lightbox'); document.getElementById('lightboxImg').src = src; lb.style.display = 'flex'; }; }
+    }).catch(function() {});
+  });
+}
+function answerCO(cloudId, decision) {
+  var name = (document.getElementById('coname_' + cloudId) || {}).value || '';
+  postResponse({ type: sv('changeOrder'), cloudId: sv(cloudId), decision: sv(decision), name: sv(name) }).then(function() {
+    var card = document.getElementById('co_' + cloudId);
+    if (card) card.innerHTML = '<div style="font-weight:800;">' + t('thanks') + '</div>';
+  });
+}
+function confirmCompletion() {
+  var name = (document.getElementById('compName') || {}).value || '';
+  postResponse({ type: sv('completion'), name: sv(name) }).then(function() {
+    var card = document.getElementById('completionCard');
+    if (card) card.innerHTML = '<div style="font-weight:800;">🏁 ' + t('confirmed') + '</div>';
+    if (VIEW) VIEW.clientConfirmed = true;
+  });
+}
+function fail() { document.getElementById('app').innerHTML = '<div class="center">' + t('invalid') + '</div>'; }
+if (!TOKEN) { fail(); }
+else {
+  document.getElementById('app').innerHTML = '<div class="center">' + t('loading') + '</div>';
+  fsGet('portal/' + encodeURIComponent(TOKEN)).then(function(doc) {
+    var raw = doc && doc.fields && doc.fields.viewJson ? doc.fields.viewJson.stringValue : '';
+    if (!raw) { fail(); return; }
+    VIEW = JSON.parse(raw);
+    render();
+    beacon();
+  }).catch(fail);
+}
+</script>
+</body>
+</html>

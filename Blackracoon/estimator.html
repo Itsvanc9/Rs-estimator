@@ -880,6 +880,27 @@
       <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="authDoSignOut()">🚪 <span data-i18n="authSignOut">Sign out</span></button>
     </div>
 
+    <div class="setting-section">
+      <div class="setting-section-title" data-i18n="ecoTitle">Company & Team</div>
+      <div class="setting-row"><span class="setting-label" id="ecoStatus">—</span></div>
+      <div id="ecoNoCompany">
+        <input class="auth-input" id="ecoCompanyName" placeholder="Company name" autocomplete="off">
+        <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="ecoCreateCompany()"><span data-i18n="ecoCreateBtn">🏢 Create my company</span></button>
+        <input class="auth-input" id="ecoJoinCode" placeholder="Invite code" autocomplete="off" style="margin-top:10px;">
+        <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="ecoJoinWithCode()"><span data-i18n="ecoJoinBtn">Join with code</span></button>
+      </div>
+      <div id="ecoOwnerBox" style="display:none;">
+        <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="ecoCreateInvite()"><span data-i18n="ecoInviteBtn">🔑 Create invite code</span></button>
+        <div class="setting-row" id="ecoInviteOut" style="display:none;"><span class="setting-label" id="ecoInviteText" style="font-weight:800;"></span></div>
+        <button class="btn btn-light btn-sm" style="width:100%;justify-content:center;" onclick="ecoLoadTeam()"><span data-i18n="ecoRefresh">↻ Refresh</span></button>
+        <div id="ecoPendingList"></div>
+        <div id="ecoMemberList"></div>
+      </div>
+      <div id="ecoWorkerBox" style="display:none;">
+        <div class="setting-row"><span class="setting-label" data-i18n="ecoWorkerSoon">Your jobs will appear in the Jobs tab.</span></div>
+      </div>
+    </div>
+
     
 
     <div class="setting-section">
@@ -1050,7 +1071,7 @@
     <div id="authUnlockBox" style="display:none;">
       <div class="auth-sub" id="authUserEmail" style="margin-bottom:12px;"></div>
       <button class="auth-bio-btn" onclick="authBiometric()">👆 <span data-i18n="authUseFingerprint">Enter with fingerprint</span></button>
-      <button class="auth-main-btn" onclick="authEnterApp()"><span data-i18n="authEnter">Enter</span></button>
+      <button class="auth-main-btn" onclick="authShowPasswordFallback()"><span data-i18n="authUsePassword">Use password</span></button>
       <br><button class="auth-link" onclick="authDoSignOut()"><span data-i18n="authSignOut">Sign out</span></button>
     </div>
     <div id="authLoginBox">
@@ -1082,7 +1103,7 @@
     <div class="card-header"><div class="si si-blue">📋</div><h2 data-i18n="projectDetails">Project Details</h2></div>
     <div class="card-body">
       <div class="grid-2">
-        <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="RS-2026-001" oninput="updateTotal();validateFolio()" autocomplete="off"><div id="folioWarn" style="display:none;font-size:11px;margin-top:5px;padding:6px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;"></div></div>
+        <div class="field"><label data-i18n="estimateNum">Estimate #</label><input id="estNum" value="BR-2026-001" oninput="updateTotal();validateFolio()" autocomplete="off"><div id="folioWarn" style="display:none;font-size:11px;margin-top:5px;padding:6px 10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;color:#dc2626;"></div></div>
         <div class="field"><label data-i18n="date">Date</label><input id="estDate" type="date" oninput="updateTotal()"></div>
         <div class="field">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -1229,14 +1250,14 @@
     <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
       <div style="flex:1;min-width:130px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
-        <div id="estSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-auth')">
+        <div id="estSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="sigSlotTap('est-auth')">
           <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
         </div>
         <button id="estSigAuthClear" onclick="clearEstSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
       </div>
       <div style="flex:1;min-width:130px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
-        <div id="estSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('est-client')">
+        <div id="estSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="sigSlotTap('est-client')">
           <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
         </div>
         <button id="estSigClientClear" onclick="clearEstSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
@@ -1476,6 +1497,61 @@
   </div>
 </div>
 
+<!-- TEAM / JOBS PAGE (ecosystem) -->
+<div id="teamPage" class="estimates-page" style="display:none;">
+  <div class="estimates-page-header">
+    <div class="ep-header-row">
+      <span class="estimates-page-title">👷 <span data-i18n="navJobs">Jobs</span></span>
+      <button class="estimates-page-back" onclick="closeTeamPage()">✕ Close</button>
+    </div>
+  </div>
+  <div class="estimates-page-body">
+    <div id="teamOwnerBox" style="padding:12px 4px;">
+      <div class="cd-section-title">📥 <span data-i18n="jobApprovalsTitle">Approvals inbox</span></div>
+      <div id="approvalsList"></div>
+      <div class="cd-section-title" style="margin-top:20px;">📋 <span data-i18n="jobPublishedList">Jobs with the team</span></div>
+      <div id="publishedJobsList"></div>
+    </div>
+    <div id="teamWorkerBox" style="padding:12px 4px;display:none;">
+      <div id="workerJobsList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- WORKER JOB DETAIL -->
+<div id="workerJobPage" class="estimates-page" style="display:none;">
+  <div class="estimates-page-header">
+    <div class="ep-header-row">
+      <span class="estimates-page-title" id="wjTitle">👷</span>
+      <button class="estimates-page-back" onclick="closeWorkerJob()">✕ Close</button>
+    </div>
+  </div>
+  <div class="estimates-page-body"><div id="workerJobBody" style="padding:12px 4px;"></div></div>
+</div>
+<input type="file" id="wkPhotoInput" accept="image/*" capture="environment" style="display:none;">
+<input type="file" id="wkAttachInput" accept="image/*" style="display:none;">
+
+<!-- ASSIGN JOB OVERLAY -->
+<div id="assignOverlay" style="display:none;position:fixed;inset:0;z-index:9995;background:rgba(0,0,0,.5);" onclick="if(event.target===this)ecoCloseAssign()">
+  <div style="position:absolute;bottom:0;left:0;right:0;max-height:90vh;overflow-y:auto;background:var(--surface);border-radius:20px 20px 0 0;padding:16px 16px 50px;">
+    <div style="text-align:center;margin-bottom:4px;"><div style="width:40px;height:4px;background:var(--border-solid);border-radius:2px;margin:0 auto 14px;"></div></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <div style="font-size:18px;font-weight:900;" data-i18n="jobAssignTitle">Assign job to the team</div>
+      <button onclick="ecoCloseAssign()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);">✕</button>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;" data-i18n="jobWorkers">Workers</div>
+    <div id="assignMembers" style="margin-bottom:14px;"></div>
+    <label style="display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;margin-bottom:14px;cursor:pointer;">
+      <input type="checkbox" id="assignPhone" style="width:20px;height:20px;">
+      <span data-i18n="jobShowPhone">Show client phone to workers</span>
+    </label>
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;" data-i18n="jobTasksLbl">Checklist tasks (one per line)</div>
+    <textarea id="assignTasks" rows="5" style="width:100%;padding:11px 12px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:16px;"></textarea>
+    <button onclick="ecoPublishJob()" style="width:100%;padding:14px;background:var(--lime);color:#0f172a;border:none;border-radius:12px;font-weight:800;font-size:15px;cursor:pointer;" data-i18n="jobPublishBtn">Publish job</button>
+    <button id="assignUnpublishBtn" onclick="ecoUnpublishJob()" style="display:none;width:100%;padding:12px;background:none;color:#dc2626;border:1.5px solid #fca5a5;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;" data-i18n="jobUnpublish">Remove from team</button>
+  </div>
+</div>
+
 <!-- CONTRACT DETAIL PAGE -->
 <div id="contractDetail" class="contract-detail">
   <div class="cd-header">
@@ -1541,6 +1617,26 @@
       </div>
     </div>
 
+    <!-- Team / worker app -->
+    <div>
+      <div class="cd-section-title">👷 <span data-i18n="jobTeamSection">Team</span></div>
+      <div id="cdTeamStatus" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
+      <button class="btn btn-light" style="width:100%;justify-content:center;" onclick="ecoOpenAssign()">👷 <span data-i18n="jobAssignBtn">Assign to team</span></button>
+    </div>
+
+    <!-- Client portal link -->
+    <div>
+      <div class="cd-section-title">🔗 <span data-i18n="ptlSection">Client link</span></div>
+      <div id="cdPortalStatus" style="font-size:12px;color:var(--muted);margin-bottom:8px;"></div>
+      <input id="cdPayLink" data-i18n-ph="ptlPayLinkPh" placeholder="Stripe payment link (optional)" onchange="ecoSavePayLink()" style="width:100%;padding:9px 10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:13px;font-family:inherit;margin-bottom:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="ecoPortalPublish()">🔗 <span data-i18n="ptlPublish">Create / update link</span></button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="ecoPortalShareWA()">📤 <span data-i18n="ptlWhats">WhatsApp</span></button>
+        <button class="btn btn-light" style="flex:1;justify-content:center;" onclick="ecoPortalRevoke()">🚫 <span data-i18n="ptlRevoke">Revoke</span></button>
+      </div>
+      <div id="cdPortalLink" style="font-size:11px;word-break:break-all;color:var(--muted);margin-top:6px;"></div>
+    </div>
+
     <!-- Original estimate -->
     <div>
       <div class="cd-section-title" data-i18n="originalEstimateSection">Original Estimate</div>
@@ -1593,14 +1689,14 @@
     <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
       <div style="flex:1;min-width:130px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Contratista</div>
-        <div id="conSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-auth')">
+        <div id="conSigAuth" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="sigSlotTap('con-auth')">
           <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
         </div>
         <button id="conSigAuthClear" onclick="clearConSig('authorized')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
       </div>
       <div style="flex:1;min-width:130px;text-align:center;">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Cliente</div>
-        <div id="conSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="openSigPad('con-client')">
+        <div id="conSigClient" style="height:64px;border:2px dashed var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;background:var(--bg);cursor:pointer;overflow:hidden;" onclick="sigSlotTap('con-client')">
           <span style="font-size:12px;color:var(--muted);">Toca para firmar</span>
         </div>
         <button id="conSigClientClear" onclick="clearConSig('client')" style="display:none;-webkit-tap-highlight-color:transparent;margin-top:4px;background:none;border:none;color:var(--red);font-size:11px;cursor:pointer;">✕ Borrar</button>
@@ -1789,6 +1885,10 @@
     <div class="nav-icon">👥</div>
     <div class="nav-label" data-i18n="navClients">Clients</div>
   </button>
+  <button class="nav-tab" id="navJobs" onclick="openTeamPage()">
+    <div class="nav-icon">👷</div>
+    <div class="nav-label" data-i18n="navJobs">Jobs</div>
+  </button>
   <button class="nav-tab" id="navSettings" onclick="navTo('settings')">
     <div class="nav-icon">⚙️</div>
     <div class="nav-label" data-i18n="navSettings">Settings</div>
@@ -1802,6 +1902,36 @@
 const T = {
   en: {
     save:'Save', new:'New', print:'Print',
+    authUsePassword:'Use password', authBioFailed:'Fingerprint not recognized. Try again or use your password.', toastDocNotFound:'Document not found',
+    ecoTitle:'Company & Team', ecoNoCompany:'You are not in a company yet. Create yours or join with a code.',
+    ecoCompanyNamePh:'Company name', ecoCreateBtn:'🏢 Create my company', ecoJoinPh:'Invite code (e.g. BR-7K2Q)',
+    ecoJoinBtn:'Join with code', ecoInviteBtn:'🔑 Create invite code', ecoInviteShare:'Share this code with your worker:',
+    ecoPending:'Requests waiting', ecoApprove:'Approve', ecoReject:'Reject', ecoMembers:'Team members',
+    ecoRemove:'Remove', ecoYouOwner:'You are the owner', ecoYouWorker:'You joined as a worker',
+    ecoReqSent:'Request sent. The owner must approve it.', ecoReqWaiting:'Your request is waiting for approval.',
+    ecoCodeBad:'That code does not exist. Check it and try again.', ecoCompanyCreated:'Company created 🎉',
+    ecoApprovedMsg:'Member added to the team', ecoWorkerSoon:'Your jobs will appear in the Jobs tab.',
+    ecoOwner:'Owner', ecoWorker:'Worker', ecoRefresh:'↻ Refresh',
+    navJobs:'Jobs', jobTeamSection:'Team', jobAssignBtn:'Assign to team', jobPublished:'Published to the team ✓',
+    jobAssignTitle:'Assign job to the team', jobWorkers:'Workers', jobShowPhone:'Show client phone to workers',
+    jobTasksLbl:'Checklist tasks (one per line)', jobPublishBtn:'Publish job', jobUnpublish:'Remove from team',
+    jobNoWorkers:'No workers yet — invite your team from Settings → Company & Team.',
+    jobApprovalsTitle:'Approvals inbox', jobPublishedList:'Jobs with the team', jobNoApprovals:'Nothing waiting for approval 🎉',
+    jobChangeOrder:'Change order', jobMaterialReq:'Materials request', jobExpenseReq:'Expense report', jobNoteLbl:'Note',
+    jobPricePh:'Price for the client ($)', jobPricedApprove:'Save price & approve', jobNeedCompany:'Create your company first (Settings → Company & Team).',
+    jobPublishedOk:'Job published to the team', jobUnpublishedOk:'Job removed from the team', jobNotPublished:'Not published to the team yet',
+    jobStageBefore:'Before', jobStageProgress:'Progress', jobStageAfter:'After', jobAssigned:'assigned',
+    jobTask1:'Arrival & prep', jobTask2:'Main work', jobTask3:'Details & finishes', jobTask4:'Cleanup & walkthrough',
+    wkMyJobs:'My jobs', wkNoJobs:'No jobs assigned to you yet.', wkCheckIn:'⏱ Check in', wkCheckOut:'⏱ Check out',
+    wkCheckedIn:'On the clock since', wkTasks:'Tasks', wkPhotos:'Photos', wkAddPhoto:'+ Add photo',
+    wkSend:'Send', wkWritePh:'Write a note or request…', wkTypeNote:'📝 Note', wkTypeMaterial:'🧱 Materials', wkTypeExpense:'🧾 Expense', wkTypeChange:'🔀 Extra work',
+    wkSignTitle:'Client signature (stage completion)', wkSignPh:'Client name', wkSignBtn:'Save signature', wkSignClear:'Clear',
+    wkActivity:'Activity', wkSent:'Sent ✓', wkCall:'Call', wkPendingApproval:'Waiting for owner approval', wkApprovedLbl:'Approved ✓', wkRejectedLbl:'Rejected',
+    wkPhotoSent:'Photo sent — the owner will approve it', wkOpen:'Open', wkScope:'Scope of work', wkDates:'Dates', wkClient:'Client', wkAddress:'Address',
+    ptlSection:'Client link', ptlPublish:'Create / update link', ptlWhats:'Send by WhatsApp', ptlRevoke:'Revoke link',
+    ptlStatusOff:'This contract has no client link yet', ptlStatusOn:'Link active — the client can open their portal',
+    ptlLastView:'Client last viewed', ptlPayLinkPh:'Stripe payment link (optional)', ptlConfirmed:'The client confirmed the job is complete ✓',
+    ptlLinkReady:'Client link ready', ptlNeedJob:'Publish the job to the team first (Assign button).',
     dashboard:'Dashboard', savedEstimates:'Saved Estimates',
     totalQuoted:'Total Quoted', avgEstimate:'Average Estimate',
     projectDetails:'Project Details', estimateNum:'Estimate #',
@@ -1973,6 +2103,36 @@ const T = {
   },
   es: {
     save:'Guardar', new:'Nuevo', print:'Imprimir',
+    authUsePassword:'Usar contraseña', authBioFailed:'Huella no reconocida. Intenta de nuevo o usa tu contraseña.', toastDocNotFound:'Documento no encontrado',
+    ecoTitle:'Empresa y Equipo', ecoNoCompany:'Aún no estás en una empresa. Crea la tuya o únete con un código.',
+    ecoCompanyNamePh:'Nombre de la empresa', ecoCreateBtn:'🏢 Crear mi empresa', ecoJoinPh:'Código de invitación (ej. BR-7K2Q)',
+    ecoJoinBtn:'Unirme con código', ecoInviteBtn:'🔑 Crear código de invitación', ecoInviteShare:'Comparte este código con tu trabajador:',
+    ecoPending:'Solicitudes en espera', ecoApprove:'Aprobar', ecoReject:'Rechazar', ecoMembers:'Miembros del equipo',
+    ecoRemove:'Quitar', ecoYouOwner:'Eres el dueño', ecoYouWorker:'Entraste como trabajador',
+    ecoReqSent:'Solicitud enviada. El dueño debe aprobarla.', ecoReqWaiting:'Tu solicitud está esperando aprobación.',
+    ecoCodeBad:'Ese código no existe. Revísalo e intenta de nuevo.', ecoCompanyCreated:'Empresa creada 🎉',
+    ecoApprovedMsg:'Miembro agregado al equipo', ecoWorkerSoon:'Tus trabajos aparecerán en la pestaña Trabajos.',
+    ecoOwner:'Dueño', ecoWorker:'Trabajador', ecoRefresh:'↻ Actualizar',
+    navJobs:'Trabajos', jobTeamSection:'Equipo', jobAssignBtn:'Asignar al equipo', jobPublished:'Publicado al equipo ✓',
+    jobAssignTitle:'Asignar trabajo al equipo', jobWorkers:'Trabajadores', jobShowPhone:'Mostrar el teléfono del cliente a los trabajadores',
+    jobTasksLbl:'Tareas del checklist (una por línea)', jobPublishBtn:'Publicar trabajo', jobUnpublish:'Quitar del equipo',
+    jobNoWorkers:'Aún no hay trabajadores — invita a tu equipo desde Ajustes → Empresa y Equipo.',
+    jobApprovalsTitle:'Bandeja de aprobaciones', jobPublishedList:'Trabajos con el equipo', jobNoApprovals:'Nada esperando aprobación 🎉',
+    jobChangeOrder:'Orden de cambio', jobMaterialReq:'Pedido de material', jobExpenseReq:'Reporte de gasto', jobNoteLbl:'Nota',
+    jobPricePh:'Precio para el cliente ($)', jobPricedApprove:'Guardar precio y aprobar', jobNeedCompany:'Primero crea tu empresa (Ajustes → Empresa y Equipo).',
+    jobPublishedOk:'Trabajo publicado al equipo', jobUnpublishedOk:'Trabajo quitado del equipo', jobNotPublished:'Aún no publicado al equipo',
+    jobStageBefore:'Antes', jobStageProgress:'Avance', jobStageAfter:'Después', jobAssigned:'asignados',
+    jobTask1:'Llegada y preparación', jobTask2:'Trabajo principal', jobTask3:'Detalles y acabados', jobTask4:'Limpieza y entrega',
+    wkMyJobs:'Mis trabajos', wkNoJobs:'Aún no tienes trabajos asignados.', wkCheckIn:'⏱ Registrar entrada', wkCheckOut:'⏱ Registrar salida',
+    wkCheckedIn:'Trabajando desde', wkTasks:'Tareas', wkPhotos:'Fotos', wkAddPhoto:'+ Agregar foto',
+    wkSend:'Enviar', wkWritePh:'Escribe una nota o pedido…', wkTypeNote:'📝 Nota', wkTypeMaterial:'🧱 Material', wkTypeExpense:'🧾 Gasto', wkTypeChange:'🔀 Trabajo extra',
+    wkSignTitle:'Firma del cliente (etapa terminada)', wkSignPh:'Nombre del cliente', wkSignBtn:'Guardar firma', wkSignClear:'Borrar',
+    wkActivity:'Actividad', wkSent:'Enviado ✓', wkCall:'Llamar', wkPendingApproval:'Esperando aprobación del dueño', wkApprovedLbl:'Aprobado ✓', wkRejectedLbl:'Rechazado',
+    wkPhotoSent:'Foto enviada — el dueño la aprobará', wkOpen:'Abrir', wkScope:'Alcance del trabajo', wkDates:'Fechas', wkClient:'Cliente', wkAddress:'Dirección',
+    ptlSection:'Link del cliente', ptlPublish:'Crear / actualizar link', ptlWhats:'Enviar por WhatsApp', ptlRevoke:'Revocar link',
+    ptlStatusOff:'Este contrato aún no tiene link del cliente', ptlStatusOn:'Link activo — el cliente puede ver su portal',
+    ptlLastView:'Última vista del cliente', ptlPayLinkPh:'Link de pago de Stripe (opcional)', ptlConfirmed:'El cliente confirmó el trabajo terminado ✓',
+    ptlLinkReady:'Link del cliente listo', ptlNeedJob:'Primero publica el trabajo al equipo (botón Asignar).',
     dashboard:'Panel', savedEstimates:'Estimados Guardados',
     totalQuoted:'Total Cotizado', avgEstimate:'Promedio',
     projectDetails:'Detalles del Proyecto', estimateNum:'Estimado #',
@@ -2779,29 +2939,6 @@ function loadDrywallTemplate() {
 // ═══════════════════════════════════════════════════════
 // CLIENTS
 // ═══════════════════════════════════════════════════════
-function saveClient() {
-  let clients = JSON.parse(localStorage.getItem('RS_CLIENTS') || '[]');
-  let client = { name:$('clientName').value, phone:$('clientPhone').value, email:$('clientEmail').value, address:$('projectAddress').value };
-  if (!client.name) { showToast(t('toastAddClientName')); return; }
-  let existing = clients.find(c => c.name === client.name);
-  function _doSaveClient() {
-    clients = clients.filter(c => c.name !== client.name);
-    clients.push(client);
-    localStorage.setItem('RS_CLIENTS', JSON.stringify(clients));
-    renderClients();
-    let sel = $('clientSelect');
-    for (let i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].text === client.name) { sel.selectedIndex = i; break; }
-    }
-    showToast(t('toastClientSaved'));
-  }
-  if (existing) {
-    showConfirm('Client "' + client.name + '" already exists. Replace?', '', '👤', 'Replace', '#f59e0b', _doSaveClient);
-  } else {
-    _doSaveClient();
-  }
-}
-
 function renderClients() {
   var sel = $('clientSelect');
   if (!sel) return;
@@ -3446,139 +3583,6 @@ function getPrintHTML() {
     signatures: estimateSignatures
   });
 }
-function _deadCode_neverCalled() {
-  let html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><style>
-@page{size:letter portrait;margin:8mm}
-*{box-sizing:border-box}
-body{font-family:Arial,sans-serif;margin:0;padding:14px;color:#0f172a;background:white;font-size:13px;}
-.page{width:100%;max-width:900px;margin:0 auto;}
-.top{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #84cc16;padding-bottom:12px;margin-bottom:12px;}
-.brand{display:flex;gap:12px;align-items:flex-start;}
-.logo{width:80px;height:80px;object-fit:cover;border-radius:12px;}
-.company h1{margin:0;font-size:24px;line-height:1;font-weight:900;color:#0f172a;}
-.company .green{color:#84cc16;display:block;}
-.company p{margin:4px 0;font-size:12px;color:#111827;}
-.contact{margin-top:6px;line-height:1.4;font-size:12px;}
-.estimate-box{text-align:right;min-width:190px;}
-.estimate-box h2{margin:0 0 8px;font-size:32px;letter-spacing:1px;color:#0f172a;}
-.est-row{display:flex;justify-content:space-between;gap:16px;font-size:13px;margin:5px 0;}
-.est-row strong{color:#0f172a;} .est-row span{color:#65a30d;font-weight:800;}
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
-.info-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;}
-.card-title{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:12px;}
-.card-title span{color:#84cc16;margin-right:6px;}
-.card-body{padding:10px 12px;font-size:12px;line-height:1.45;}
-.info-line{display:grid;grid-template-columns:110px 1fr;margin-bottom:5px;}
-.info-line strong{color:#111827;}
-.scope-list{margin-left:14px;} .scope-list li{margin-bottom:4px;}
-.cost-card{border:1px solid #d1d5db;border-radius:6px;overflow:hidden;margin-top:8px;}
-.cost-title{background:#0f172a;color:white;padding:8px 12px;font-weight:800;font-size:12px;}
-.cost-title span{color:#84cc16;margin-right:6px;}
-.cost-table{width:100%;border-collapse:collapse;}
-.cost-table th{padding:7px 12px;color:#65a30d;text-align:left;font-size:11px;border-bottom:1px solid #d1d5db;}
-.cost-table th:last-child,.cost-table td:last-child{text-align:right;}
-.cost-table td{padding:7px 12px;border-bottom:1px solid #e5e7eb;font-size:12px;}
-.cost-icon{color:#65a30d;width:26px;display:inline-block;font-size:14px;}
-.bold-row td{font-weight:800;}
-.deposit td:last-child{color:#dc2626;font-weight:800;}
-.balance{background:#84cc16;} .balance td{font-size:18px;font-weight:900;color:#0f172a;border-bottom:none;}
-.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1.25fr;gap:12px;margin-top:12px;}
-.bottom-box h3{font-size:12px;margin:0 0 6px;border-bottom:2px solid #84cc16;padding-bottom:4px;}
-.bottom-box h3 span{color:#84cc16;margin-right:5px;}
-.bottom-box p{font-size:11px;line-height:1.4;margin:0 0 5px;}
-.sig-line{border-top:1px solid #111827;margin-top:18px;padding-top:4px;font-size:11px;}
-.footer{margin-top:12px;border-top:2px solid #0f172a;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11px;}
-.footer div{line-height:1.4;}
-.copyright{text-align:center;font-size:10px;color:#64748b;margin-top:8px;}
-@media print{body{padding:0}.page{max-width:100%}}
-</style></head>
-<body><div class="page">
-  <div class="top">
-    <div class="brand">
-      <img src="${logoSrc()}" class="logo">
-      <div class="company">
-        <h1>${escapeHtml(getProfile().companyName)}</h1>
-        <p>${escapeHtml(getProfile().companyLocation)}${getProfile().companyLocation ? ' · ' : ''}${pdfStr('Licensed &amp; Insured','Licenciado y Asegurado')}</p>
-        <div class="contact"><div>☎ ${escapeHtml(getProfile().companyPhone)}</div><div>✉ ${escapeHtml(getProfile().companyEmail)}</div></div>
-      </div>
-    </div>
-    <div class="estimate-box">
-      <h2>${pdfStr('ESTIMATE','ESTIMADO')}</h2>
-      <div class="est-row"><strong>${pdfStr('Estimate #:','Estimado #:')}</strong><span>${escapeHtml($('estNum').value||'-')}</span></div>
-      <div class="est-row"><strong>${pdfStr('Date:','Fecha:')}</strong><span>${escapeHtml(formatDate()||'-')}</span></div>
-      <div class="est-row"><strong>${pdfStr('Valid Until:','Válido Hasta:')}</strong><span>${escapeHtml($('validUntil').value||'-')}</span></div>
-    </div>
-  </div>
-  <div class="cards">
-    <div class="info-card">
-      <div class="card-title"><span>●</span>${pdfStr('CLIENT INFORMATION','INFORMACIÓN DEL CLIENTE')}</div>
-      <div class="card-body">
-        <div class="info-line"><strong>${pdfStr('Client:','Cliente:')}</strong><div>${escapeHtml($('clientName').value||'-')}</div></div>
-        <div class="info-line"><strong>${pdfStr('Project:','Proyecto:')}</strong><div>${escapeHtml($('projectName').value||'-')}</div></div>
-        <div class="info-line"><strong>${pdfStr('Address:','Dirección:')}</strong><div>${escapeHtml($('projectAddress').value||'-')}</div></div>
-      </div>
-    </div>
-    <div class="info-card">
-      <div class="card-title"><span>▣</span>${pdfStr('WORK DESCRIPTION','DESCRIPCIÓN DEL TRABAJO')}</div>
-      <div class="card-body">
-        <ul class="scope-list">
-          ${String($('scopeWork').value||'-').split('\n').map(x=>`<li>${escapeHtml(x.trim()||'-')}</li>`).join('')}
-        </ul>
-      </div>
-    </div>
-  </div>
-  <div class="cost-card">
-    <div class="cost-title"><span>$</span>${pdfStr('PROJECT COSTS','COSTOS DEL PROYECTO')}</div>
-    <table class="cost-table">
-      <tr><th>${pdfStr('Description','Descripción')}</th><th>${pdfStr('Total','Total')}</th></tr>
-      ${t.unit>0?`<tr><td><span class="cost-icon">▧</span>${pdfStr('Unit Pricing','Precio Unitario')}</td><td>${formatMoney(t.unit)}</td></tr>`:''}
-      ${t.labor>0?`<tr><td><span class="cost-icon">👷</span>${pdfStr('Labor','Mano de Obra')}</td><td>${formatMoney(t.labor)}</td></tr>`:''}
-      ${t.mat>0?`<tr><td><span class="cost-icon">▤</span>${pdfStr('Materials','Materiales')}</td><td>${formatMoney(t.mat)}</td></tr>`:''}
-      ${otherCosts.filter(o=>(parseFloat(o.amount)||0)>0).map(o=>`<tr><td><span class="cost-icon">⚙</span>${escapeHtml(o.desc||pdfStr('Other Cost','Otro Costo'))}</td><td>${formatMoney(parseFloat(o.amount)||0)}</td></tr>`).join('')}
-      <tr class="bold-row"><td>${pdfStr('Subtotal','Subtotal')}</td><td>${formatMoney(t.sub)}</td></tr>
-      <tr class="bold-row"><td>${pdfStr('Tax','Impuesto')} (${t.taxP}%)</td><td>${formatMoney(t.tax)}</td></tr>
-      ${t.deposit>0?`<tr class="deposit"><td>${pdfStr('Deposit Paid','Depósito Pagado')}</td><td>-${formatMoney(t.deposit)}</td></tr>`:''}
-      <tr class="balance"><td>${pdfStr('BALANCE DUE','SALDO A PAGAR')}</td><td>${formatMoney(t.balance)}</td></tr>
-    </table>
-  </div>
-  <div class="bottom-grid">
-    <div class="bottom-box">
-      <h3><span>▣</span>${pdfStr('NOTES','NOTAS')}</h3>
-      <p>${escapeHtml($('notes').value||pdfStr('Standard installation and cleanup included.','Instalación estándar y limpieza incluida.'))}</p>
-      <p>${pdfStr('Additional repairs or change orders may affect pricing.','Reparaciones adicionales u órdenes de cambio pueden afectar el precio.')}</p>
-      <p>${pdfStr('Thank you for the opportunity!','¡Gracias por la oportunidad!')}</p>
-    </div>
-    <div class="bottom-box">
-      <h3><span>🛡</span>${pdfStr('TERMS & CONDITIONS','TÉRMINOS Y CONDICIONES')}</h3>
-      <p>${pdfStr('This estimate is valid until the date listed above.','Este estimado es válido hasta la fecha indicada arriba.')}</p>
-      <p>${pdfStr('Final pricing may change if work description, materials, or site conditions change.','El precio final puede cambiar si la descripción del trabajo, materiales o condiciones del sitio cambian.')}</p>
-      <p>${pdfStr('A deposit may be required before scheduling work.','Puede requerirse un depósito antes de programar el trabajo.')}</p>
-    </div>
-    <div class="bottom-box">
-      <h3><span>✎</span>${pdfStr('SIGNATURES','FIRMAS')}</h3>
-      ${estimateSignatures.authorized ? '<img src="'+estimateSignatures.authorized+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-bottom:2px;">' : ''}
-      <div class="sig-line">${pdfStr('Authorized Signature','Firma del Contratista')}</div>
-      ${estimateSignatures.client ? '<img src="'+estimateSignatures.client+'" style="height:48px;max-width:100%;object-fit:contain;display:block;margin-top:14px;margin-bottom:2px;">' : ''}
-      <div class="sig-line">${pdfStr('Client Signature','Firma del Cliente')}</div>
-    </div>
-  </div>
-  ${receiptPhotos.length > 0 ? `
-  <div style="margin-top:12px;padding:10px 14px;background:#f8fdf0;border:1px solid #c6e89a;border-radius:10px;page-break-inside:avoid;">
-    <div style="font-weight:800;font-size:12px;color:#365314;margin-bottom:8px;">📷 ${pdfStr('DEPOSIT PAYMENT RECEIPT','COMPROBANTE DE DEPÓSITO')}${receiptPhotos.length > 1 ? pdfStr('S','S') : ''}</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;">
-      ${receiptPhotos.map((src,i) => `<img src="${src}" style="height:120px;width:auto;max-width:180px;border-radius:6px;border:1px solid #c6e89a;object-fit:cover;" alt="${pdfStr('Receipt','Comprobante')} ${i+1}">`).join('')}
-    </div>
-  </div>` : ''}
-  <div class="footer">
-    <div>📍 ${escapeHtml(getProfile().companyName)}<br>${escapeHtml(getProfile().companyLocation)}</div>
-    <div>☎ ${escapeHtml(getProfile().companyPhone)}<br>✉ ${escapeHtml(getProfile().companyEmail)}</div>
-  </div>
-  <div class="copyright">© 2026 ${escapeHtml(getProfile().companyName)}. ${pdfStr('All rights reserved.','Todos los derechos reservados.')}</div>
-</div></body></html>`;
-  return injectAccentColors(html);
-}
-
 function doPDF() {
   if (!window.AndroidBridge) { showToast(t('toastBridgeError')); return; }
   AndroidBridge.saveHtmlAsPdf(getPrintHTML(), 'Estimate_' + ($('estNum').value||'estimate'));
@@ -3954,11 +3958,13 @@ function clearConSig(role) {
 // BACKUP / IMPORT
 // ═══════════════════════════════════════════════════════
 function exportBackup() {
-  var data = {
-    RS_ESTIMATES: JSON.parse(localStorage.getItem('RS_ESTIMATES') || '[]'),
-    RS_CONTRACTS: JSON.parse(localStorage.getItem('RS_CONTRACTS') || '[]')
-  };
-  var filename = 'RS_backup_' + new Date().toISOString().slice(0,10) + '.json';
+  var data = {};
+  CLOUD_KEYS.forEach(function(k) {
+    var raw = localStorage.getItem(k);
+    if (raw == null) return;
+    try { data[k] = JSON.parse(raw); } catch (e) { data[k] = raw; }
+  });
+  var filename = 'BR_backup_' + new Date().toISOString().slice(0,10) + '.json';
   if (window.AndroidBridge && AndroidBridge.saveTextFile) {
     AndroidBridge.saveTextFile(JSON.stringify(data), filename, 'application/json');
   } else {
@@ -3977,6 +3983,7 @@ function importBackupBase64(base64Text) {
     localStorage.setItem('RS_ESTIMATES', JSON.stringify(currentEst.concat(estimates)));
     if (contracts.length > 0)
       localStorage.setItem('RS_CONTRACTS', JSON.stringify(currentCon.concat(contracts)));
+    if (!Array.isArray(data)) CLOUD_KEYS.forEach(function(k) { if (k !== 'RS_ESTIMATES' && k !== 'RS_CONTRACTS' && data[k] != null) localStorage.setItem(k, JSON.stringify(data[k])); });
     renderSaved(); updateDashboard(); updateContractCount();
     showToast(t('toastImported') + estimates.length + t('toastImportedSuffix') + contracts.length + t('toastImportedContracts'));
   } catch(err) { showToast(t('toastImportErr') + err.message); }
@@ -3994,8 +4001,7 @@ function importBackup(e) {
         renderSaved(); updateDashboard();
         showToast(t('toastBackupImported') + data.length + t('toastEstimateSuffix'));
       } else if (data.RS_ESTIMATES || data.RS_CONTRACTS) {
-        if (data.RS_ESTIMATES) localStorage.setItem('RS_ESTIMATES', JSON.stringify(data.RS_ESTIMATES));
-        if (data.RS_CONTRACTS) localStorage.setItem('RS_CONTRACTS', JSON.stringify(data.RS_CONTRACTS));
+        CLOUD_KEYS.forEach(function(k) { if (data[k] != null) localStorage.setItem(k, JSON.stringify(data[k])); });
         renderSaved(); updateDashboard(); updateContractCount();
         showToast(t('toastBackupImported') + (data.RS_ESTIMATES||[]).length + t('toastImportedSuffix') + (data.RS_CONTRACTS||[]).length + t('toastImportedContracts'));
       } else { showToast(t('toastInvalidBackup')); }
@@ -4225,6 +4231,10 @@ function openContractDetail(id) {
   renderSignedSection(c);
   // Electronic signatures
   renderConSigs(c);
+  // Team publishing status (ecosystem)
+  try { ecoRenderCdTeam(c); } catch (e) {}
+  // Client portal status + responses (ecosystem)
+  try { ecoRenderCdPortal(c); ecoPortalCheckResponses(c); } catch (e) {}
   history.pushState({ panel: 'contractDetail' }, '');
   $('contractDetail').classList.add('open');
   $('contractDetail').scrollTop = 0;
@@ -4484,10 +4494,24 @@ function closeSignedPhotoViewer() {
 // STATE LAW DATA
 // ═══════════════════════════════════════════════════════
 // ── Generic photo viewer ──
-function viewPhoto(src) {
-  $('receiptModalImg').src = src;
+function viewPhoto(src, white) {
+  var im = $('receiptModalImg');
+  im.style.background = white ? '#fff' : '';
+  im.src = src;
   history.pushState({ panel: 'receiptModal' }, '');
   $('receiptModal').classList.add('open');
+}
+// Tap a signature slot: a saved signature opens LARGE; an empty slot opens the pad.
+function sigSlotTap(context) {
+  var img = null;
+  if (context === 'est-auth') img = estimateSignatures.authorized;
+  else if (context === 'est-client') img = estimateSignatures.client;
+  else {
+    var c = getContracts().find(function(x) { return x.id === currentContractId; });
+    var sigs = (c && c.signatures) || {};
+    img = context === 'con-auth' ? sigs.authorized : sigs.client;
+  }
+  if (img) viewPhoto(img, true); else openSigPad(context);
 }
 function viewEstimateReceipt(idx) {
   var c = getContracts().find(function(x){ return x.id===currentContractId; });
@@ -4955,15 +4979,15 @@ function devScheduleReminders() {
     var now = Date.now();
     getContracts().forEach(function(c) {
       if (c.status === 'completed') return;
-      var h = String(c.id || ''); var base = 0;
-      for (var i = 0; i < h.length; i++) base = (base * 31 + h.charCodeAt(i)) % 90000;
       (c.schedule || []).forEach(function(s) {
         var paid = (c.payments || []).some(function(p){ return p.scheduleId === s.sid; });
         if (paid || !s.due) return;
         var parts = s.due.split('-');
         if (parts.length < 3) return;
         var due9 = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 9, 0).getTime();
-        var idBase = 10000 + base + (s.sid || 0) * 2;
+        var h2 = String(c.id || '') + ':' + (s.sid || 0); var hb = 0;
+        for (var j = 0; j < h2.length; j++) hb = (hb * 31 + h2.charCodeAt(j)) % 500000000;
+        var idBase = 100000 + hb * 2;
         var title = '💰 ' + (currentLang === 'es' ? 'Vence un pago' : 'Payment due');
         var body = (c.contractNum || c.estNum || '') + ' · ' + (c.clientName || '') + ' · ' + s.label + ' $' + fmtMoney(s.amount);
         if (due9 > now) out.push({ id: idBase, title: title, body: body, at: due9 });
@@ -5057,7 +5081,19 @@ function authEmailMain() {
   } catch (e) { authShowError(e.message); }
 }
 function authBiometric() { try { window.AuthBridge.biometricUnlock(); } catch (e) {} }
-function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); cloudCheckOnEnter(); }
+function authShowPasswordFallback() {
+  authShowError('');
+  var ub = $('authUnlockBox'), lb = $('authLoginBox');
+  if (ub) ub.style.display = 'none';
+  if (lb) lb.style.display = 'block';
+  authMode = 'login';
+  var em = $('authEmail');
+  if (em && window.__authUser && window.__authUser.email) em.value = window.__authUser.email;
+  var pw = $('authPass');
+  if (pw) { pw.value = ''; setTimeout(function() { try { pw.focus(); } catch (e) {} }, 150); }
+  authRefreshTexts();
+}
+function authEnterApp() { authPassed = true; var scr = $('authScreen'); if (scr) scr.classList.remove('open'); cloudCheckOnEnter(); try { ecoBootstrap(); } catch (e) {} }
 function authDoSignOut() { try { window.AuthBridge.signOut(); } catch (e) {} if (!authHasBridge()) return; authPassed = false; authUnlockShown = false; window.__authUser = null; authGate(); }
 function authFriendlyError(msg) {
   msg = String(msg || '');
@@ -5085,6 +5121,8 @@ window.__onAuthEvent = function(json) {
     authShowError(authFriendlyError(d.message));
   } else if (d.event === 'biometricOk') {
     authEnterApp();
+  } else if (d.event === 'biometricError' || d.event === 'biometricUnavailable') {
+    authShowError(t('authBioFailed'));
   } else if (d.event === 'backupOk') {
     cloudOnBackupOk(d);
   } else if (d.event === 'backupError') {
@@ -5151,11 +5189,11 @@ function cloudHandleRestore(d) {
   var cloudTs = d.updatedAt || 0;
   if (cloudManualRestoreFlag) {
     cloudManualRestoreFlag = false;
-    if (cloudApplyData(d.data)) { showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
+    if (cloudApplyData(d.data)) { try { localStorage.setItem('RS_DATA_TS', String(cloudTs)); } catch (e) {} showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
     return;
   }
   if (cloudLocalEmpty()) {
-    if (cloudApplyData(d.data)) { showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
+    if (cloudApplyData(d.data)) { try { localStorage.setItem('RS_DATA_TS', String(cloudTs)); } catch (e) {} showToast(t('cloudRestored')); setTimeout(function() { location.reload(); }, 700); }
     return;
   }
   var localTs = parseInt(localStorage.getItem('RS_DATA_TS') || '0', 10);
@@ -5195,6 +5233,803 @@ function cloudUpdateStatusUI() {
     }
   };
 })();
+
+/* ═══════ ECOSYSTEM (companies / team) — Fase A foundations ═══════
+   Data belongs to the company. profiles/{uid} points to the company;
+   companies/{cid}/members/{uid} carries the role. Access is enforced by
+   Firestore rules; this layer only talks through AuthBridge.fsOp. */
+var ecoState = null;
+var ecoPendingOps = {};
+var ecoOpSeq = 0;
+function ecoHasBridge() { return authHasBridge() && typeof window.AuthBridge.fsOp === 'function'; }
+function ecoUid() { try { var u = JSON.parse(window.AuthBridge.getUser()); return (u && u.uid) ? u.uid : null; } catch (e) { return null; } }
+function ecoMyEmail() { return (window.__authUser && window.__authUser.email) || ''; }
+function ecoMyName() { return (window.__authUser && window.__authUser.name) || ecoMyEmail(); }
+function ecoEsc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+window.__onCloudEvent = function(json) {
+  var d = null; try { d = JSON.parse(json); } catch (e) { return; }
+  if (!d || d.event !== 'fsResult') return;
+  var p = ecoPendingOps[d.opId]; if (!p) return; delete ecoPendingOps[d.opId];
+  if (d.ok) p.resolve(d); else p.reject(new Error(d.error || 'cloud-error'));
+};
+function fsCall(kind, path, data) {
+  return new Promise(function(resolve, reject) {
+    if (!ecoHasBridge()) { reject(new Error('no-bridge')); return; }
+    var opId = 'op' + (++ecoOpSeq) + '_' + Date.now();
+    ecoPendingOps[opId] = { resolve: resolve, reject: reject };
+    setTimeout(function() { if (ecoPendingOps[opId]) { delete ecoPendingOps[opId]; reject(new Error('timeout')); } }, 20000);
+    try { window.AuthBridge.fsOp(opId, kind, path, data ? JSON.stringify(data) : ''); }
+    catch (e) { delete ecoPendingOps[opId]; reject(e); }
+  });
+}
+function ecoSaveLocal() { try { if (ecoState) localStorage.setItem('RS_ECO', JSON.stringify(ecoState)); else localStorage.removeItem('RS_ECO'); } catch (e) {} }
+function ecoLoadLocal() { try { var s = localStorage.getItem('RS_ECO'); ecoState = s ? JSON.parse(s) : null; } catch (e) { ecoState = null; } }
+function ecoBootstrap() {
+  if (!ecoHasBridge() || !window.__authUser) return;
+  var uid = ecoUid(); if (!uid) return;
+  ecoLoadLocal(); ecoRenderSettings();
+  fsCall('get', 'profiles/' + uid).then(function(r) {
+    var prof = r.data;
+    if (prof && prof.companyId) {
+      fsCall('get', 'companies/' + prof.companyId + '/members/' + uid).then(function(m) {
+        if (m.data && m.data.status === 'active') {
+          ecoState = { companyId: prof.companyId, role: m.data.role || 'worker', companyName: prof.companyName || '' };
+          if (!ecoState.companyName) {
+            fsCall('get', 'companies/' + prof.companyId).then(function(c) { if (c.data) { ecoState.companyName = c.data.name || ''; ecoSaveLocal(); ecoRenderSettings(); } }).catch(function() {});
+          }
+        } else { ecoState = null; }
+        ecoSaveLocal(); ecoRenderSettings();
+        if (ecoState && ecoState.role === 'owner') ecoLoadTeam();
+      }).catch(function() {});
+      return;
+    }
+    // No company yet — check whether a join request was decided.
+    fsCall('get', 'joinPend/' + uid).then(function(rp) {
+      var pend = rp.data;
+      if (!pend || !pend.companyId) { window.__ecoWaiting = false; ecoRenderSettings(); return; }
+      fsCall('get', 'companies/' + pend.companyId + '/joinRequests/' + uid).then(function(rq) {
+        var req = rq.data;
+        if (req && req.status === 'approved') {
+          fsCall('set', 'profiles/' + uid, { email: ecoMyEmail(), companyId: pend.companyId, companyName: pend.companyName || '', role: 'worker' })
+            .then(function() { return fsCall('delete', 'joinPend/' + uid); })
+            .then(function() { window.__ecoWaiting = false; ecoState = { companyId: pend.companyId, role: 'worker', companyName: pend.companyName || '' }; ecoSaveLocal(); ecoRenderSettings(); })
+            .catch(function() {});
+        } else if (req && req.status === 'rejected') {
+          window.__ecoWaiting = false;
+          fsCall('delete', 'joinPend/' + uid).then(function() { ecoRenderSettings(); }).catch(function() {});
+        } else {
+          window.__ecoWaiting = true; ecoRenderSettings();
+        }
+      }).catch(function() {});
+    }).catch(function() {});
+  }).catch(function() {});
+}
+function ecoRenderSettings() {
+  var st = $('ecoStatus'); if (!st) return;
+  var cn = $('ecoCompanyName'); if (cn) cn.placeholder = t('ecoCompanyNamePh');
+  var jc = $('ecoJoinCode'); if (jc) jc.placeholder = t('ecoJoinPh');
+  var noC = $('ecoNoCompany'), ow = $('ecoOwnerBox'), wk = $('ecoWorkerBox');
+  if (ecoState && ecoState.companyId) {
+    if (noC) noC.style.display = 'none';
+    st.textContent = '🏢 ' + (ecoState.companyName || '') + ' · ' + (ecoState.role === 'owner' ? t('ecoYouOwner') : t('ecoYouWorker'));
+    if (ow) ow.style.display = ecoState.role === 'owner' ? 'block' : 'none';
+    if (wk) wk.style.display = ecoState.role === 'worker' ? 'block' : 'none';
+  } else {
+    if (noC) noC.style.display = 'block';
+    if (ow) ow.style.display = 'none';
+    if (wk) wk.style.display = 'none';
+    st.textContent = window.__ecoWaiting ? t('ecoReqWaiting') : t('ecoNoCompany');
+  }
+  try { ecoApplyRoleUI(); } catch (e) {}
+}
+function ecoCreateCompany() {
+  var name = (($('ecoCompanyName') || {}).value || '').trim();
+  if (!name) { showToast(t('ecoCompanyNamePh')); return; }
+  var uid = ecoUid(); if (!uid) return;
+  var cid = uid;
+  fsCall('set', 'companies/' + cid, { name: name, ownerUid: uid, ownerEmail: ecoMyEmail(), createdAt: '__SERVER_TS__' })
+    .then(function() { return fsCall('set', 'companies/' + cid + '/members/' + uid, { email: ecoMyEmail(), name: ecoMyName(), role: 'owner', status: 'active', joinedAt: '__SERVER_TS__' }); })
+    .then(function() { return fsCall('set', 'profiles/' + uid, { email: ecoMyEmail(), companyId: cid, companyName: name, role: 'owner' }); })
+    .then(function() { ecoState = { companyId: cid, role: 'owner', companyName: name }; ecoSaveLocal(); ecoRenderSettings(); ecoLoadTeam(); showToast(t('ecoCompanyCreated')); })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoCreateInvite() {
+  if (!ecoState || ecoState.role !== 'owner') return;
+  var chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789', code = 'BR-';
+  for (var i = 0; i < 4; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+  fsCall('set', 'invites/' + code, { companyId: ecoState.companyId, companyName: ecoState.companyName || '', createdBy: ecoUid(), createdAt: '__SERVER_TS__' })
+    .then(function() { var out = $('ecoInviteOut'), tx = $('ecoInviteText'); if (out) out.style.display = 'flex'; if (tx) tx.textContent = t('ecoInviteShare') + ' ' + code; })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoJoinWithCode() {
+  var code = (($('ecoJoinCode') || {}).value || '').trim().toUpperCase();
+  if (!code) return;
+  var uid = ecoUid(); if (!uid) return;
+  fsCall('get', 'invites/' + code).then(function(r) {
+    if (!r.data || !r.data.companyId) { showToast(t('ecoCodeBad')); return; }
+    var cid = r.data.companyId, cname = r.data.companyName || '';
+    fsCall('set', 'companies/' + cid + '/joinRequests/' + uid, { email: ecoMyEmail(), name: ecoMyName(), status: 'pending', requestedAt: '__SERVER_TS__' })
+      .then(function() { return fsCall('set', 'joinPend/' + uid, { companyId: cid, companyName: cname, code: code }); })
+      .then(function() { window.__ecoWaiting = true; showToast(t('ecoReqSent')); ecoRenderSettings(); })
+      .catch(function(e) { showToast('Error: ' + e.message); });
+  }).catch(function() { showToast(t('ecoCodeBad')); });
+}
+function ecoLoadTeam() {
+  if (!ecoState || ecoState.role !== 'owner') return;
+  var cid = ecoState.companyId;
+  fsCall('query', 'companies/' + cid + '/joinRequests', { field: 'status', value: 'pending' }).then(function(r) {
+    var box = $('ecoPendingList'); if (!box) return;
+    var items = r.items || [], h = '';
+    if (items.length) {
+      h += '<div class="setting-row"><span class="setting-label" style="font-weight:800;">' + t('ecoPending') + ' (' + items.length + ')</span></div>';
+      items.forEach(function(q) {
+        h += '<div class="setting-row"><span class="setting-label">' + ecoEsc(q.name || q.email || '') + '<br><small>' + ecoEsc(q.email || '') + '</small></span><span><button class="btn btn-primary btn-sm" onclick="ecoApprove(\'' + q._id + '\')">✓ ' + t('ecoApprove') + '</button> <button class="btn btn-light btn-sm" onclick="ecoReject(\'' + q._id + '\')">' + t('ecoReject') + '</button></span></div>';
+      });
+    }
+    box.innerHTML = h;
+  }).catch(function() {});
+  fsCall('query', 'companies/' + cid + '/members', {}).then(function(r) {
+    var box = $('ecoMemberList'); if (!box) return;
+    var items = r.items || [];
+    var h = '<div class="setting-row"><span class="setting-label" style="font-weight:800;">' + t('ecoMembers') + ' (' + items.length + ')</span></div>';
+    items.forEach(function(m) {
+      h += '<div class="setting-row"><span class="setting-label">' + ecoEsc(m.name || m.email || '') + ' · ' + (m.role === 'owner' ? t('ecoOwner') : t('ecoWorker')) + '<br><small>' + ecoEsc(m.email || '') + '</small></span>' +
+        (m._id !== ecoUid() ? '<button class="btn btn-light btn-sm" onclick="ecoRemoveMember(\'' + m._id + '\')">' + t('ecoRemove') + '</button>' : '') + '</div>';
+    });
+    box.innerHTML = h;
+  }).catch(function() {});
+}
+function ecoApprove(uid2) {
+  if (!ecoState || ecoState.role !== 'owner') return;
+  var cid = ecoState.companyId;
+  fsCall('get', 'companies/' + cid + '/joinRequests/' + uid2).then(function(r) {
+    var q = r.data || {};
+    return fsCall('set', 'companies/' + cid + '/members/' + uid2, { email: q.email || '', name: q.name || '', role: 'worker', status: 'active', joinedAt: '__SERVER_TS__' })
+      .then(function() { return fsCall('set', 'companies/' + cid + '/joinRequests/' + uid2, { status: 'approved' }); });
+  }).then(function() { showToast(t('ecoApprovedMsg')); ecoLoadTeam(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoReject(uid2) {
+  if (!ecoState || ecoState.role !== 'owner') return;
+  fsCall('set', 'companies/' + ecoState.companyId + '/joinRequests/' + uid2, { status: 'rejected' }).then(function() { ecoLoadTeam(); }).catch(function() {});
+}
+function ecoRemoveMember(uid2) {
+  if (!ecoState || ecoState.role !== 'owner') return;
+  if (!confirm(t('ecoRemove') + '?')) return;
+  fsCall('delete', 'companies/' + ecoState.companyId + '/members/' + uid2).then(function() { ecoLoadTeam(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+
+/* ═══════ ECOSYSTEM — Fase B: owner publishing + approvals inbox ═══════ */
+function openTeamPage() {
+  history.pushState({ panel: 'teamPage' }, '');
+  var el = $('teamPage');
+  el.style.display = 'block';
+  el.scrollTop = 0;
+  document.querySelectorAll('.nav-tab').forEach(function(b) { b.classList.remove('active'); });
+  var nj = $('navJobs'); if (nj) nj.classList.add('active');
+  var isWorker = ecoState && ecoState.role === 'worker';
+  $('teamOwnerBox').style.display = isWorker ? 'none' : 'block';
+  $('teamWorkerBox').style.display = isWorker ? 'block' : 'none';
+  if (isWorker) { if (typeof ecoRenderWorkerJobs === 'function') ecoRenderWorkerJobs(); }
+  else { ecoLoadApprovals(); }
+}
+function closeTeamPage() {
+  $('teamPage').style.display = 'none';
+  document.querySelectorAll('.nav-tab').forEach(function(b) { b.classList.remove('active'); });
+  var ne = $('navEstimate'); if (ne) ne.classList.add('active');
+}
+function ecoRenderCdTeam(c) {
+  var st = $('cdTeamStatus'); if (!st) return;
+  if (!ecoState || ecoState.role !== 'owner') { st.textContent = ''; return; }
+  st.textContent = '…';
+  fsCall('get', 'companies/' + ecoState.companyId + '/jobs/' + c.id).then(function(r) {
+    if (r.data) {
+      var n = (r.data.assignedTo || []).length;
+      st.textContent = t('jobPublished') + ' · ' + n + ' ' + t('jobAssigned');
+    } else { st.textContent = t('jobNotPublished'); }
+  }).catch(function() { st.textContent = ''; });
+}
+var __assignJobId = null;
+function ecoOpenAssign() {
+  if (!ecoState || ecoState.role !== 'owner') { showToast(t('jobNeedCompany')); return; }
+  __assignJobId = currentContractId;
+  var cid = ecoState.companyId;
+  var box = $('assignMembers');
+  box.innerHTML = '<div style="color:var(--muted);font-size:13px;">…</div>';
+  history.pushState({ panel: 'assignOverlay' }, '');
+  $('assignOverlay').style.display = 'block';
+  Promise.all([
+    fsCall('query', 'companies/' + cid + '/members', {}).catch(function() { return { items: [] }; }),
+    fsCall('get', 'companies/' + cid + '/jobs/' + __assignJobId).catch(function() { return { data: null }; })
+  ]).then(function(res) {
+    var members = (res[0].items || []).filter(function(m) { return m._id !== ecoUid(); });
+    var job = res[1].data;
+    var assigned = job && job.assignedTo ? job.assignedTo : [];
+    if (!members.length) {
+      box.innerHTML = '<div style="color:var(--muted);font-size:13px;">' + t('jobNoWorkers') + '</div>';
+    } else {
+      box.innerHTML = members.map(function(m) {
+        var chk = assigned.indexOf(m._id) >= 0 ? ' checked' : '';
+        return '<label style="display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;padding:7px 0;cursor:pointer;">' +
+          '<input type="checkbox" class="assign-member-cb" value="' + m._id + '"' + chk + ' style="width:20px;height:20px;">' +
+          '<span>' + ecoEsc(m.name || m.email || '') + ' <small style="color:var(--muted);">' + (m.role === 'owner' ? t('ecoOwner') : t('ecoWorker')) + '</small></span></label>';
+      }).join('');
+    }
+    var ph = $('assignPhone'); if (ph) ph.checked = !!(job && job.phoneVisible);
+    var ta = $('assignTasks');
+    if (ta) ta.value = job && job.tasks && job.tasks.length
+      ? job.tasks.map(function(x) { return x.label; }).join('\n')
+      : [t('jobTask1'), t('jobTask2'), t('jobTask3'), t('jobTask4')].join('\n');
+    $('assignUnpublishBtn').style.display = job ? 'block' : 'none';
+  });
+}
+function ecoCloseAssign() { $('assignOverlay').style.display = 'none'; }
+function ecoPublishJob() {
+  if (!ecoState || ecoState.role !== 'owner' || !__assignJobId) return;
+  var contracts = getContracts();
+  var c = contracts.find(function(x) { return x.id === __assignJobId; });
+  if (!c) return;
+  var assigned = [];
+  document.querySelectorAll('.assign-member-cb').forEach(function(cb) { if (cb.checked) assigned.push(cb.value); });
+  var phoneVisible = !!($('assignPhone') && $('assignPhone').checked);
+  var tasks = (($('assignTasks') || {}).value || '').split('\n').map(function(s) { return s.trim(); }).filter(Boolean)
+    .map(function(label) { return { label: label }; });
+  var job = {
+    contractNum: c.contractNum || c.estNum || '', estNum: c.estNum || '',
+    projectName: c.projectName || '', clientName: c.clientName || '',
+    address: c.projectAddress || '', scope: c.scopeWork || '',
+    jobStart: c.jobStart || '', jobEnd: c.jobEnd || '', team: c.team || '',
+    assignedTo: assigned, phoneVisible: phoneVisible,
+    clientPhone: phoneVisible ? ((c.estimateData && c.estimateData.clientPhone) || '') : '',
+    tasks: tasks, status: 'active', updatedAt: '__SERVER_TS__'
+  };
+  fsCall('set', 'companies/' + ecoState.companyId + '/jobs/' + c.id, job)
+    .then(function() { showToast(t('jobPublishedOk')); ecoCloseAssign(); try { ecoRenderCdTeam(c); } catch (e) {} })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoUnpublishJob() {
+  if (!ecoState || ecoState.role !== 'owner' || !__assignJobId) return;
+  if (!confirm(t('jobUnpublish') + '?')) return;
+  fsCall('delete', 'companies/' + ecoState.companyId + '/jobs/' + __assignJobId)
+    .then(function() {
+      showToast(t('jobUnpublishedOk')); ecoCloseAssign();
+      var contracts = getContracts();
+      var c = contracts.find(function(x) { return x.id === __assignJobId; });
+      if (c) try { ecoRenderCdTeam(c); } catch (e) {}
+    })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+}
+function renderPublishedJobs(jobs) {
+  var box = $('publishedJobsList'); if (!box) return;
+  if (!jobs.length) { box.innerHTML = '<div style="padding:14px;text-align:center;color:var(--muted);font-size:13px;">—</div>'; return; }
+  box.innerHTML = jobs.map(function(j) {
+    return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;cursor:pointer;" onclick="closeTeamPage();openContractDetail(\'' + j._id + '\')">' +
+      '<div style="font-weight:800;font-size:15px;">' + ecoEsc(j.projectName || j.contractNum || '') + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:2px;">' + ecoEsc(j.clientName || '') + (j.jobStart ? ' · 📅 ' + ecoEsc(j.jobStart) : '') + (j.jobEnd ? ' → ' + ecoEsc(j.jobEnd) : '') + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:2px;">👷 ' + (j.assignedTo || []).length + ' ' + t('jobAssigned') + ' · <span id="jobpct_' + j._id + '">…</span></div></div>';
+  }).join('');
+  jobs.forEach(function(j) {
+    fsCall('get', 'companies/' + ecoState.companyId + '/jobs/' + j._id + '/progress/main').then(function(r) {
+      var el = $('jobpct_' + j._id); if (!el) return;
+      el.textContent = (r.data && typeof r.data.pct === 'number') ? ('✅ ' + r.data.pct + '%') : '0%';
+    }).catch(function() {});
+  });
+}
+function approvalPhotoCard(job, p) {
+  window.__ecoPhotoCache = window.__ecoPhotoCache || {};
+  window.__ecoPhotoCache[p._id] = p;
+  var stage = p.stage === 'before' ? t('jobStageBefore') : (p.stage === 'after' ? t('jobStageAfter') : t('jobStageProgress'));
+  return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:10px;margin-bottom:10px;">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:6px;">📷 ' + ecoEsc(job.projectName || job.contractNum || '') + ' · ' + stage + ' · ' + ecoEsc(p.byName || '') + '</div>' +
+    '<img src="' + p.data + '" onclick="viewPhoto(this.src)" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;">' +
+    '<div style="display:flex;gap:8px;margin-top:8px;">' +
+    '<button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;" onclick="ecoApprovePhoto(\'' + job._id + '\',\'' + p._id + '\')">✓ ' + t('ecoApprove') + '</button>' +
+    '<button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="ecoRejectPhoto(\'' + job._id + '\',\'' + p._id + '\')">✗ ' + t('ecoReject') + '</button></div></div>';
+}
+function approvalUpdateCard(job, u) {
+  window.__ecoUpdatesCache = window.__ecoUpdatesCache || {};
+  window.__ecoUpdatesCache[u._id] = u;
+  var icon = u.type === 'material' ? '🧱 ' + t('jobMaterialReq') : u.type === 'expense' ? '🧾 ' + t('jobExpenseReq') : u.type === 'change' ? '🔀 ' + t('jobChangeOrder') : '📝 ' + t('jobNoteLbl');
+  var h = '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:10px;">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">' + icon + ' · ' + ecoEsc(job.projectName || job.contractNum || '') + ' · ' + ecoEsc(u.byName || '') + '</div>' +
+    '<div style="font-size:14px;">' + ecoEsc(u.text || '') + '</div>';
+  if (u.photo) h += '<img src="' + u.photo + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-top:8px;">';
+  if (u.type === 'change') {
+    h += '<input type="number" id="co_price_' + job._id + '_' + u._id + '" placeholder="' + t('jobPricePh') + '" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;margin-top:10px;">' +
+      '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;" onclick="ecoApproveUpdate(\'' + job._id + '\',\'' + u._id + '\',\'change\')">✓ ' + t('jobPricedApprove') + '</button>' +
+      '<button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="ecoRejectUpdate(\'' + job._id + '\',\'' + u._id + '\')">✗ ' + t('ecoReject') + '</button></div>';
+  } else {
+    h += '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-primary btn-sm" style="flex:1;justify-content:center;" onclick="ecoApproveUpdate(\'' + job._id + '\',\'' + u._id + '\',\'\')">✓ ' + t('ecoApprove') + '</button>' +
+      '<button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="ecoRejectUpdate(\'' + job._id + '\',\'' + u._id + '\')">✗ ' + t('ecoReject') + '</button></div>';
+  }
+  return h + '</div>';
+}
+function ecoLoadApprovals() {
+  var box = $('approvalsList'); if (!box) return;
+  if (!ecoState || ecoState.role !== 'owner') { box.innerHTML = ''; var pj = $('publishedJobsList'); if (pj) pj.innerHTML = ''; return; }
+  box.innerHTML = '<div style="padding:12px;color:var(--muted);">…</div>';
+  var cid = ecoState.companyId;
+  fsCall('query', 'companies/' + cid + '/jobs', {}).then(function(r) {
+    var jobs = r.items || [];
+    renderPublishedJobs(jobs);
+    var per = jobs.map(function(j) {
+      return Promise.all([
+        fsCall('query', 'companies/' + cid + '/jobs/' + j._id + '/photos', { field: 'approved', value: false }).catch(function() { return { items: [] }; }),
+        fsCall('query', 'companies/' + cid + '/jobs/' + j._id + '/updates', { field: 'status', value: 'pending' }).catch(function() { return { items: [] }; })
+      ]).then(function(res) { return { job: j, photos: res[0].items || [], updates: res[1].items || [] }; });
+    });
+    Promise.all(per).then(function(all) {
+      var h = '', count = 0;
+      all.forEach(function(g) {
+        g.photos.forEach(function(p) { count++; h += approvalPhotoCard(g.job, p); });
+        g.updates.forEach(function(u) { count++; h += approvalUpdateCard(g.job, u); });
+      });
+      box.innerHTML = count ? h : '<div style="padding:16px;text-align:center;color:var(--muted);">' + t('jobNoApprovals') + '</div>';
+    });
+  }).catch(function() { box.innerHTML = ''; });
+}
+function ecoApprovePhoto(jobId, photoId) {
+  fsCall('set', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/photos/' + photoId, { approved: true })
+    .then(function() { try { ecoPortalSyncPhoto(jobId, photoId); } catch (e) {} ecoLoadApprovals(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoRejectPhoto(jobId, photoId) {
+  fsCall('delete', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/photos/' + photoId)
+    .then(function() { ecoLoadApprovals(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoApproveUpdate(jobId, updId, type) {
+  if (type === 'change') {
+    var inp = $('co_price_' + jobId + '_' + updId);
+    var price = parseFloat(inp && inp.value);
+    if (!price || price <= 0) { showToast(t('jobPricePh')); return; }
+    var contracts = getContracts();
+    var c = contracts.find(function(x) { return x.id === jobId; });
+    if (c) {
+      if (!c.clientChangeOrders) c.clientChangeOrders = [];
+      var upd = (window.__ecoUpdatesCache || {})[updId] || {};
+      c.clientChangeOrders.push({ desc: upd.text || '', price: price, at: Date.now(), status: 'client-pending', cloudId: updId });
+      saveContracts(contracts);
+    }
+  }
+  fsCall('set', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/updates/' + updId, { status: 'approved' })
+    .then(function() { ecoLoadApprovals(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoRejectUpdate(jobId, updId) {
+  fsCall('set', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/updates/' + updId, { status: 'rejected' })
+    .then(function() { ecoLoadApprovals(); }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+
+/* ═══════ ECOSYSTEM — Fase C: worker view ═══════ */
+function ecoApplyRoleUI() {
+  if (!ecoState || ecoState.role !== 'worker') return;
+  document.querySelectorAll('.nav-tab').forEach(function(b) { if (b.id !== 'navJobs') b.style.display = 'none'; });
+  if (!window.__ecoWorkerLanded) {
+    window.__ecoWorkerLanded = true;
+    setTimeout(function() { try { openTeamPage(); } catch (e) {} }, 700);
+  }
+}
+function ecoCompressImage(file, cb) {
+  var url = URL.createObjectURL(file);
+  var img = new Image();
+  img.onload = function() {
+    var max = 800, scale = Math.min(1, max / Math.max(img.width, img.height));
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url);
+    cb(cv.toDataURL('image/jpeg', 0.75));
+  };
+  img.onerror = function() { URL.revokeObjectURL(url); showToast('Error'); };
+  img.src = url;
+}
+function ecoRenderWorkerJobs() {
+  var box = $('workerJobsList'); if (!box || !ecoState) return;
+  box.innerHTML = '<div class="cd-section-title">👷 ' + t('wkMyJobs') + '</div><div style="color:var(--muted);">…</div>';
+  fsCall('query', 'companies/' + ecoState.companyId + '/jobs', { field: 'assignedTo', op: 'arrayContains', value: ecoUid() }).then(function(r) {
+    var jobs = r.items || [];
+    window.__ecoJobs = {};
+    jobs.forEach(function(j) { window.__ecoJobs[j._id] = j; });
+    if (!jobs.length) { box.innerHTML = '<div class="cd-section-title">👷 ' + t('wkMyJobs') + '</div><div style="padding:20px;text-align:center;color:var(--muted);">' + t('wkNoJobs') + '</div>'; return; }
+    box.innerHTML = '<div class="cd-section-title">👷 ' + t('wkMyJobs') + ' (' + jobs.length + ')</div>' + jobs.map(function(j) {
+      return '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;" onclick="openWorkerJob(\'' + j._id + '\')">' +
+        '<div style="font-weight:800;font-size:16px;">' + ecoEsc(j.projectName || j.contractNum || '') + '</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-top:3px;">' + ecoEsc(j.clientName || '') + (j.jobStart ? ' · 📅 ' + ecoEsc(j.jobStart) : '') + (j.jobEnd ? ' → ' + ecoEsc(j.jobEnd) : '') + '</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-top:2px;">📍 ' + ecoEsc(j.address || '') + '</div></div>';
+    }).join('');
+  }).catch(function(e) { box.innerHTML = '<div style="padding:16px;color:var(--muted);">Error: ' + ecoEsc(e.message) + '</div>'; });
+}
+var __wj = null;
+var __wjStage = 'progress';
+var __wjAttach = '';
+function openWorkerJob(jobId) {
+  var job = (window.__ecoJobs || {})[jobId];
+  if (!job || !ecoState) return;
+  __wj = { job: job, done: {} };
+  __wjStage = 'progress'; __wjAttach = '';
+  history.pushState({ panel: 'workerJobPage' }, '');
+  $('workerJobPage').style.display = 'block';
+  $('workerJobPage').scrollTop = 0;
+  $('wjTitle').textContent = '👷 ' + (job.contractNum || job.projectName || '');
+  wjRender();
+  var base = 'companies/' + ecoState.companyId + '/jobs/' + jobId;
+  fsCall('get', base + '/progress/main').then(function(r) { if (r.data && r.data.done) { __wj.done = r.data.done; wjRenderTasks(); } }).catch(function() {});
+  wjReloadPhotos(); wjReloadActivity();
+}
+function closeWorkerJob() {
+  $('workerJobPage').style.display = 'none';
+  __wj = null;
+  if (ecoState && ecoState.role === 'worker') ecoRenderWorkerJobs();
+}
+function wjRender() {
+  var job = __wj.job, box = $('workerJobBody'); if (!box) return;
+  var inAt = parseInt(localStorage.getItem('RS_CHECKIN_' + job._id) || '0', 10);
+  var h = '';
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    '<div style="font-weight:900;font-size:18px;">' + ecoEsc(job.projectName || '') + '</div>' +
+    '<div style="font-size:13px;color:var(--muted);margin-top:4px;">' + t('wkClient') + ': ' + ecoEsc(job.clientName || '') + '</div>' +
+    (job.jobStart || job.jobEnd ? '<div style="font-size:13px;color:var(--muted);">📅 ' + ecoEsc(job.jobStart || '') + (job.jobEnd ? ' → ' + ecoEsc(job.jobEnd) : '') + '</div>' : '') +
+    '<div style="font-size:13px;color:var(--muted);">📍 ' + ecoEsc(job.address || '') + '</div>' +
+    (job.scope ? '<div style="font-size:13px;margin-top:8px;"><strong>' + t('wkScope') + ':</strong> ' + ecoEsc(job.scope) + '</div>' : '') +
+    '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">' +
+    '<button class="btn btn-light btn-sm" onclick="wjDirections()">🧭 ' + t('directionsBtn') + '</button>' +
+    (job.phoneVisible && job.clientPhone ? '<a class="btn btn-light btn-sm" style="text-decoration:none;" href="tel:' + ecoEsc(job.clientPhone) + '">📞 ' + t('wkCall') + ' ' + ecoEsc(job.clientPhone) + '</a>' : '') +
+    '</div></div>';
+  // Check-in
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    (inAt ? '<div style="font-size:13px;color:var(--muted);margin-bottom:8px;">🟢 ' + t('wkCheckedIn') + ' ' + new Date(inAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</div>' : '') +
+    '<button class="btn ' + (inAt ? 'btn-light' : 'btn-primary') + '" style="width:100%;justify-content:center;" onclick="wjCheckInOut()">' + (inAt ? t('wkCheckOut') : t('wkCheckIn')) + '</button>' +
+    '<div id="wjHours" style="font-size:12px;color:var(--muted);margin-top:8px;"></div></div>';
+  // Tasks
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    '<div class="cd-section-title">✅ ' + t('wkTasks') + ' · <span id="wjPct">0%</span></div><div id="wjTasks"></div></div>';
+  // Photos
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    '<div class="cd-section-title">📷 ' + t('wkPhotos') + '</div>' +
+    '<div style="display:flex;gap:6px;margin-bottom:10px;">' +
+    ['before', 'progress', 'after'].map(function(s) {
+      var lbl = s === 'before' ? t('jobStageBefore') : (s === 'after' ? t('jobStageAfter') : t('jobStageProgress'));
+      return '<button class="btn btn-sm wj-stage-btn" data-stage="' + s + '" onclick="wjSetStage(\'' + s + '\')" style="flex:1;justify-content:center;">' + lbl + '</button>';
+    }).join('') + '</div>' +
+    '<div id="wjPhotos" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;"></div>' +
+    '<button class="btn btn-light" style="width:100%;justify-content:center;" onclick="document.getElementById(\'wkPhotoInput\').click()">' + t('wkAddPhoto') + '</button></div>';
+  // Composer
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    '<div style="display:flex;gap:6px;margin-bottom:8px;">' +
+    [['note', 'wkTypeNote'], ['material', 'wkTypeMaterial'], ['expense', 'wkTypeExpense'], ['change', 'wkTypeChange']].map(function(x) {
+      return '<button class="btn btn-sm wj-type-btn" data-type="' + x[0] + '" onclick="wjSetType(\'' + x[0] + '\')" style="flex:1;justify-content:center;font-size:12px;">' + t(x[1]) + '</button>';
+    }).join('') + '</div>' +
+    '<textarea id="wjUpdText" rows="2" placeholder="' + t('wkWritePh') + '" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;font-family:inherit;"></textarea>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;align-items:center;">' +
+    '<button class="btn btn-light btn-sm" onclick="document.getElementById(\'wkAttachInput\').click()">📎</button>' +
+    '<span id="wjAttachHint" style="font-size:12px;color:var(--muted);flex:1;"></span>' +
+    '<button class="btn btn-primary btn-sm" onclick="wjSendUpdate()">' + t('wkSend') + '</button></div></div>';
+  // Signature
+  h += '<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;">' +
+    '<div class="cd-section-title">✍️ ' + t('wkSignTitle') + '</div>' +
+    '<input id="wjSignName" placeholder="' + t('wkSignPh') + '" style="width:100%;padding:10px;border-radius:10px;border:1.5px solid var(--border-solid);background:var(--input-bg);color:var(--text);font-size:14px;margin-bottom:8px;">' +
+    '<canvas id="wjSigCanvas" width="640" height="220" style="width:100%;height:110px;background:#fff;border:1.5px dashed var(--border-solid);border-radius:10px;"></canvas>' +
+    '<div style="display:flex;gap:8px;margin-top:8px;"><button class="btn btn-light btn-sm" style="flex:1;justify-content:center;" onclick="wjClearSig()">' + t('wkSignClear') + '</button>' +
+    '<button class="btn btn-primary btn-sm" style="flex:2;justify-content:center;" onclick="wjSaveSig()">' + t('wkSignBtn') + '</button></div></div>';
+  // Activity
+  h += '<div class="cd-section-title">🕘 ' + t('wkActivity') + '</div><div id="wjActivity"></div>';
+  box.innerHTML = h;
+  window.__wjType = 'note';
+  wjSetType('note'); wjSetStage('progress'); wjRenderTasks(); wjInitSigPad();
+}
+function wjSetType(type) {
+  window.__wjType = type;
+  document.querySelectorAll('.wj-type-btn').forEach(function(b) {
+    var on = b.getAttribute('data-type') === type;
+    b.style.background = on ? 'var(--lime)' : ''; b.style.color = on ? '#0f172a' : ''; b.style.border = on ? '1px solid var(--lime)' : '';
+  });
+}
+function wjSetStage(stage) {
+  __wjStage = stage;
+  document.querySelectorAll('.wj-stage-btn').forEach(function(b) {
+    var on = b.getAttribute('data-stage') === stage;
+    b.style.background = on ? 'var(--lime)' : ''; b.style.color = on ? '#0f172a' : ''; b.style.border = on ? '1px solid var(--lime)' : '';
+  });
+  wjRenderPhotos();
+}
+function wjDirections() { try { window.AuthBridge.openMaps(__wj.job.address || ''); } catch (e) {} }
+function wjRenderTasks() {
+  var box = $('wjTasks'); if (!box || !__wj) return;
+  var tasks = __wj.job.tasks || [];
+  var doneCount = 0;
+  tasks.forEach(function(_, i) { if (__wj.done[i]) doneCount++; });
+  var pct = tasks.length ? Math.round(doneCount / tasks.length * 100) : 0;
+  var pctEl = $('wjPct'); if (pctEl) pctEl.textContent = pct + '%';
+  box.innerHTML = tasks.map(function(task, i) {
+    var done = !!__wj.done[i];
+    return '<label style="display:flex;gap:10px;align-items:center;font-size:14px;padding:8px 0;cursor:pointer;' + (done ? 'color:var(--muted);text-decoration:line-through;' : '') + '">' +
+      '<input type="checkbox" onchange="wjToggleTask(' + i + ', this.checked)"' + (done ? ' checked' : '') + ' style="width:21px;height:21px;">' +
+      '<span>' + ecoEsc(task.label) + '</span></label>';
+  }).join('') || '<div style="color:var(--muted);font-size:13px;">—</div>';
+}
+function wjToggleTask(idx, checked) {
+  if (!__wj) return;
+  __wj.done[idx] = checked;
+  wjRenderTasks();
+  var tasks = __wj.job.tasks || [];
+  var doneCount = 0;
+  tasks.forEach(function(_, i) { if (__wj.done[i]) doneCount++; });
+  var pct = tasks.length ? Math.round(doneCount / tasks.length * 100) : 0;
+  fsCall('set', 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id + '/progress/main',
+    { done: __wj.done, pct: pct, byUid: ecoUid(), byName: ecoMyName(), updatedAt: '__SERVER_TS__' })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+}
+function wjReloadPhotos() {
+  if (!__wj) return;
+  fsCall('query', 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id + '/photos', {}).then(function(r) {
+    __wj.photos = r.items || [];
+    wjRenderPhotos();
+  }).catch(function() {});
+}
+function wjRenderPhotos() {
+  var box = $('wjPhotos'); if (!box || !__wj) return;
+  var list = (__wj.photos || []).filter(function(p) { return (p.stage || 'progress') === __wjStage; });
+  box.innerHTML = list.map(function(p) {
+    return '<div style="position:relative;"><img src="' + p.data + '" onclick="viewPhoto(this.src)" style="width:100%;height:84px;object-fit:cover;border-radius:8px;">' +
+      (p.approved ? '' : '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.6);color:#fff;font-size:9px;text-align:center;padding:2px 0;border-radius:0 0 8px 8px;">⏳</div>') + '</div>';
+  }).join('') || '<div style="grid-column:1/-1;color:var(--muted);font-size:13px;text-align:center;padding:8px;">—</div>';
+}
+function wjReloadActivity() {
+  if (!__wj) return;
+  var base = 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id;
+  Promise.all([
+    fsCall('query', base + '/updates', {}).catch(function() { return { items: [] }; }),
+    fsCall('query', base + '/checkins', {}).catch(function() { return { items: [] }; })
+  ]).then(function(res) {
+    var ups = (res[0].items || []).map(function(u) { return { kind: 'upd', at: u.at || 0, u: u }; });
+    var chks = (res[1].items || []).map(function(c) { return { kind: 'chk', at: c.at || 0, c: c }; });
+    var all = ups.concat(chks).sort(function(a, b) { return b.at - a.at; });
+    var hoursEl = $('wjHours');
+    var myChks = (res[1].items || []).filter(function(c) { return c.byUid === ecoUid(); }).sort(function(a, b) { return a.at - b.at; });
+    var totalMs = 0, openIn = 0;
+    myChks.forEach(function(c) { if (c.type === 'in') openIn = c.at; else if (c.type === 'out' && openIn) { totalMs += c.at - openIn; openIn = 0; } });
+    if (hoursEl) hoursEl.textContent = totalMs ? ('⏱ ' + (totalMs / 3600000).toFixed(2) + ' h') : '';
+    var box = $('wjActivity'); if (!box) return;
+    box.innerHTML = all.slice(0, 40).map(function(x) {
+      var when = x.at ? new Date(x.at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      if (x.kind === 'chk') {
+        return '<div style="font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">⏱ ' + (x.c.type === 'in' ? '🟢' : '🔴') + ' ' + ecoEsc(x.c.byName || '') + ' · ' + when + '</div>';
+      }
+      var u = x.u;
+      var icon = u.type === 'material' ? '🧱' : u.type === 'expense' ? '🧾' : u.type === 'change' ? '🔀' : u.type === 'signature' ? '✍️' : '📝';
+      var chip = u.status === 'pending' ? ' · <span style="color:#d97706;">⏳ ' + t('wkPendingApproval') + '</span>'
+        : u.status === 'approved' ? ' · <span style="color:#10b981;">' + t('wkApprovedLbl') + '</span>'
+        : u.status === 'rejected' ? ' · <span style="color:#dc2626;">' + t('wkRejectedLbl') + '</span>' : '';
+      return '<div style="font-size:13px;padding:8px 0;border-bottom:1px solid var(--border);">' + icon + ' <strong>' + ecoEsc(u.byName || '') + '</strong> · ' + when + chip +
+        '<div>' + ecoEsc(u.text || '') + '</div>' +
+        (u.photo ? '<img src="' + u.photo + '" onclick="viewPhoto(this.src' + (u.type === 'signature' ? ',true' : '') + ')" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;margin-top:6px;">' : '') + '</div>';
+    }).join('') || '<div style="color:var(--muted);font-size:13px;padding:8px 0;">—</div>';
+  });
+}
+function wjCheckInOut() {
+  if (!__wj) return;
+  var jobId = __wj.job._id;
+  var key = 'RS_CHECKIN_' + jobId;
+  var inAt = parseInt(localStorage.getItem(key) || '0', 10);
+  var type = inAt ? 'out' : 'in';
+  var prevLat = (typeof pendingJobLat !== 'undefined') ? pendingJobLat : null;
+  var prevLng = (typeof pendingJobLng !== 'undefined') ? pendingJobLng : null;
+  try { window.AuthBridge.getLocation(); } catch (e) {}
+  var tries = 0;
+  var iv = setInterval(function() {
+    tries++;
+    var got = (typeof pendingJobLat !== 'undefined' && pendingJobLat != null && (pendingJobLat !== prevLat || pendingJobLng !== prevLng));
+    if (got || tries >= 8) {
+      clearInterval(iv);
+      var rec = { type: type, at: Date.now(), lat: got ? pendingJobLat : null, lng: got ? pendingJobLng : null, byUid: ecoUid(), byName: ecoMyName() };
+      fsCall('add', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/checkins', rec).then(function() {
+        if (type === 'in') localStorage.setItem(key, String(rec.at)); else localStorage.removeItem(key);
+        showToast(t('wkSent'));
+        if (__wj && __wj.job._id === jobId) { wjRender(); wjReloadPhotos(); wjReloadActivity(); fsCall('get', 'companies/' + ecoState.companyId + '/jobs/' + jobId + '/progress/main').then(function(r) { if (r.data && r.data.done) { __wj.done = r.data.done; wjRenderTasks(); } }).catch(function() {}); }
+      }).catch(function(e) { showToast('Error: ' + e.message); });
+    }
+  }, 600);
+}
+function wjSendUpdate() {
+  if (!__wj) return;
+  var text = (($('wjUpdText') || {}).value || '').trim();
+  if (!text && !__wjAttach) return;
+  var rec = { type: window.__wjType || 'note', text: text, photo: __wjAttach || '', status: (window.__wjType === 'note') ? 'note' : 'pending', byUid: ecoUid(), byName: ecoMyName(), at: Date.now() };
+  fsCall('add', 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id + '/updates', rec).then(function() {
+    showToast(t('wkSent'));
+    var ta = $('wjUpdText'); if (ta) ta.value = '';
+    __wjAttach = ''; var hint = $('wjAttachHint'); if (hint) hint.textContent = '';
+    wjReloadActivity();
+  }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function wjInitSigPad() {
+  var cv = $('wjSigCanvas'); if (!cv) return;
+  var ctx = cv.getContext('2d');
+  ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = '#111827';
+  var drawing = false, last = null;
+  function pos(e) { var r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * (cv.width / r.width), y: (e.clientY - r.top) * (cv.height / r.height) }; }
+  cv.style.touchAction = 'none';
+  cv.addEventListener('pointerdown', function(e) { drawing = true; last = pos(e); });
+  cv.addEventListener('pointermove', function(e) { if (!drawing) return; var p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p; });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev) { cv.addEventListener(ev, function() { drawing = false; }); });
+}
+function wjClearSig() { var cv = $('wjSigCanvas'); if (cv) cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); }
+function wjSaveSig() {
+  if (!__wj) return;
+  var cv = $('wjSigCanvas'); if (!cv) return;
+  var name = (($('wjSignName') || {}).value || '').trim();
+  var rec = { type: 'signature', text: name, photo: cv.toDataURL('image/png'), status: 'signed', byUid: ecoUid(), byName: ecoMyName(), at: Date.now() };
+  fsCall('add', 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id + '/updates', rec).then(function() {
+    showToast(t('wkSent')); wjClearSig(); var ni = $('wjSignName'); if (ni) ni.value = ''; wjReloadActivity();
+  }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+document.addEventListener('DOMContentLoaded', function() { ecoWireWorkerInputs(); });
+function ecoWireWorkerInputs() {
+  var pi = $('wkPhotoInput');
+  if (pi) pi.addEventListener('change', function() {
+    var f = pi.files && pi.files[0]; pi.value = '';
+    if (!f || !__wj) return;
+    ecoCompressImage(f, function(dataUrl) {
+      fsCall('add', 'companies/' + ecoState.companyId + '/jobs/' + __wj.job._id + '/photos',
+        { data: dataUrl, stage: __wjStage, byUid: ecoUid(), byName: ecoMyName(), at: Date.now(), approved: false })
+        .then(function() { showToast(t('wkPhotoSent')); wjReloadPhotos(); })
+        .catch(function(e) { showToast('Error: ' + e.message); });
+    });
+  });
+  var ai = $('wkAttachInput');
+  if (ai) ai.addEventListener('change', function() {
+    var f = ai.files && ai.files[0]; ai.value = '';
+    if (!f) return;
+    ecoCompressImage(f, function(dataUrl) { __wjAttach = dataUrl; var hint = $('wjAttachHint'); if (hint) hint.textContent = '📎 ✓'; });
+  });
+}
+
+/* ═══════ ECOSYSTEM — Fase D: client portal ═══════ */
+var PORTAL_BASE = 'https://itsvanc9.github.io/Rs-estimator/portal.html';
+function ecoPortalUrl(token) { return PORTAL_BASE + '?t=' + token; }
+function ecoGenToken() {
+  var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789', s = '';
+  for (var i = 0; i < 22; i++) s += chars.charAt(Math.floor(Math.random() * chars.length));
+  return s;
+}
+function ecoSavePayLink() {
+  var cs = getContracts();
+  var c = cs.find(function(x) { return x.id === currentContractId; });
+  if (!c) return;
+  c.payLink = (($('cdPayLink') || {}).value || '').trim();
+  saveContracts(cs);
+}
+function ecoRenderCdPortal(c) {
+  var st = $('cdPortalStatus'); if (!st) return;
+  var inp = $('cdPayLink'); if (inp) inp.value = c.payLink || '';
+  var linkEl = $('cdPortalLink');
+  if (c.portalToken) {
+    st.innerHTML = '🟢 ' + t('ptlStatusOn') +
+      (c.portalLastView ? '<br>👀 ' + t('ptlLastView') + ': ' + new Date(c.portalLastView).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '') +
+      (c.clientConfirmedAt ? '<br>' + t('ptlConfirmed') : '');
+    if (linkEl) linkEl.textContent = ecoPortalUrl(c.portalToken);
+  } else {
+    st.textContent = t('ptlStatusOff');
+    if (linkEl) linkEl.textContent = '';
+  }
+}
+function ecoPortalBuild(c) {
+  var cid = ecoState.companyId;
+  var prof = getProfile();
+  return Promise.all([
+    fsCall('get', 'companies/' + cid + '/jobs/' + c.id + '/progress/main').catch(function() { return { data: null }; }),
+    fsCall('query', 'companies/' + cid + '/jobs/' + c.id + '/photos', { field: 'approved', value: true }).catch(function() { return { items: [] }; })
+  ]).then(function(res) {
+    var paid = (c.payments || []).reduce(function(s, p) { return s + (p.amount || 0); }, 0);
+    var view = {
+      company: prof.companyName || ecoState.companyName || 'Blackracoon',
+      logo: (prof.logoBase64 && prof.logoBase64.length < 150000) ? prof.logoBase64 : '',
+      contactPhone: prof.companyPhone || '',
+      contractNum: c.contractNum || c.estNum || '',
+      projectName: c.projectName || '', clientName: c.clientName || '',
+      address: c.projectAddress || '', scope: c.scopeWork || '',
+      total: c.totalAmount || 0, paid: paid, balance: Math.max(0, (c.totalAmount || 0) - paid),
+      schedule: (c.schedule || []).map(function(s) { return { label: s.label, amount: s.amount, due: s.due, paid: (c.payments || []).some(function(p) { return p.scheduleId === s.sid; }) }; }),
+      pct: (res[0].data && typeof res[0].data.pct === 'number') ? res[0].data.pct : 0,
+      photos: (res[1].items || []).map(function(p) { return { id: p._id, stage: p.stage || 'progress' }; }),
+      changeOrders: (c.clientChangeOrders || []).filter(function(x) { return x.status === 'client-pending' || x.status === 'client-approved'; })
+        .map(function(x) { return { cloudId: x.cloudId, desc: x.desc, price: x.price, status: x.status }; }),
+      payLink: c.payLink || '',
+      clientConfirmed: !!c.clientConfirmedAt,
+      updatedAt: Date.now()
+    };
+    return { view: view, photoDocs: res[1].items || [] };
+  });
+}
+function ecoPortalPublish() {
+  if (!ecoState || ecoState.role !== 'owner') { showToast(t('jobNeedCompany')); return; }
+  var cs = getContracts();
+  var c = cs.find(function(x) { return x.id === currentContractId; });
+  if (!c) return;
+  fsCall('get', 'companies/' + ecoState.companyId + '/jobs/' + c.id).then(function(jr) {
+    if (!jr.data) { showToast(t('ptlNeedJob')); return; }
+    if (!c.portalToken) { c.portalToken = ecoGenToken(); saveContracts(cs); }
+    var token = c.portalToken;
+    ecoPortalBuild(c).then(function(built) {
+      var ops = [fsCall('set', 'portal/' + token, { companyId: ecoState.companyId, jobId: c.id, viewJson: JSON.stringify(built.view), updatedAt: '__SERVER_TS__' })];
+      built.photoDocs.forEach(function(p) {
+        ops.push(fsCall('set', 'portalPhotos/' + token + '_' + p._id, { companyId: ecoState.companyId, token: token, stage: p.stage || 'progress', data: p.data, at: p.at || Date.now() }));
+      });
+      return Promise.all(ops);
+    }).then(function() { showToast(t('ptlLinkReady')); ecoRenderCdPortal(c); })
+    .catch(function(e) { showToast('Error: ' + e.message); });
+  }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoPortalShareWA() {
+  var cs = getContracts();
+  var c = cs.find(function(x) { return x.id === currentContractId; });
+  if (!c || !c.portalToken) { showToast(t('ptlStatusOff')); return; }
+  var msg = (c.contractNum || '') + ' · ' + (c.projectName || '') + '\n' + ecoPortalUrl(c.portalToken);
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+function ecoPortalRevoke() {
+  var cs = getContracts();
+  var c = cs.find(function(x) { return x.id === currentContractId; });
+  if (!c || !c.portalToken) return;
+  if (!confirm(t('ptlRevoke') + '?')) return;
+  var token = c.portalToken;
+  fsCall('query', 'companies/' + ecoState.companyId + '/jobs/' + c.id + '/photos', { field: 'approved', value: true }).catch(function() { return { items: [] }; }).then(function(r) {
+    var ops = [fsCall('delete', 'portal/' + token)];
+    (r.items || []).forEach(function(p) { ops.push(fsCall('delete', 'portalPhotos/' + token + '_' + p._id)); });
+    return Promise.all(ops);
+  }).then(function() {
+    c.portalToken = ''; saveContracts(cs); ecoRenderCdPortal(c); showToast('✓');
+  }).catch(function(e) { showToast('Error: ' + e.message); });
+}
+function ecoPortalSyncPhoto(jobId, photoId) {
+  var cs = getContracts();
+  var c = cs.find(function(x) { return x.id === jobId; });
+  if (!c || !c.portalToken) return;
+  var p = (window.__ecoPhotoCache || {})[photoId];
+  if (!p) return;
+  var token = c.portalToken;
+  fsCall('set', 'portalPhotos/' + token + '_' + photoId, { companyId: ecoState.companyId, token: token, stage: p.stage || 'progress', data: p.data, at: p.at || Date.now() })
+    .then(function() { return fsCall('get', 'portal/' + token); })
+    .then(function(r) {
+      if (!r.data || !r.data.viewJson) return;
+      var view = JSON.parse(r.data.viewJson);
+      view.photos = view.photos || [];
+      if (!view.photos.some(function(x) { return x.id === photoId; })) {
+        view.photos.push({ id: photoId, stage: p.stage || 'progress' });
+        fsCall('set', 'portal/' + token, { viewJson: JSON.stringify(view) }).catch(function() {});
+      }
+    }).catch(function() {});
+}
+function ecoPortalCheckResponses(c) {
+  if (!c || !c.portalToken || !ecoState) return;
+  fsCall('query', 'portal/' + c.portalToken + '/responses', {}).then(function(r) {
+    var items = r.items || [];
+    if (!items.length) return;
+    var cs = getContracts();
+    var cc = cs.find(function(x) { return x.id === c.id; });
+    if (!cc) return;
+    var seen = cc.portalSeen || [], changed = false;
+    items.forEach(function(resp) {
+      if (seen.indexOf(resp._id) >= 0) return;
+      seen.push(resp._id); changed = true;
+      if (resp.type === 'view') { cc.portalLastView = Math.max(cc.portalLastView || 0, resp.at || 0); }
+      else if (resp.type === 'completion') { cc.clientConfirmedAt = resp.at || Date.now(); }
+      else if (resp.type === 'changeOrder') {
+        var co = (cc.clientChangeOrders || []).find(function(x) { return x.cloudId === resp.cloudId; });
+        if (co && co.status === 'client-pending') {
+          co.status = resp.decision === 'approved' ? 'client-approved' : 'client-rejected';
+          co.clientName = resp.name || '';
+          co.decidedAt = resp.at || Date.now();
+          if (resp.decision === 'approved' && !co.applied) {
+            co.applied = true;
+            cc.totalAmount = (cc.totalAmount || 0) + (co.price || 0);
+            var maxSid = (cc.schedule || []).reduce(function(m, s) { return Math.max(m, s.sid || 0); }, 0);
+            cc.schedule.push({ sid: maxSid + 1, label: '🔀 ' + co.desc, pct: 0, amount: co.price, due: new Date().toISOString().slice(0, 10), note: 'Change order approved by client' });
+          }
+        }
+      }
+    });
+    cc.portalSeen = seen;
+    if (changed) { saveContracts(cs); ecoRenderCdPortal(cc); }
+  }).catch(function() {});
+}
 
 function openTerms() {
   var ts = $('termsScreen');
@@ -5472,7 +6307,7 @@ function _upsertClient(name, phone, email, address, type) {
 
   // Set date and estimate number
   $('estDate').value = new Date().toISOString().slice(0,10);
-  if (!$('estNum').value || $('estNum').value === 'RS-2026-001') {
+  if (!$('estNum').value || $('estNum').value === 'BR-2026-001') {
     $('estNum').value = getNextEstimateNumber();
   }
 
@@ -5519,6 +6354,9 @@ function _upsertClient(name, phone, email, address, type) {
     if ($('estimatesPage') && $('estimatesPage').classList.contains('open')) { closeEstimatesPage(); return; }
     if ($('clientFormOverlay') && $('clientFormOverlay').style.display !== 'none') { closeClientForm(); return; }
     if ($('clientDetailOverlay') && $('clientDetailOverlay').style.display !== 'none') { closeClientDetail(); return; }
+    if ($('assignOverlay') && $('assignOverlay').style.display !== 'none') { ecoCloseAssign(); return; }
+    if ($('workerJobPage') && $('workerJobPage').style.display !== 'none') { closeWorkerJob(); return; }
+    if ($('teamPage') && $('teamPage').style.display !== 'none') { closeTeamPage(); return; }
     if ($('clientsPage') && $('clientsPage').style.display !== 'none') { closeClientsPage(); return; }
     if ($('calendarPage') && $('calendarPage').style.display !== 'none') { closeCalendarPage(); return; }
   });

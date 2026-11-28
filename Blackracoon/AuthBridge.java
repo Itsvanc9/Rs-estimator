@@ -80,6 +80,7 @@ public class AuthBridge {
             o.put("event", event);
             o.put("signedIn", u != null);
             if (u != null) {
+                o.put("uid", u.getUid());
                 o.put("email", u.getEmail() == null ? "" : u.getEmail());
                 o.put("name", u.getDisplayName() == null ? "" : u.getDisplayName());
             }
@@ -463,8 +464,10 @@ public class AuthBridge {
                             if (l != null && (best == null || l.getTime() > best.getTime())) best = l;
                         } catch (Exception ignored) {}
                     }
+                    final Location lastKnown = best;
                     final boolean[] emitted = {false};
-                    if (best != null) { emitted[0] = true; emitLocation(best); }
+                    long ageMs = lastKnown != null ? (System.currentTimeMillis() - lastKnown.getTime()) : Long.MAX_VALUE;
+                    if (lastKnown != null && ageMs <= 120000) { emitted[0] = true; emitLocation(lastKnown); return; }
                     final LocationListener listener = new LocationListener() {
                         @Override public void onLocationChanged(Location l) {
                             if (!emitted[0]) { emitted[0] = true; emitLocation(l); }
@@ -478,15 +481,19 @@ public class AuthBridge {
                         try { lm.requestSingleUpdate(p, listener, Looper.getMainLooper()); any = true; } catch (Exception ignored) {}
                     }
                     if (!any && !emitted[0]) {
-                        JSONObject o = new JSONObject();
-                        o.put("event", "locationError");
-                        o.put("message", "unavailable");
-                        notifyDevice(o.toString());
+                        if (lastKnown != null) { emitted[0] = true; emitLocation(lastKnown); }
+                        else {
+                            JSONObject o = new JSONObject();
+                            o.put("event", "locationError");
+                            o.put("message", "unavailable");
+                            notifyDevice(o.toString());
+                        }
                     } else if (!emitted[0]) {
                         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                             @Override public void run() {
                                 if (!emitted[0]) {
                                     emitted[0] = true;
+                                    if (lastKnown != null) { emitLocation(lastKnown); return; }
                                     try {
                                         JSONObject o = new JSONObject();
                                         o.put("event", "locationError");
@@ -495,7 +502,7 @@ public class AuthBridge {
                                     } catch (Exception ignored) {}
                                 }
                             }
-                        }, 12000);
+                        }, 10000);
                     }
                 } catch (Exception e) { deviceError("location", e); }
             }
@@ -513,6 +520,149 @@ public class AuthBridge {
                 } catch (Exception e) { deviceError("maps", e); }
             }
         });
+    }
+
+    /* ═══════ ECOSYSTEM: generic Firestore ops (companies / jobs / portal) ═══════
+       All access control lives in the Firestore security rules (membership-based).
+       The bridge is a dumb pipe: JS sends ops with an opId and gets results back
+       on window.__onCloudEvent as {event:"fsResult", opId, ok, data|items|error}. */
+
+    private void notifyCloud(String json) {
+        webView.post(new Runnable() {
+            @Override public void run() {
+                webView.evaluateJavascript("window.__onCloudEvent&&window.__onCloudEvent(" + JSONObject.quote(json) + ")", null);
+            }
+        });
+    }
+
+    private void fsResult(String opId, boolean ok, String payloadKey, Object payload, String error) {
+        try {
+            JSONObject o = new JSONObject();
+            o.put("event", "fsResult");
+            o.put("opId", opId);
+            o.put("ok", ok);
+            if (payloadKey != null) o.put(payloadKey, payload);
+            if (error != null) o.put("error", error);
+            notifyCloud(o.toString());
+        } catch (Exception ignored) {}
+    }
+
+    private Object jsonToJava(Object v) throws Exception {
+        if (v == null || v == JSONObject.NULL) return null;
+        if (v instanceof String && "__SERVER_TS__".equals(v)) return com.google.firebase.firestore.FieldValue.serverTimestamp();
+        if (v instanceof JSONObject) {
+            java.util.Map<String, Object> m = new java.util.HashMap<>();
+            java.util.Iterator<String> it = ((JSONObject) v).keys();
+            while (it.hasNext()) { String k = it.next(); m.put(k, jsonToJava(((JSONObject) v).get(k))); }
+            return m;
+        }
+        if (v instanceof org.json.JSONArray) {
+            java.util.List<Object> l = new java.util.ArrayList<>();
+            for (int i = 0; i < ((org.json.JSONArray) v).length(); i++) l.add(jsonToJava(((org.json.JSONArray) v).get(i)));
+            return l;
+        }
+        return v;
+    }
+
+    private Object javaToJson(Object v) {
+        try {
+            if (v == null) return JSONObject.NULL;
+            if (v instanceof com.google.firebase.Timestamp) return ((com.google.firebase.Timestamp) v).toDate().getTime();
+            if (v instanceof java.util.Map) {
+                JSONObject o = new JSONObject();
+                for (java.util.Map.Entry<?, ?> e : ((java.util.Map<?, ?>) v).entrySet()) o.put(String.valueOf(e.getKey()), javaToJson(e.getValue()));
+                return o;
+            }
+            if (v instanceof java.util.List) {
+                org.json.JSONArray a = new org.json.JSONArray();
+                for (Object item : (java.util.List<?>) v) a.put(javaToJson(item));
+                return a;
+            }
+            return v;
+        } catch (Exception e) { return JSONObject.NULL; }
+    }
+
+    private com.google.firebase.firestore.DocumentReference docRef(String path) {
+        String[] seg = path.split("/");
+        com.google.firebase.firestore.DocumentReference ref = null;
+        com.google.firebase.firestore.CollectionReference col = null;
+        for (int i = 0; i < seg.length; i++) {
+            if (i % 2 == 0) { col = (ref == null) ? firestore().collection(seg[i]) : ref.collection(seg[i]); }
+            else { ref = col.document(seg[i]); }
+        }
+        return ref;
+    }
+
+    private com.google.firebase.firestore.CollectionReference colRef(String path) {
+        String[] seg = path.split("/");
+        com.google.firebase.firestore.CollectionReference col = firestore().collection(seg[0]);
+        com.google.firebase.firestore.DocumentReference ref = null;
+        for (int i = 1; i < seg.length; i++) {
+            if (i % 2 == 1) { ref = col.document(seg[i]); }
+            else { col = ref.collection(seg[i]); }
+        }
+        return col;
+    }
+
+    @JavascriptInterface
+    public void fsOp(final String opId, final String kind, final String path, final String json) {
+        try {
+            FirebaseUser u = auth().getCurrentUser();
+            if (u == null) { fsResult(opId, false, null, null, "not-signed-in"); return; }
+            if ("set".equals(kind)) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> data = (java.util.Map<String, Object>) jsonToJava(new JSONObject(json == null ? "{}" : json));
+                docRef(path).set(data, com.google.firebase.firestore.SetOptions.merge())
+                        .addOnCompleteListener(t -> {
+                            if (t.isSuccessful()) fsResult(opId, true, null, null, null);
+                            else fsResult(opId, false, null, null, t.getException() == null ? "Error" : String.valueOf(t.getException().getMessage()));
+                        });
+            } else if ("get".equals(kind)) {
+                docRef(path).get().addOnCompleteListener(t -> {
+                    if (t.isSuccessful() && t.getResult() != null) {
+                        if (t.getResult().exists()) fsResult(opId, true, "data", javaToJson(t.getResult().getData()), null);
+                        else fsResult(opId, true, "data", JSONObject.NULL, null);
+                    } else fsResult(opId, false, null, null, t.getException() == null ? "Error" : String.valueOf(t.getException().getMessage()));
+                });
+            } else if ("add".equals(kind)) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> data = (java.util.Map<String, Object>) jsonToJava(new JSONObject(json == null ? "{}" : json));
+                colRef(path).add(data).addOnCompleteListener(t -> {
+                    if (t.isSuccessful()) fsResult(opId, true, "id", t.getResult().getId(), null);
+                    else fsResult(opId, false, null, null, t.getException() == null ? "Error" : String.valueOf(t.getException().getMessage()));
+                });
+            } else if ("delete".equals(kind)) {
+                docRef(path).delete().addOnCompleteListener(t -> {
+                    if (t.isSuccessful()) fsResult(opId, true, null, null, null);
+                    else fsResult(opId, false, null, null, t.getException() == null ? "Error" : String.valueOf(t.getException().getMessage()));
+                });
+            } else if ("query".equals(kind)) {
+                JSONObject q = new JSONObject(json == null ? "{}" : json);
+                String field = q.optString("field", "");
+                Object value = jsonToJava(q.opt("value"));
+                com.google.firebase.firestore.Query query;
+                if (field.isEmpty()) query = colRef(path);
+                else if ("arrayContains".equals(q.optString("op", ""))) query = colRef(path).whereArrayContains(field, value);
+                else query = colRef(path).whereEqualTo(field, value);
+                if (q.has("orderBy")) query = query.orderBy(q.optString("orderBy"));
+                if (q.has("limit")) query = query.limit(q.optInt("limit", 50));
+                query.get().addOnCompleteListener(t -> {
+                    if (t.isSuccessful() && t.getResult() != null) {
+                        org.json.JSONArray items = new org.json.JSONArray();
+                        for (com.google.firebase.firestore.DocumentSnapshot d : t.getResult().getDocuments()) {
+                            JSONObject item = (JSONObject) javaToJson(d.getData());
+                            try { item.put("_id", d.getId()); } catch (Exception ignored) {}
+                            items.put(item);
+                        }
+                        fsResult(opId, true, "items", items, null);
+                    } else fsResult(opId, false, null, null, t.getException() == null ? "Error" : String.valueOf(t.getException().getMessage()));
+                });
+            } else {
+                fsResult(opId, false, null, null, "unknown-kind");
+            }
+        } catch (Exception e) {
+            fsResult(opId, false, null, null, e.getMessage() == null ? e.toString() : e.getMessage());
+        }
     }
 
     public static class NotifyReceiver extends BroadcastReceiver {

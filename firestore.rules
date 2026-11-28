@@ -1,0 +1,122 @@
+rules_version = '2';
+// Blackracoon ecosystem rules — Fase A (2026-11-28)
+// Model: data belongs to a company. Membership doc = access. Job docs are
+// SANITIZED by design (never contain money), so member read access is safe.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function isMember(cid) {
+      return signedIn() && exists(/databases/$(database)/documents/companies/$(cid)/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/companies/$(cid)/members/$(request.auth.uid)).data.status == 'active';
+    }
+    function isOwner(cid) {
+      return isMember(cid)
+        && get(/databases/$(database)/documents/companies/$(cid)/members/$(request.auth.uid)).data.role == 'owner';
+    }
+
+    // Existing per-user cloud backup — owner only (unchanged from 2026-11-27).
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Ecosystem pointer per user: which company + role.
+    match /profiles/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Pending-join pointer: lets a worker find the company they asked to join
+    // (and learn the decision) without knowing the company id in advance.
+    match /joinPend/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Invite codes: doc id IS the code. Any signed-in user may GET one code
+    // (to join); listing is not allowed. Only the company owner manages them.
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow create, update, delete: if signedIn()
+        && isOwner(request.resource.data.companyId);
+    }
+
+    match /companies/{cid} {
+      allow create: if signedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow get: if isMember(cid) || (signedIn() && resource.data.ownerUid == request.auth.uid);
+      allow update, delete: if isOwner(cid);
+
+      match /members/{uid} {
+        allow get: if signedIn() && (request.auth.uid == uid || isMember(cid));
+        allow list: if isMember(cid);
+        allow create, update, delete: if isOwner(cid)
+          || (signedIn() && request.auth.uid == uid && request.resource.data.role == 'owner'
+              && get(/databases/$(database)/documents/companies/$(cid)).data.ownerUid == request.auth.uid);
+      }
+
+      match /joinRequests/{uid} {
+        allow create: if signedIn() && request.auth.uid == uid;
+        allow get: if signedIn() && (request.auth.uid == uid || isOwner(cid));
+        allow list: if isOwner(cid);
+        allow update, delete: if isOwner(cid) || (signedIn() && request.auth.uid == uid);
+      }
+
+      // Sanitized work orders (NO money fields ever stored here).
+      match /jobs/{jobId} {
+        allow read: if isMember(cid);
+        allow create, update, delete: if isOwner(cid);
+
+        // Worker-writable progress state (checklist + stage status).
+        match /progress/{docId} {
+          allow read: if isMember(cid);
+          allow write: if isMember(cid);
+        }
+        // Photos: one photo per doc (~100 KB). Workers create their own;
+        // only the owner approves (approved flag) or deletes.
+        match /photos/{photoId} {
+          allow read: if isMember(cid);
+          allow create: if isMember(cid) && request.resource.data.byUid == request.auth.uid;
+          allow update: if isOwner(cid)
+            || (isMember(cid) && resource.data.byUid == request.auth.uid
+                && request.resource.data.approved == resource.data.approved);
+          allow delete: if isOwner(cid) || (isMember(cid) && resource.data.byUid == request.auth.uid);
+        }
+        // Notes, material requests, expense reports, change-order proposals.
+        match /updates/{updateId} {
+          allow read: if isMember(cid);
+          allow create: if isMember(cid) && request.resource.data.byUid == request.auth.uid;
+          allow update: if isOwner(cid)
+            || (isMember(cid) && resource.data.byUid == request.auth.uid
+                && request.resource.data.status == resource.data.status);
+          allow delete: if isOwner(cid);
+        }
+        // GPS check-in / check-out records.
+        match /checkins/{checkinId} {
+          allow read: if isMember(cid);
+          allow create: if isMember(cid) && request.resource.data.byUid == request.auth.uid;
+          allow update: if isMember(cid) && resource.data.byUid == request.auth.uid;
+          allow delete: if isOwner(cid);
+        }
+      }
+    }
+
+    // Client portal: doc id IS the unguessable token. Unauthenticated GET of a
+    // single portal doc is the product (the client has no account). No list.
+    // The portal doc only ever holds the sanitized client view.
+    match /portal/{token} {
+      allow get: if true;
+      allow create: if signedIn() && isOwner(request.resource.data.companyId);
+      allow update, delete: if signedIn() && isOwner(resource.data.companyId);
+      match /responses/{rid} {
+        allow create: if true;
+        allow read: if signedIn() && isMember(get(/databases/$(database)/documents/portal/$(token)).data.companyId);
+      }
+    }
+
+    // Photos the owner approved for a client portal. Doc id = token + '_' +
+    // photoId, so GET requires knowing the token. No list (privacy).
+    match /portalPhotos/{id} {
+      allow get: if true;
+      allow create: if signedIn() && isOwner(request.resource.data.companyId);
+      allow update, delete: if signedIn() && isOwner(resource.data.companyId);
+    }
+  }
+}
